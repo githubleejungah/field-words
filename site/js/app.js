@@ -43,6 +43,7 @@ const state = {
   hold: false,        // true면 다음 카드를 열 때 자동으로 읽지 않는다 (사용자가 멈춘 채로 넘겼을 때)
   session: null,      // 오늘의 학습 진행 중: { queue: [용어 id], i: 지금 몇 번째, retries: {id: 다시 나온 횟수} }
   extraGoal: 0,       // 오늘 목표를 채운 뒤 "더 하기"로 늘린 장 수 (오늘만)
+  celebratedTier: 0,  // 오늘 이미 축하한 칭찬 단계 (같은 단계는 한 번만 축하)
 };
 
 const app = document.getElementById("app");
@@ -215,7 +216,9 @@ function todayPanel() {
   const c = Review.counts(state.terms);
   const left = p.queue.length;
 
-  const button = h("button", {
+  // 목표를 채웠고 더 낼 카드도 없으면(용어를 모두 봄) 버튼 대신 안내만 보여 준다
+  const more = left ? left : moreLeft();
+  const button = more === 0 ? "" : h("button", {
     class: "btn primary",
     type: "button",
     onclick: () => {
@@ -223,7 +226,7 @@ function todayPanel() {
       state.session = null;
       location.hash = "#/study";
     },
-  }, p.done === 0 ? t("today.start") : left ? t("today.continue") : t("today.more"));
+  }, p.done === 0 ? t("today.start") : left ? t("today.continue") : more >= 5 ? t("today.more") : t("today.more.n", { n: more }));
 
   const stats = c.unseen === state.terms.length ? null : h("div", { class: "status-row" },
     ["known", "shaky", "confused", "misconception", "unknown"].map((k) =>
@@ -239,7 +242,7 @@ function todayPanel() {
           p.done >= min_goal && h("span", { class: "today-min" }, t("today.min.ok"))),
         h("p", { class: "muted" }, left
           ? t("today.left", { n: left, m: p.minutesLeft, r: p.reviewCount, f: p.newCount })
-          : t("today.done"))
+          : more ? t("today.done") : t("done.allseen", { n: state.terms.length }))
       ),
       button
     ),
@@ -280,9 +283,11 @@ function renderStudy() {
   if (!state.session) {
     const p = Review.plan(state.terms, { extra: state.extraGoal });
     // answers: 몇 번째 카드를 어떤 상태로 체크했는지. 이전 카드로 돌아갔을 때 다시 채점하지 않으려고 기억한다.
-    state.session = { queue: p.queue, i: 0, retries: {}, answers: {} };
+    // kinds:   몇 번째 카드가 "learn"(배우기 카드)인지 "check"(체크 카드)인지
+    state.session = { queue: p.queue, i: 0, retries: {}, answers: {}, kinds: {} };
   }
   const s = state.session;
+  s.kinds ??= {};
   if (s.i >= s.queue.length) { renderStudyDone(); return; }
 
   const term = state.allById.get(s.queue[s.i]);
@@ -296,10 +301,16 @@ function renderStudy() {
     head.replaceChildren(
       progressRing(done, goal, 36),
       h("span", {}, t("today.title", { done, goal })),
-      // 이 카드가 앞에서 이미 한 번 나왔던 용어일 때만 "다시 나온 용어" 표시
-      s.queue.slice(0, s.i).includes(term.id) ? h("span", { class: "badge" }, t("study.again")) : ""
+      // 앞에서 이미 나왔던 용어면 표시: 배우기 카드로만 나왔으면 "방금 배운 용어", 틀려서 다시 나왔으면 "다시 나온 용어"
+      againBadge()
     );
   };
+  function againBadge() {
+    const before = s.queue.slice(0, s.i).map((id, idx) => (id === term.id ? idx : -1)).filter((idx) => idx >= 0);
+    if (!before.length) return "";
+    const onlyLearned = before.every((idx) => s.kinds[idx] === "learn");
+    return h("span", { class: "badge" }, t(onlyLearned ? "study.learned" : "study.again"));
+  }
   paintHead();
 
   const card = h("article", { class: "card" },
@@ -312,10 +323,16 @@ function renderStudy() {
   card.append(panel);
 
   // 아래 막대: 왼쪽 ⏮ 이전(첫 카드가 아니면) · 가운데 전체 듣기 · 오른쪽 다음 (듣기·다음은 답한 뒤에 나타난다)
+  // 넣을 버튼이 하나도 없으면(첫 카드의 답하기 전) 빈 흰 줄이 남지 않게 막대를 숨긴다
   const inner = h("div", { class: "bottom-inner" });
+  const bar = h("nav", { class: "bottom-bar", "aria-label": t("controls.label") }, inner);
+  const syncBar = () => {
+    bar.hidden = inner.childElementCount === 0;
+    document.body.classList.toggle("has-bottom-bar", !bar.hidden);
+  };
   if (s.i > 0) inner.append(h("button", { class: "ctrl", type: "button", "aria-label": t("check.prev"), onclick: () => { s.i -= 1; route(); } }, icon("prev")));
-  app.replaceChildren(head, card, h("nav", { class: "bottom-bar", "aria-label": t("controls.label") }, inner));
-  document.body.classList.add("has-bottom-bar");
+  app.replaceChildren(head, card, bar);
+  syncBar();
   window.scrollTo(0, 0);
 
   // 이미 체크한 카드로 돌아온 경우: 다시 채점하지 않고(기록이 두 번 남지 않게) 결과와 카드만 보여 준다
@@ -325,6 +342,13 @@ function renderStudy() {
     showFullCard(true);
     return;
   }
+
+  // 이 자리의 카드 종류를 처음 볼 때 정한다:
+  //   처음 보는 용어(기록 없음)이고 이 학습에서 아직 배우지 않았으면 → 배우기 카드
+  //   그 밖에는 → 체크 카드 (복습은 문제부터: 먼저 떠올려 보는 것이 가장 오래 남는다)
+  s.learned ??= [];
+  if (!s.kinds[s.i]) s.kinds[s.i] = !Review.get(term.id) && !s.learned.includes(term.id) ? "learn" : "check";
+  if (s.kinds[s.i] === "learn") { showLearn(); return; }
 
   if (speech.supported) speech.start("term", termOnlyParts(term));
 
@@ -393,8 +417,47 @@ function renderStudy() {
     const nextBtn = h("button", { class: "ctrl go", type: "button", onclick: () => { s.i += 1; route(); } },
       h("span", {}, s.i + 1 < s.queue.length ? t("check.next") : t("check.finish")), icon("next"));
     inner.append(listen, nextBtn);
+    syncBar();
+  }
+
+  // 처음 보는 용어: 먼저 배우기 카드
+  //   카드 전체를 보여 주고(전체 듣기 가능) → [익혔어요]를 누르면 다른 카드 3장 뒤에 확인 문제로 다시 나온다.
+  //   바로 묻지 않는 이유: 방금 본 것을 바로 물으면 기억이 아니라 눈앞의 잔상으로 맞힌다 (간격 효과)
+  //   [이미 알아요]: 배우기를 건너뛰고 바로 확인 문제로. 틀리면 착각으로 잡히므로 놓치지 않는다.
+  function showLearn() {
+    panel.replaceChildren(h("div", { class: "learn-box" },
+      h("p", { class: "learn-title" }, t("learn.title")),
+      h("p", { class: "learn-body" }, t("learn.body", { n: LEARN_GAP })),
+      h("button", { class: "btn small", type: "button", onclick: alreadyKnow }, t("learn.know"))
+    ));
+    const full = buildCard(term, "");
+    full.classList.add("study-full");
+    card.after(full);
+    speech.onSentence = (part) => highlight(full, part.sec);
+    const doneBtn = h("button", { class: "ctrl go", type: "button", onclick: learned }, h("span", {}, t("learn.done")), icon("next"));
+    inner.append(listenButton(term), doneBtn);
+    syncBar();
+    if (speech.supported) speech.start("term", termOnlyParts(term));
+  }
+
+  function learned() {
+    // 이전 버튼으로 돌아와 다시 누른 경우에는 확인 문제를 또 넣지 않는다
+    if (!s.learned.includes(term.id)) {
+      s.learned.push(term.id);
+      s.queue.splice(Math.min(s.i + 1 + LEARN_GAP, s.queue.length), 0, term.id);
+    }
+    s.i += 1;
+    route();
+  }
+
+  function alreadyKnow() {
+    if (!s.learned.includes(term.id)) s.learned.push(term.id);
+    s.kinds[s.i] = "check";
+    route();
   }
 }
+
+const LEARN_GAP = 3;   // 배운 용어를 확인 문제로 다시 낼 때까지 사이에 둘 카드 수
 
 // 아래 막대의 "전체 듣기" 큰 버튼 (재생 ↔ 일시정지 ↔ 이어 듣기). beforePlay: 재생 전에 할 일
 function listenButton(term, beforePlay) {
@@ -466,8 +529,12 @@ function renderStudyDone() {
   const corrected = today.corrected;
   const found = today.misconceptions;
 
+  // 축하 종이 조각은 새 단계에 처음 올라섰을 때만 뿌린다 (같은 화면을 다시 열 때마다 나오지 않게)
+  const celebrate = tier > 0 && tier > state.celebratedTier;
+  if (celebrate) state.celebratedTier = tier;
+
   app.replaceChildren(
-    tier > 0 ? confetti(tier) : "",
+    celebrate ? confetti(tier) : "",
     h("article", { class: `card done tier-${tier}` },
       h("div", { class: "done-hero" },
         progressRing(done, Math.max(goal, done), 72),
@@ -493,11 +560,38 @@ function renderStudyDone() {
 
       h("div", { class: "done-actions" },
         h("a", { class: "btn", href: "#/" }, t("nav.back")),
-        h("button", { class: "btn primary", type: "button", onclick: () => { state.extraGoal += 5; state.session = null; route(); } }, t("today.more"))
-      )
+        moreAction(today)
+      ),
+      moreLeft(today) === 0 && h("p", { class: "muted done-note" }, t("done.allseen", { n: state.terms.length }))
     )
   );
   state.session = null;
+}
+
+// 오늘 더 낼 수 있는 새·복습 카드 수 (5장 더 하기를 눌렀을 때 실제로 나올 장 수)
+function moreLeft() {
+  return Review.plan(state.terms, { extra: state.extraGoal + 5 }).queue.length;
+}
+
+// 마침 화면의 두 번째 버튼
+//   더 낼 카드가 있으면: "5장 더 하기" (남은 게 5장보다 적으면 그 수만큼)
+//   모두 봤으면: 오늘 틀렸던 용어를 한 번 더 풀기 (틀린 게 없으면 버튼 없음)
+function moreAction(today) {
+  const left = moreLeft();
+  if (left > 0) {
+    return h("button", { class: "btn primary", type: "button", onclick: () => { state.extraGoal += 5; state.session = null; route(); } },
+      left >= 5 ? t("today.more") : t("today.more.n", { n: left }));
+  }
+  const again = [...new Set(today.wrong)];
+  if (!again.length) return "";
+  return h("button", {
+    class: "btn primary",
+    type: "button",
+    onclick: () => {
+      state.session = { queue: again, i: 0, retries: {}, answers: {} };
+      route();
+    },
+  }, t("done.retry", { n: again.length }));
 }
 
 // 축하 종이 조각: 칭찬 단계가 높을수록 조각이 많아진다. 한 번만 떨어지고 사라진다.

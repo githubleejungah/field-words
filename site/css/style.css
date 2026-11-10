@@ -605,6 +605,19 @@ body.has-bottom-bar .footer { display: none; }
 .cmp-box.answer.pair-a, .cmp-box.answer.pair-b { border-width: 3px; }
 .cmp-label { font-size: 13px; font-weight: 700; }
 .study-full { margin-top: 16px; }
+/* 새 용어 배우기 안내 */
+.learn-box {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+.learn-box p { margin: 0; }
+.learn-title { font-size: 18px; font-weight: 700; color: var(--accent); }
+.learn-body { font-size: 15px; }
+
 /* 체크 화면 아래 카드 전체: 위에 이미 단어가 있으니 머리(단어·발음)는 다시 보여 주지 않는다 */
 .study-full .card-head { display: none; }
 .study-full .term-ko-big { margin-top: 0; }
@@ -647,7 +660,8 @@ body.has-bottom-bar .footer { display: none; }
 .done-chip.gold { border: 1.5px solid var(--gold); color: var(--gold); }
 .done-chip.gold::before { content: "✨ "; }
 .done-chip.warm { border: 1px solid var(--warm-border); color: var(--warm); }
-.done-actions { display: flex; gap: 10px; margin-top: 24px; }
+.done-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.done-note { margin: 14px 0 0; }
 
 /* 축하 종이 조각: 위에서 한 번 떨어지고 사라진다 */
 .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 20; }

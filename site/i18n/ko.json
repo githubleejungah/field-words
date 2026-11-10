@@ -84,6 +84,9 @@
   "today.start": "시작",
   "today.continue": "이어 하기",
   "today.more": "5장 더 하기",
+  "today.more.n": "{n}장 더 하기",
+  "done.allseen": "준비된 용어 {n}개를 오늘 모두 봤어요. 새 용어가 추가되면 여기에 나와요.",
+  "done.retry": "오늘 틀렸던 용어 다시 풀기 ({n}개)",
 
   "status.known": "✅ 앎",
   "status.shaky": "🟡 불안",
@@ -93,6 +96,11 @@
   "status.longTerm": "🏅 장기 기억",
 
   "study.again": "다시 나온 용어",
+  "study.learned": "방금 배운 용어 확인",
+  "learn.title": "📖 처음 보는 용어예요",
+  "learn.body": "먼저 천천히 읽고 들어 보세요. [익혔어요]를 누르면 다른 카드 {n}장 뒤에 확인 문제로 다시 나와요.",
+  "learn.know": "이미 알아요 → 바로 확인",
+  "learn.done": "익혔어요",
   "check.recall": "뜻을 떠올려 보세요. 얼마나 자신 있나요?",
   "check.sure": "확실해요",
   "check.unsure": "헷갈려요",
