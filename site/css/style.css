@@ -427,13 +427,21 @@ details.answer[open] summary::before { content: "▾"; }
 .mode-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .mode-btn .icon { width: 16px; height: 16px; }
 
-/* 지금 읽는 구역: 연한 색 바탕 + 왼쪽 굵은 막대 */
+/* 지금 읽는 구역: 연한 색 바탕 + 왼쪽 굵은 막대
+   글자에 바짝 붙지 않도록 바탕을 사방으로 12px 넓히고, 초록 막대는 그 바깥에 둔다.
+   box-shadow로 그리기 때문에 칸의 크기·위치는 그대로라서 글자가 밀리지 않는다.
+     1번째 그림자: 연한 바탕을 사방 12px 넓힘
+     2번째 그림자: 같은 크기를 왼쪽으로 4px 옮긴 초록 판 → 바탕 바깥 왼쪽에 4px만 보임 */
 .reading {
   background: var(--accent-soft);
-  box-shadow: -4px 0 0 var(--accent);
-  border-radius: 6px;
-  transition: background 0.2s;
+  box-shadow:
+    0 0 0 12px var(--accent-soft),
+    -4px 0 0 12px var(--accent);
+  border-radius: 2px;
+  transition: background 0.2s, box-shadow 0.2s;
 }
+/* 구역(뜻, 비유 …)은 위 여백이 커서, 색칠할 때는 위 여백을 줄여 제목과 바탕이 붙어 보이지 않게 한다 */
+.section.reading { border-top-color: transparent; }
 
 /* ---------- 아래 고정 막대: ⏮ 재생/일시정지 ⏭ ---------- */
 .bottom-bar {

@@ -27,7 +27,7 @@ const NEXT_CARD_DELAY_MS = 2000;
 const FEEDBACK = {
   accessKey: "",
   endpoint: "https://api.web3forms.com/submit",
-  mailto: "veryfar@naver.com",
+  mailto: "veryfar4@gmail.com",   // 의견을 받는 메일 (2026-11-10 사용자 지정)
 };
 
 // 앱이 기억하는 값(상태, State)을 한곳에 모은다.
