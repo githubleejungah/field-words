@@ -340,6 +340,7 @@ details.answer[open] summary::before { content: "▾"; }
 .topbar.compact { padding: 8px 0; }
 .btn.small { min-height: 36px; padding: 0 12px; font-size: 14px; }
 .brand-mini { color: var(--muted); font-size: 14px; font-weight: 700; text-decoration: none; }
+.brand-mini-en { font-weight: 500; }
 
 /* 모드 전환 막대: 버튼 세 개를 한 줄로 붙인다 (세그먼트 버튼) */
 .modebar { margin-bottom: 10px; }
@@ -388,13 +389,43 @@ details.answer[open] summary::before { content: "▾"; }
 }
 .speak-prompt { margin: 0; }
 .speak-row2 { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
-.speak-clock {
-  min-width: 72px;
-  font-size: 32px;
+/* 원형 타이머: 원이 시계 방향으로 줄어든다. 가운데 숫자는 작게 */
+.ring-wrap { position: relative; width: 64px; height: 64px; flex: none; }
+.ring { width: 64px; height: 64px; transform: rotate(-90deg); }   /* 12시 방향에서 시작 */
+.ring circle { fill: none; stroke-width: 6; }
+.ring-track { stroke: var(--border); }
+.ring-bar { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.ring-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;   /* 숫자가 바뀌어도 폭이 흔들리지 않게 */
   color: var(--accent);
 }
+
+/* 답을 펼친 뒤: 다음 용어까지 남은 시간 + 머물기/지금 넘기기 */
+.next-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 12px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  font-size: 15px;
+}
+.next-actions { display: flex; gap: 8px; }
+.next-actions .btn { min-height: 40px; }
+
+/* 모드 버튼 안 작은 상태 아이콘 (이동 중: ⏸ / ▶) */
+.mode-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.mode-btn .icon { width: 16px; height: 16px; }
 
 /* 지금 읽는 구역: 연한 색 바탕 + 왼쪽 굵은 막대 */
 .reading {

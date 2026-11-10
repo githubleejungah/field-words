@@ -145,7 +145,7 @@ function renderTopbar(kind) {
     topbar.className = "topbar compact";
     topbar.replaceChildren(
       h("a", { class: "btn small", href: "#/" }, t("nav.back")),
-      h("a", { class: "brand-mini", href: "#/" }, "필드워드")
+      h("a", { class: "brand-mini", href: "#/" }, "필드워드 ", h("span", { class: "brand-mini-en" }, "Field Words"))
     );
   }
 }
@@ -251,9 +251,9 @@ function renderTerm(id) {
   const controls = buildControls(term, index, seq.length, goTo);
 
   // 🗣️ 말하기: 답(뜻·예문 등)을 가리고, 30초 동안 먼저 설명해 보게 한다
-  const practice = state.mode === "speak" ? speakPractice(card) : null;
+  const practice = state.mode === "speak" ? speakPractice(card, term, index < seq.length - 1, () => goTo(index + 1)) : null;
 
-  app.replaceChildren(modeBar(term, goTo, index, seq.length), card, controls.bar);
+  app.replaceChildren(modeBar(term, controls), card, controls.bar);
   if (practice) (card.querySelector(".term-ko-big") ?? card.querySelector(".term-head")).after(practice);
   document.body.classList.add("has-bottom-bar");
   window.scrollTo(0, 0);
@@ -276,71 +276,148 @@ function renderTerm(id) {
   if (state.mode === "walk") controls.playFull();
 }
 
-// 🗣️ 말하기 연습 상자: 답을 가린 채 "30초 안에 설명해 보세요" → 답 보기
+// 🗣️ 말하기 연습 상자
+//   1) 답을 가린 채 원형 타이머가 30초 동안 줄어든다 → 그동안 소리 내어 설명해 본다
+//   2) 시간이 다 되면(또는 "답 보기"를 누르면) 답을 펼치고 뜻을 읽어 준다
+//   3) 다음 용어까지 5초 세고 자동으로 넘어간다. "지금 넘기기"로 빨리, "여기 머물기"로 멈출 수 있다
 // 먼저 떠올려 말해 보고 나서 답을 보면 기억에 더 오래 남는다 (인출 연습).
 const SPEAK_SECONDS = 30;
-function speakPractice(card) {
+const SPEAK_NEXT_SECONDS = 5;
+const RING_R = 26;
+const RING_LEN = 2 * Math.PI * RING_R;
+
+function speakPractice(card, term, hasNext, goNext) {
   card.classList.add("concealed");
-  const clock = h("span", { class: "speak-clock" }, `${SPEAK_SECONDS}`);
-  const reveal = () => {
-    clearInterval(state.speakTimer);
-    card.classList.remove("concealed");
-    box.remove();
-  };
+
+  // 원형 타이머: 글자 대신 원이 줄어드는 모양으로 남은 시간을 보여 준다 (흘끗 봐도 알 수 있게)
+  const ns = "http://www.w3.org/2000/svg";
+  const ring = document.createElementNS(ns, "svg");
+  ring.setAttribute("viewBox", "0 0 64 64");
+  ring.setAttribute("class", "ring");
+  ring.setAttribute("aria-hidden", "true");
+  const track = document.createElementNS(ns, "circle");
+  const bar = document.createElementNS(ns, "circle");
+  for (const c of [track, bar]) { c.setAttribute("cx", "32"); c.setAttribute("cy", "32"); c.setAttribute("r", String(RING_R)); }
+  track.setAttribute("class", "ring-track");
+  bar.setAttribute("class", "ring-bar");
+  bar.style.strokeDasharray = `${RING_LEN}`;
+  bar.style.strokeDashoffset = "0";
+  ring.append(track, bar);
+  const seconds = h("span", { class: "ring-num" }, `${SPEAK_SECONDS}`);
+  const timer = h("div", { class: "ring-wrap", role: "timer", "aria-label": t("speak.timer.label") }, ring, seconds);
+
   const box = h("div", { class: "speak-box" },
     h("p", { class: "speak-prompt" }, t("speak.prompt", { n: SPEAK_SECONDS })),
     h("div", { class: "speak-row2" },
-      clock,
-      h("button", { class: "btn primary", type: "button", onclick: reveal }, t("speak.reveal"))
+      timer,
+      h("button", { class: "btn primary", type: "button", onclick: () => reveal() }, t("speak.reveal"))
     )
   );
+
   box.startTimer = () => {
     clearInterval(state.speakTimer);
     let left = SPEAK_SECONDS;
     state.speakTimer = setInterval(() => {
       left -= 1;
-      clock.textContent = left > 0 ? `${left}` : t("speak.timeup");
-      if (left <= 0) clearInterval(state.speakTimer);
+      seconds.textContent = `${Math.max(left, 0)}`;
+      bar.style.strokeDashoffset = `${RING_LEN * (1 - left / SPEAK_SECONDS)}`;
+      if (left <= 0) reveal();            // 시간이 다 되면 바로 답을 펼친다 ("시간 끝" 글자 대신)
     }, 1000);
   };
+
+  // read=false: 아래 "전체 듣기"로 펼칠 때. 그때는 전체 듣기가 읽으므로 여기서는 읽지 않고, 자동 넘김도 하지 않는다.
+  function reveal({ read = true } = {}) {
+    clearInterval(state.speakTimer);
+    card.classList.remove("concealed");
+    if (!read) { box.remove(); return; }
+    box.replaceWith(nextBox);
+    if (speech.supported) {
+      speech.start("answer", [{ text: `${t("speak.def_prefix")} ${term.definition}`, lang: "ko-KR", sec: "def" }], startCountdown);
+    } else {
+      startCountdown();
+    }
+  }
   box.reveal = reveal;
+
+  // 다음 용어로 넘어가기 전 안내 상자
+  const countText = h("span", {});
+  const nextBox = h("div", { class: "next-box" },
+    hasNext ? countText : h("span", {}, t("speak.last")),
+    hasNext && h("div", { class: "next-actions" },
+      h("button", { class: "btn", type: "button", onclick: stay }, t("speak.stay")),
+      h("button", { class: "btn primary", type: "button", onclick: () => { stopCountdown(); goNext(); } }, t("speak.next.now"))
+    )
+  );
+
+  function startCountdown() {
+    if (!hasNext) return;
+    let left = SPEAK_NEXT_SECONDS;
+    countText.textContent = t("speak.next.in", { n: left });
+    state.speakTimer = setInterval(() => {
+      left -= 1;
+      countText.textContent = t("speak.next.in", { n: Math.max(left, 0) });
+    }, 1000);
+    state.nextTimer = setTimeout(() => { stopCountdown(); goNext(); }, SPEAK_NEXT_SECONDS * 1000);
+  }
+  function stopCountdown() {
+    clearInterval(state.speakTimer);
+    clearTimeout(state.nextTimer);
+    state.nextTimer = null;
+  }
+  function stay() {
+    stopCountdown();
+    nextBox.remove();
+  }
+
   return box;
 }
 
 // 모드 전환 막대: 늘 카드 위에 보인다. 한 줄 설명으로 무엇이 일어나는지 알려 준다.
-function modeBar(term, goTo, index, total) {
+// 🚶 이동 중이 켜진 상태에서 그 버튼을 한 번 더 누르면 일시정지 ↔ 다시 듣기 (아래 큰 버튼과 같은 동작)
+function modeBar(term, controls) {
   const desc = h("p", { class: "mode-desc" });
   const buttons = MODES.map((mode) => h("button", {
     class: "mode-btn",
     type: "button",
     "aria-pressed": String(state.mode === mode),
-    onclick: () => switchMode(mode),
-  }, t(`mode.${mode}`)));
+    onclick: () => (mode === state.mode ? pressAgain(mode) : switchMode(mode)),
+  }));
 
   function paint() {
-    buttons.forEach((b, i) => b.setAttribute("aria-pressed", String(MODES[i] === state.mode)));
+    buttons.forEach((b, i) => {
+      const mode = MODES[i];
+      const active = mode === state.mode;
+      b.setAttribute("aria-pressed", String(active));
+      // 이동 중 버튼에는 지금 상태를 작은 아이콘으로 붙인다: 듣는 중이면 ⏸(누르면 멈춤), 멈춰 있으면 ▶(누르면 다시 듣기)
+      const extra = active && mode === "walk" && speech.supported ? icon(controls.isPlaying() ? "pause" : "play") : null;
+      b.replaceChildren(t(`mode.${mode}`), extra ?? "");
+    });
     desc.textContent = t(`mode.${state.mode}.desc`);
+  }
+
+  function pressAgain(mode) {
+    if (mode === "walk" && speech.supported) controls.toggle();
   }
 
   function switchMode(mode) {
     // 말하기는 답을 가리는 화면이라, 말하기로 들어가거나 나올 때는 카드를 새로 그린다
-    if (mode !== state.mode && (mode === "speak" || state.mode === "speak")) {
+    if (mode === "speak" || state.mode === "speak") {
       state.mode = mode;
       route();
       return;
     }
     state.mode = mode;
-    paint();
     if (mode !== "walk" && state.nextTimer) { clearTimeout(state.nextTimer); state.nextTimer = null; }
     // 이동 중으로 바꾸면 지금 카드를 바로 읽기 시작한다 (이미 읽고 있으면 그대로 이어 간다)
-    if (mode === "walk" && speech.status !== "playing" && speech.supported) {
+    if (mode === "walk" && speech.supported && speech.status !== "playing") {
       if (speech.owner === "all" && speech.status === "paused") speech.run(speech.index);
-      else document.querySelector(".bottom-bar .main")?.click();
+      else controls.playFull();
     }
-    if (mode === "speak" && speech.status !== "playing" && speech.supported) speech.start("term", termOnlyParts(term));
+    paint();
     syncWakeLock();
   }
 
+  speech.listeners.add(paint);
   paint();
   return h("div", { class: "modebar" },
     h("div", { class: "mode-group", role: "group", "aria-label": t("mode.label") }, buttons),
@@ -459,18 +536,25 @@ function buildControls(term, index, total, goTo) {
 
   // 전체 듣기. 이동 중 모드면 다 읽은 뒤 2초 쉬고 다음 카드로 넘어간다.
   const playFull = () => {
-    document.querySelector(".speak-box")?.reveal?.();   // 말하기 모드에서 답을 들으면 가린 답도 펼친다
+    // 말하기 모드: 가린 답을 펼치고(여기서 전부 읽으므로 따로 읽지 않음), 다음 용어 자동 넘김은 멈춘다
+    document.querySelector(".speak-box")?.reveal?.({ read: false });
+    document.querySelector(".next-box")?.remove();
+    clearInterval(state.speakTimer);
+    clearTimeout(state.nextTimer);
+    state.nextTimer = null;
     speech.start("all", fullParts(term), () => {
       if (state.mode !== "walk" || !hasNext) { syncWakeLock(); return; }
       state.nextTimer = setTimeout(() => { state.nextTimer = null; goTo(index + 1); }, NEXT_CARD_DELAY_MS);
-      paint();
+      speech.listeners.forEach((fn) => fn());   // 아래 큰 버튼과 위 모드 버튼 모두 "듣는 중"으로 다시 그린다
     });
   };
 
-  const isPlaying = () => (speech.owner === "all" && speech.status === "playing") || state.nextTimer !== null;
+  // "듣는 중": 전체 듣기를 읽는 중이거나, 이동 중 모드에서 다음 카드로 넘어가기 전 2초 동안
+  const walkGap = () => state.mode === "walk" && state.nextTimer !== null;
+  const isPlaying = () => (speech.owner === "all" && speech.status === "playing") || walkGap();
 
   const toggle = () => {
-    if (state.nextTimer !== null) {          // 다음 카드로 넘어가기 전 2초 동안 누르면: 다음 카드에서 멈춰 둔다
+    if (walkGap()) {                          // 다음 카드로 넘어가기 전 2초 동안 누르면: 다음 카드에서 멈춰 둔다
       clearTimeout(state.nextTimer);
       state.nextTimer = null;
       state.hold = true;
@@ -482,9 +566,10 @@ function buildControls(term, index, total, goTo) {
     playFull();
   };
 
-  // 이전·다음: 듣는 중이었으면 새 카드에서도 이어서 듣고, 멈춰 있었으면 멈춘 채로 넘긴다
+  // 이전·다음: 이동 중 모드에서 듣는 중이었으면 새 카드에서도 이어서 듣고, 멈춰 있었으면 멈춘 채로 넘긴다
+  // (말하기 모드는 넘기면 늘 새 용어를 들려준다)
   const move = (step) => {
-    if (!isPlaying()) state.hold = true;
+    if (state.mode === "walk" && !isPlaying()) state.hold = true;
     clearTimeout(state.nextTimer);
     state.nextTimer = null;
     goTo(index + step);
@@ -514,7 +599,7 @@ function buildControls(term, index, total, goTo) {
 
   const bar = h("nav", { class: "bottom-bar", "aria-label": t("controls.label") },
     h("div", { class: "bottom-inner" }, prev, main, next));
-  return { bar, toggle, playFull };
+  return { bar, toggle, playFull, isPlaying };
 }
 
 /* ---------- 듣기 (Web Speech API의 speechSynthesis) ---------- */
