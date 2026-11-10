@@ -16,6 +16,10 @@
   --accent: #3f6b57;          /* 버튼·링크 (세이지 계열의 진한 색) */
   --accent-soft: #e7efea;
   --danger: #a3402d;          /* 입력 오류 안내 글자 */
+  /* 격려 색: 혼동 쌍 베이지(#f2e9e4)와 같은 따뜻한 계열. 틀렸을 때 "괜찮아요"를 감싼다 (빨강 대신) */
+  --warm: #8a5a3c;
+  --warm-soft: #f6ece5;
+  --warm-border: #e2cbbd;
 
   /* 혼동 쌍 색: A쪽 베이지, B쪽 세이지 */
   --pair-a: #f2e9e4;
@@ -42,6 +46,9 @@
     --accent: #9cc3ae;
     --accent-soft: #263129;
     --danger: #f08a73;
+    --warm: #e8b896;
+    --warm-soft: #33291f;
+    --warm-border: #5a4636;
 
     --pair-a: #3a322d;
     --pair-a-border: #7d6a5f;
@@ -54,6 +61,8 @@
 
 /* ---------- 2) 기본 요소 ---------- */
 * { box-sizing: border-box; }
+/* hidden 속성은 언제나 숨긴다. (.btn처럼 display를 정한 요소에서도 hidden이 이기게) */
+[hidden] { display: none !important; }
 
 body {
   margin: 0;
@@ -564,8 +573,22 @@ body.has-bottom-bar .footer { display: none; }
 
 .result { display: grid; gap: 12px; }
 .result p { margin: 0; }
-.result-title { font-size: 19px; font-weight: 700; }
-.result-title.known, .result-title.shaky { color: var(--accent); }
+/* 결과 문구는 띠(배너)로 감싼다.
+   맞음: 앱의 세이지 초록 / 틀림·모름·착각: 따뜻한 베이지·갈색 (격려하는 느낌, 빨강·경고 없음) */
+.result-title {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.result-title.known, .result-title.shaky { background: var(--accent-soft); color: var(--accent); }
+.result-title.unknown, .result-title.confused, .result-title.misconception {
+  background: var(--warm-soft);
+  border: 1px solid var(--warm-border);
+  color: var(--warm);
+}
 .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 @media (max-width: 420px) { .cmp { grid-template-columns: 1fr; } }
 .cmp-box { display: grid; gap: 4px; padding: 14px; border-radius: var(--radius); border: 1.5px solid var(--border); line-height: 1.5; }
@@ -575,6 +598,16 @@ body.has-bottom-bar .footer { display: none; }
 .cmp-box.answer.pair-a, .cmp-box.answer.pair-b { border-width: 3px; }
 .cmp-label { font-size: 13px; font-weight: 700; }
 .study-full { margin-top: 16px; }
+/* 체크 화면 아래 카드 전체: 위에 이미 단어가 있으니 머리(단어·발음)는 다시 보여 주지 않는다 */
+.study-full .card-head { display: none; }
+.study-full .term-ko-big { margin-top: 0; }
+
+/* 면접 질문 아래: ⏱ 30초 답해 보기 + 모범 답변 보기 */
+.interview-tools { margin-top: 14px; }
+.practice-row { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.practice-btn { font-weight: 600; }
+.ring-num.small { font-size: 14px; }
+.interview-tools details.answer { margin-top: 6px; }
 .study-more { margin-top: 16px; }
 .study-more summary { cursor: pointer; color: var(--accent); font-weight: 600; min-height: 44px; display: flex; align-items: center; list-style: none; }
 .study-more summary::-webkit-details-marker { display: none; }

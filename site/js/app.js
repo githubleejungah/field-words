@@ -83,9 +83,10 @@ function normalize(s) {
 /* ---------- 데이터 불러오기 ---------- */
 
 async function loadData() {
+  // cache: "no-cache" — 저장해 둔 파일이 있어도 서버에 "바뀌었나요?"를 먼저 묻는다. 용어가 추가되면 바로 보이게.
   const [glossary, text] = await Promise.all([
-    fetch("data/glossary.json").then((r) => r.json()),
-    fetch("i18n/ko.json").then((r) => r.json()),
+    fetch("data/glossary.json", { cache: "no-cache" }).then((r) => r.json()),
+    fetch("i18n/ko.json", { cache: "no-cache" }).then((r) => r.json()),
   ]);
   state.text = text;
   state.pairs = glossary.confusable_pairs;
@@ -278,7 +279,8 @@ function renderStudy() {
   renderTopbar("card");
   if (!state.session) {
     const p = Review.plan(state.terms, { extra: state.extraGoal });
-    state.session = { queue: p.queue, i: 0, retries: {} };
+    // answers: 몇 번째 카드를 어떤 상태로 체크했는지. 이전 카드로 돌아갔을 때 다시 채점하지 않으려고 기억한다.
+    state.session = { queue: p.queue, i: 0, retries: {}, answers: {} };
   }
   const s = state.session;
   if (s.i >= s.queue.length) { renderStudyDone(); return; }
@@ -294,7 +296,8 @@ function renderStudy() {
     head.replaceChildren(
       progressRing(done, goal, 36),
       h("span", {}, t("today.title", { done, goal })),
-      s.retries[term.id] ? h("span", { class: "badge" }, t("study.again")) : ""
+      // 이 카드가 앞에서 이미 한 번 나왔던 용어일 때만 "다시 나온 용어" 표시
+      s.queue.slice(0, s.i).includes(term.id) ? h("span", { class: "badge" }, t("study.again")) : ""
     );
   };
   paintHead();
@@ -307,8 +310,22 @@ function renderStudy() {
   );
   const panel = h("div", { class: "check" });
   card.append(panel);
-  app.replaceChildren(head, card);
+
+  // 아래 막대: 왼쪽 ⏮ 이전(첫 카드가 아니면) · 가운데 전체 듣기 · 오른쪽 다음 (듣기·다음은 답한 뒤에 나타난다)
+  const inner = h("div", { class: "bottom-inner" });
+  if (s.i > 0) inner.append(h("button", { class: "ctrl", type: "button", "aria-label": t("check.prev"), onclick: () => { s.i -= 1; route(); } }, icon("prev")));
+  app.replaceChildren(head, card, h("nav", { class: "bottom-bar", "aria-label": t("controls.label") }, inner));
+  document.body.classList.add("has-bottom-bar");
   window.scrollTo(0, 0);
+
+  // 이미 체크한 카드로 돌아온 경우: 다시 채점하지 않고(기록이 두 번 남지 않게) 결과와 카드만 보여 준다
+  const answered = s.answers[s.i];
+  if (answered) {
+    panel.replaceChildren(h("p", { class: `result-title ${answered.status}` }, t("check.already", { status: t(`status.${answered.status}`) })));
+    showFullCard(true);
+    return;
+  }
+
   if (speech.supported) speech.start("term", termOnlyParts(term));
 
   // ① 떠올리기: 확신도 한 번 누르기
@@ -346,6 +363,7 @@ function renderStudy() {
     const confusedWith = !correct && chosen ? chosen.id : null;
     const { status } = Review.record(term.id, { confidence, correct, quiz: quiz?.kind ?? "recall", confusedWith });
     const bad = status === "misconception" || status === "confused" || status === "unknown";
+    s.answers[s.i] = { status };
     paintHead();
 
     // 틀리거나 모르면 같은 학습 안에서 다시 나오게 한다 (3장 뒤 → 10장 뒤)
@@ -358,20 +376,23 @@ function renderStudy() {
     }
 
     panel.replaceChildren(resultBox(term, status, chosen, quiz));
-    // 결과 아래에 카드 전체(뜻·예문·함정…)를 붙여 바로 공부할 수 있게 한다. 맞았으면 접어 둔다.
+    showFullCard(bad);
+  }
+
+  // 결과 아래에 카드 전체(뜻·예문·함정…)를 붙여 바로 공부할 수 있게 한다. 맞았으면 접어 둔다.
+  // 그리고 아래 막대에 "전체 듣기"(가운데)와 "다음"(오른쪽)을 붙인다 — 카드 화면과 같은 자리 약속
+  function showFullCard(open) {
     const full = buildCard(term, "");
     full.classList.add("study-full");
-    const wrap = bad ? full : h("details", { class: "study-more" }, h("summary", {}, t("check.more")), full);
+    const wrap = open ? full : h("details", { class: "study-more" }, h("summary", {}, t("check.more")), full);
     card.after(wrap);
 
-    // 아래 막대: 카드 화면과 같은 자리 약속 — 가운데 큰 버튼은 "전체 듣기", 오른쪽은 "다음"
     // 전체 듣기를 누르면 접혀 있던 카드도 펼치고, 읽는 구역에 색을 칠한다
     speech.onSentence = (part) => highlight(full, part.sec);
     const listen = listenButton(term, () => { if (wrap.tagName === "DETAILS") wrap.open = true; });
     const nextBtn = h("button", { class: "ctrl go", type: "button", onclick: () => { s.i += 1; route(); } },
       h("span", {}, s.i + 1 < s.queue.length ? t("check.next") : t("check.finish")), icon("next"));
-    app.append(h("nav", { class: "bottom-bar", "aria-label": t("controls.label") }, h("div", { class: "bottom-inner" }, listen, nextBtn)));
-    document.body.classList.add("has-bottom-bar");
+    inner.append(listen, nextBtn);
   }
 }
 
@@ -417,7 +438,7 @@ function resultBox(term, status, chosen, quiz) {
   } else {
     parts.push(h("p", {}, firstSentence(term.definition)));
   }
-  if (status !== "known" && status !== "shaky" && term.pitfall) parts.push(h("p", { class: "pitfall" }, term.pitfall));
+  // 현업 함정은 결과 바로 아래에 펼쳐지는 카드 전체에 있으므로 여기서는 반복하지 않는다
   if (status === "misconception" || status === "confused" || status === "unknown") parts.push(h("p", { class: "muted" }, t("result.again")));
   return h("div", { class: "result" }, parts);
 }
@@ -715,10 +736,7 @@ function buildCard(term, progressText) {
     pairSection(term),
     term.interview_q && section(null, t("card.interview"),
       h("p", { "data-sec": "interview" }, term.interview_q),
-      term.interview_a && h("details", { class: "answer", "data-sec": "answer" },
-        h("summary", {}, t("card.interview.show")),
-        h("p", {}, term.interview_a)
-      )
+      term.interview_a && interviewPractice(term)
     ),
     linkSection(null, t("card.prerequisites"), term.prerequisites),
     linkSection("related", t("card.related"), term.related),
@@ -728,6 +746,69 @@ function buildCard(term, progressText) {
     sourceSection(term),
     h("p", { class: "card-feedback" }, h("a", { href: `#/feedback/${term.id}` }, t("card.feedback")))
   );
+}
+
+// 면접 질문 아래: [⏱ 30초 답해 보기] + [모범 답변 보기]
+// 30초 답해 보기를 누르면 원형 타이머가 줄어들고, 시간이 다 되면 모범 답변이 저절로 펼쳐진다.
+// 바로 보고 싶으면 "모범 답변 보기"를 누르면 된다 (그때는 타이머를 멈춘다).
+const INTERVIEW_SECONDS = 30;
+function interviewPractice(term) {
+  const answer = h("details", { class: "answer", "data-sec": "answer" },
+    h("summary", {}, t("card.interview.show")),
+    h("p", {}, term.interview_a)
+  );
+  const ring = countdownRing(INTERVIEW_SECONDS, 44);
+  let timer = null;
+  const stop = () => { clearInterval(timer); timer = null; };
+  answer.addEventListener("toggle", () => { if (answer.open) { stop(); ring.el.remove(); start.hidden = false; } });
+
+  const start = h("button", {
+    class: "btn small practice-btn",
+    type: "button",
+    onclick: () => {
+      answer.open = false;
+      start.hidden = true;
+      start.after(ring.el);
+      let left = INTERVIEW_SECONDS;
+      ring.set(left);
+      stop();
+      timer = setInterval(() => {
+        left -= 1;
+        ring.set(left);
+        if (!document.body.contains(ring.el)) return stop();     // 화면을 옮겼으면 멈춘다
+        if (left <= 0) { stop(); answer.open = true; answer.scrollIntoView({ block: "center", behavior: "smooth" }); }
+      }, 1000);
+    },
+  }, t("card.interview.practice", { n: INTERVIEW_SECONDS }));
+
+  return h("div", { class: "interview-tools" }, h("div", { class: "practice-row" }, start), answer);
+}
+
+// 원형 타이머 (원이 시계 방향으로 줄어들고 가운데에 남은 초)
+function countdownRing(total, size) {
+  const ns = "http://www.w3.org/2000/svg";
+  const r = size / 2 - 4, len = 2 * Math.PI * r;
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+  svg.setAttribute("class", "ring");
+  svg.style.width = svg.style.height = `${size}px`;
+  const mk = (cls) => {
+    const c = document.createElementNS(ns, "circle");
+    c.setAttribute("cx", size / 2); c.setAttribute("cy", size / 2); c.setAttribute("r", r);
+    c.setAttribute("class", cls);
+    return c;
+  };
+  const bar = mk("ring-bar");
+  bar.style.strokeDasharray = `${len}`;
+  svg.append(mk("ring-track"), bar);
+  const num = h("span", { class: "ring-num small" });
+  const el = h("div", { class: "ring-wrap", role: "timer", style: `width:${size}px;height:${size}px` }, svg, num);
+  const set = (left) => {
+    num.textContent = `${Math.max(left, 0)}`;
+    bar.style.strokeDashoffset = `${len * (1 - Math.max(left, 0) / total)}`;
+  };
+  set(total);
+  return { el, set };
 }
 
 function section(sec, title, ...body) {
