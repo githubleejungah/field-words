@@ -105,7 +105,11 @@ function renderList() {
   function update() {
     const found = searchTerms();
     results.replaceChildren(
-      h("p", { class: "muted" }, t("search.count", { n: found.length })),
+      h("div", { class: "list-head" },
+        h("p", { class: "muted" }, t("search.count", { n: found.length })),
+        // 지금 보이는 용어들(단계·검색 결과)을 차례로 자동으로 듣는다
+        found.length > 0 && h("a", { class: "btn primary", href: "#/walk" }, icon("walk"), t("walk.entry"))
+      ),
       found.length
         ? h("ul", { class: "list" }, found.map(listItem))
         : h("p", { class: "muted" }, t("search.empty"))
@@ -340,9 +344,11 @@ const speech = {
     this.start(owner, makeParts());
   },
 
-  start(owner, parts) {
+  // onFinish: 끝까지 다 읽었을 때 부를 함수 (이동 모드가 다음 카드로 넘어갈 때 쓴다)
+  start(owner, parts, onFinish) {
     this.stop();
     this.owner = owner;
+    this.onFinish = onFinish;
     this.queue = parts.flatMap((p) =>
       p.pause ? [p] : this.sentences(p.text, p.lang).map((s) => ({ text: s, lang: p.lang }))
     );
@@ -359,7 +365,14 @@ const speech = {
     const next = (i) => {
       if (myToken !== this.token) return;     // 그사이 멈췄거나 다른 재생이 시작됨
       this.index = i;
-      if (i >= this.queue.length) { this.owner = null; this.setStatus("idle"); return; } // 다 읽음
+      if (i >= this.queue.length) {                            // 다 읽음
+        const done = this.onFinish;
+        this.owner = null;
+        this.onFinish = null;
+        this.setStatus("idle");
+        done?.();
+        return;
+      }
       const p = this.queue[i];
       if (p.pause) { this.timer = setTimeout(() => next(i + 1), p.pause); return; }
 
@@ -380,6 +393,7 @@ const speech = {
   stop() {
     this.halt();
     this.owner = null;
+    this.onFinish = null;
     this.queue = [];
     this.index = 0;
     this.setStatus("idle");
@@ -424,17 +438,34 @@ function koreanCounters(text) {
 
 function speakButtons(term) {
   if (!speech.supported) return h("p", { class: "muted" }, t("speak.unsupported"));
+  return h("div", { class: "speak-row" },
+    speakButton("term", t("speak.term"), () => termOnlyParts(term)),
+    speakButton("all", t("speak.all"), () => fullParts(term))
+  );
+}
 
-  // 영어 음성이 없는 기기도 있다(예: 한국어 음성만 깔린 윈도우).
-  // 그때 한국어 음성이 영어 철자를 읽으면 어색하므로, 한글 발음 표기를 대신 읽는다.
-  // 음성 목록은 늦게 준비되는 브라우저가 있어서 버튼을 누를 때마다 확인한다.
-  const hasEnglish = () => Boolean(speech.voiceFor("en-US"));
-  const termPart = () => hasEnglish()
+// ----- 읽을 문장 만들기: 카드의 듣기 버튼과 이동 모드가 함께 쓴다 -----
+
+// 영어 음성이 없는 기기도 있다(예: 한국어 음성만 깔린 윈도우).
+// 그때 한국어 음성이 영어 철자를 읽으면 어색하므로, 한글 발음 표기를 대신 읽는다.
+// 음성 목록은 늦게 준비되는 브라우저가 있어서 읽을 때마다 확인한다.
+const hasEnglishVoice = () => Boolean(speech.voiceFor("en-US"));
+
+function termPart(term) {
+  return hasEnglishVoice()
     ? { text: term.pronunciation.tts ?? term.term_en, lang: "en-US" }
     : { text: term.pronunciation.ko, lang: "ko-KR" };
+}
+
+function termOnlyParts(term) { return [termPart(term)]; }
+
+// 전체 듣기 순서: 화면 위에서 아래로 보이는 순서와 같다.
+// 면접 질문 뒤에는 3초 쉬어서, 답을 듣기 전에 먼저 떠올려 보게 한다 (인출 연습).
+function fullParts(term) {
+  const hasEnglish = hasEnglishVoice();
 
   // 한국어 문장 속 영어 용어(예: "OAuth로 붙이면", "MVP는")도 영어 음성이 없으면 한글 발음으로 바꿔 읽는다.
-  const ko = (text) => ({ text: hasEnglish() ? text : toKoreanSounds(text), lang: "ko-KR" });
+  const ko = (text) => ({ text: hasEnglish ? text : toKoreanSounds(text), lang: "ko-KR" });
 
   // 다른 용어 이름을 한국어 문장 안에서 읽을 때는 한글 발음으로 읽는다. (예: "엠브이피")
   const sayName = (id) => state.allById.get(id)?.pronunciation.ko;
@@ -442,17 +473,13 @@ function speakButtons(term) {
   const pairs = state.pairs.filter((p) => p.a === term.id || p.b === term.id);
   const related = (term.related ?? []).map(sayName).filter(Boolean);
 
-  const termOnly = () => [termPart()];
-
-  // 전체 듣기 순서: 화면 위에서 아래로 보이는 순서와 같다.
-  // 면접 질문 뒤에는 3초 쉬어서, 답을 듣기 전에 먼저 떠올려 보게 한다 (인출 연습).
   // 약어 풀이는 화살표 뒤 우리말 부분만 읽는다. ("Proof(증명) of …" 같은 영어 단어를 한국어 음성이 읽으면 어색하다)
   // 예: "Proof(증명) of Concept(개념) → 개념 증명. 우리말로는…" → "개념 증명. 우리말로는…"
   const expansionKo = term.expansion_ko?.split("→").pop().trim();
 
-  const everything = () => [
-    termPart(),
-    term.expansion && hasEnglish() && { text: term.expansion, lang: "en-US" },
+  return [
+    termPart(term),
+    term.expansion && hasEnglish && { text: term.expansion, lang: "en-US" },
     expansionKo && ko(expansionKo),
     ko(`${t("speak.def_prefix")} ${term.definition}`),
     term.analogy && ko(`${t("speak.analogy_prefix")} ${term.analogy}`),
@@ -467,11 +494,6 @@ function speakButtons(term) {
     term.interview_a && ko(`${t("speak.answer_prefix")}. ${term.interview_a}`),
     related.length > 0 && ko(`${t("card.related")}. ${related.join(", ")}.`),
   ].filter(Boolean);
-
-  return h("div", { class: "speak-row" },
-    speakButton("term", t("speak.term"), termOnly),
-    speakButton("all", t("speak.all"), everything)
-  );
 }
 
 // 듣기 버튼 하나 = 재생 ↔ 일시정지 토글.
@@ -504,6 +526,9 @@ const ICONS = {
   speaker: "M4 9v6h4l5 4V5L8 9H4z M16 8.5a5 5 0 0 1 0 7 M18.5 6a8.5 8.5 0 0 1 0 12",
   play: "M8 5v14l11-7z",
   pause: "M8 5v14 M16 5v14",
+  prev: "M6 5v14 M18 5l-9 7 9 7z",
+  next: "M18 5v14 M6 5l9 7-9 7z",
+  walk: "M13 4a1.5 1.5 0 1 0 0 .01 M10 21l2-6 3 3v3 M12 15l-1-5 4 2 3 1 M11 10l-3 2-1 3",
 };
 function icon(name) {
   const ns = "http://www.w3.org/2000/svg";
@@ -515,6 +540,163 @@ function icon(name) {
   path.setAttribute("d", ICONS[name]);
   svg.append(path);
   return svg;
+}
+
+/* ---------- 화면 4: 이동 모드 ---------- */
+// 걸을 때·대중교통에서 화면을 보지 않고 듣기만 하는 모드.
+// - 목록 화면에서 고른 단계·검색 결과를 차례로 듣는다.
+// - 카드 한 장을 다 읽으면 2초 쉬고 다음 카드로 자동으로 넘어간다 (누르지 않아도 된다).
+// - 큰 버튼 3개: 이전 / 재생·일시정지 / 다음
+// - 화면 켜 두기(Wake Lock API): 화면이 꺼지면 브라우저가 읽기를 멈추기 때문에, 듣는 동안 화면을 켜 둔다.
+// - 잠금 화면·이어폰 버튼(Media Session API): 지원하는 기기에서만 동작한다.
+const WALK_GAP_MS = 2000;
+const walk = { list: [], i: 0, timer: null, wakeLock: null, active: false, done: false, render: null };
+
+function renderWalk() {
+  walk.list = searchTerms();
+  walk.i = 0;
+  walk.done = false;
+  walk.active = true;
+
+  const back = h("p", {}, h("a", { class: "btn", href: "#/" }, t("walk.exit")));
+  if (!walk.list.length) { app.replaceChildren(back, h("p", {}, t("walk.empty"))); return; }
+  if (!speech.supported) { app.replaceChildren(back, h("p", {}, t("speak.unsupported"))); return; }
+
+  const progress = h("p", { class: "walk-progress" });
+  const name = h("h1", { class: "walk-term" });
+  const sub = h("p", { class: "walk-sub" });
+  const def = h("p", { class: "walk-def" });
+  const prevBtn = h("button", { class: "walk-btn", type: "button", "aria-label": t("walk.prev"), onclick: () => walkGo(walk.i - 1) }, icon("prev"));
+  const playBtn = h("button", { class: "walk-btn main", type: "button", onclick: walkToggle });
+  const nextBtn = h("button", { class: "walk-btn", type: "button", "aria-label": t("walk.next"), onclick: () => walkGo(walk.i + 1) }, icon("next"));
+  const note = h("p", { class: "muted walk-note" }, "wakeLock" in navigator ? t("walk.wake.on") : t("walk.wake.off"));
+
+  // 상태가 바뀔 때마다 화면을 다시 그린다 (speech.listeners에 등록)
+  walk.render = () => {
+    const term = walk.list[walk.i];
+    const playing = walkIsPlaying();
+    const paused = speech.owner === "walk" && speech.status === "paused";
+    progress.textContent = `${walk.i + 1} / ${walk.list.length} · ${t(`stage.${term.stage}`)}`;
+    name.replaceChildren(term.term_en, h("span", { class: "pron" }, ` [${term.pronunciation.ko}]`));
+    sub.textContent = term.term_ko;
+    def.textContent = term.definition;
+    playBtn.classList.toggle("playing", playing);
+    playBtn.setAttribute("aria-pressed", String(playing));
+    playBtn.replaceChildren(
+      icon(playing ? "pause" : "play"),
+      h("span", {}, playing ? t("speak.pause") : paused ? t("speak.resume") : walk.done ? t("walk.again") : t("walk.start"))
+    );
+    prevBtn.disabled = walk.i === 0;
+    nextBtn.disabled = walk.i >= walk.list.length - 1;
+    updateMediaSession(term);
+  };
+  speech.listeners.add(walk.render);
+
+  app.replaceChildren(back, h("section", { class: "walk" },
+    progress, name, sub, def,
+    h("div", { class: "walk-controls" }, prevBtn, playBtn, nextBtn),
+    note
+  ));
+  walk.render();
+}
+
+// 읽는 중이거나, 다음 카드로 넘어가기 전 2초 쉬는 중이면 "재생 중"으로 본다
+function walkIsPlaying() {
+  return (speech.owner === "walk" && speech.status === "playing") || walk.timer !== null;
+}
+
+// 지금 카드를 처음부터 읽고, 다 읽으면 2초 뒤 다음 카드로 넘어간다
+function walkPlayCurrent() {
+  clearTimeout(walk.timer);
+  walk.timer = null;
+  walk.done = false;
+  keepScreenOn(true);
+  speech.start("walk", fullParts(walk.list[walk.i]), () => {
+    if (walk.i >= walk.list.length - 1) {   // 마지막 카드까지 다 들음
+      walk.done = true;
+      keepScreenOn(false);
+      walk.render();
+      return;
+    }
+    walk.timer = setTimeout(() => { walk.timer = null; walk.i += 1; walkPlayCurrent(); }, WALK_GAP_MS);
+    walk.render();
+  });
+}
+
+function walkToggle() {
+  if (walk.timer !== null) {                 // 2초 쉬는 중에 누르면: 다음 카드에서 멈춰 둔다
+    clearTimeout(walk.timer);
+    walk.timer = null;
+    walk.i = Math.min(walk.i + 1, walk.list.length - 1);
+    keepScreenOn(false);
+    walk.render();
+    return;
+  }
+  if (speech.owner === "walk" && speech.status === "playing") { speech.pause(); keepScreenOn(false); return; }
+  if (speech.owner === "walk" && speech.status === "paused") { keepScreenOn(true); speech.run(speech.index); return; }
+  if (walk.done) walk.i = 0;                 // 다 들은 뒤에는 처음부터
+  walkPlayCurrent();
+}
+
+// 이전·다음 카드로. 듣는 중이었으면 새 카드를 바로 읽고, 멈춰 있었으면 화면만 바꾼다.
+function walkGo(i) {
+  if (i < 0 || i >= walk.list.length) return;
+  const wasPlaying = walkIsPlaying();
+  clearTimeout(walk.timer);
+  walk.timer = null;
+  walk.done = false;
+  walk.i = i;
+  speech.stop();
+  if (wasPlaying) walkPlayCurrent(); else walk.render();
+}
+
+function exitWalk() {
+  if (!walk.active) return;
+  walk.active = false;
+  clearTimeout(walk.timer);
+  walk.timer = null;
+  keepScreenOn(false);
+  clearMediaSession();
+}
+
+// 화면 켜 두기. 배터리 절약 모드 등에서는 거절될 수 있어서 실패해도 조용히 넘어간다.
+async function keepScreenOn(on) {
+  if (!("wakeLock" in navigator)) return;
+  try {
+    if (on && !walk.wakeLock) {
+      walk.wakeLock = await navigator.wakeLock.request("screen");
+      walk.wakeLock.addEventListener("release", () => { walk.wakeLock = null; });
+    } else if (!on && walk.wakeLock) {
+      await walk.wakeLock.release();
+      walk.wakeLock = null;
+    }
+  } catch { /* 무시 */ }
+}
+// 다른 앱에 갔다 돌아오면 화면 켜 두기가 풀려 있으므로 다시 건다
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && walk.active && walkIsPlaying()) keepScreenOn(true);
+});
+
+// 잠금 화면·이어폰 버튼 연결 (지원하는 기기에서만)
+const MEDIA_ACTIONS = ["play", "pause", "nexttrack", "previoustrack"];
+function updateMediaSession(term) {
+  if (!("mediaSession" in navigator)) return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: `${term.term_en} · ${term.term_ko}`,
+      artist: t("app.name"),
+      album: t(`stage.${term.stage}`),
+    });
+    navigator.mediaSession.setActionHandler("play", walkToggle);
+    navigator.mediaSession.setActionHandler("pause", walkToggle);
+    navigator.mediaSession.setActionHandler("nexttrack", () => walkGo(walk.i + 1));
+    navigator.mediaSession.setActionHandler("previoustrack", () => walkGo(walk.i - 1));
+  } catch { /* 일부 동작을 지원하지 않는 브라우저 */ }
+}
+function clearMediaSession() {
+  if (!("mediaSession" in navigator)) return;
+  navigator.mediaSession.metadata = null;
+  for (const a of MEDIA_ACTIONS) { try { navigator.mediaSession.setActionHandler(a, null); } catch { /* 무시 */ } }
 }
 
 /* ---------- 화면 3: 정보 ---------- */
@@ -563,10 +745,12 @@ function voiceInfo() {
 // #/term/webhook → 용어 카드
 // #/about       → 정보
 function route() {
+  exitWalk();                // 이동 모드에서 나가면 화면 켜 두기·잠금 화면 연결을 푼다
   speech.stop();             // 화면을 옮기면 읽던 것을 멈춘다
   speech.listeners.clear();  // 이전 화면의 버튼은 더 이상 다시 그리지 않는다
   const hash = location.hash || "#/";
   if (hash.startsWith("#/term/")) renderTerm(decodeURIComponent(hash.slice("#/term/".length)));
+  else if (hash === "#/walk") renderWalk();
   else if (hash === "#/about") renderAbout();
   else renderList();
 }
