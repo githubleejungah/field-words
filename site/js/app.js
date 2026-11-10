@@ -444,21 +444,78 @@ function resultBox(term, status, chosen, quiz) {
 }
 
 // 오늘 할 카드를 다 했을 때: 구체적인 칭찬 + 상태별 개수 (오늘의 마무리 전체 버전은 다음 작업)
+// 칭찬 단계: 목표를 넘어 5장 더 할 때마다 한 단계씩 커진다
+//   0: 목표 전에 끝남(용어가 모자랄 때)  1: 목표 달성 🎉  2: +5장 🔥  3: +10장 🚀  4: +15장 이상 🏆
+// 4단계에서는 "내일은 쉬엄쉬엄"을 함께 말한다. 몰아서 하는 것보다 매일 조금씩이 오래 남기 때문이다.
+function praiseTier(done, goal) {
+  if (done < goal) return 0;
+  return Math.min(1 + Math.floor((done - goal) / 5), 4);
+}
+
 function renderStudyDone() {
   const today = Review.getToday();
-  const names = (ids) => ids.map((id) => state.allById.get(id)?.term_en).filter(Boolean).join(", ");
+  const goal = Review.getSettings().daily_goal;
+  const done = today.seen.length;
+  const tier = praiseTier(done, goal);
+
+  // 용어 이름표: 누르면 그 용어 카드로 간다
+  const chips = (ids, cls) => h("div", { class: "done-chips" },
+    ids.map((id) => state.allById.get(id)).filter(Boolean).map((x) =>
+      h("a", { class: `done-chip ${cls}`, href: `#/term/${x.id}` }, x.term_en)));
+
   const corrected = today.corrected;
-  app.replaceChildren(h("article", { class: "card done" },
-    h("h1", {}, t("done.title")),
-    h("p", {}, t("done.count", { n: today.seen.length })),
-    corrected.length > 0 && h("p", { class: "praise" }, t("done.corrected", { names: names(corrected) })),
-    today.misconceptions.length > 0 && h("p", {}, t("done.misconceptions", { names: names(today.misconceptions) })),
-    h("div", { class: "done-actions" },
-      h("a", { class: "btn", href: "#/" }, t("nav.back")),
-      h("button", { class: "btn primary", type: "button", onclick: () => { state.extraGoal += 5; state.session = null; route(); } }, t("today.more"))
+  const found = today.misconceptions;
+
+  app.replaceChildren(
+    tier > 0 ? confetti(tier) : "",
+    h("article", { class: `card done tier-${tier}` },
+      h("div", { class: "done-hero" },
+        progressRing(done, Math.max(goal, done), 72),
+        h("div", {},
+          h("h1", {}, t(`done.tier${tier}.title`)),
+          h("p", { class: "done-sub" }, t(`done.tier${tier}.sub`, { n: done, extra: Math.max(done - goal, 0) }))
+        )
+      ),
+
+      // ✨ 바로잡은 용어: 틀렸다가 다시 맞힌 것. 실력이 느는 순간이라 가장 크게 칭찬한다
+      corrected.length > 0 && h("section", { class: "done-box gold" },
+        h("p", { class: "done-box-title" }, t("done.corrected.title", { k: corrected.length })),
+        chips(corrected, "gold"),
+        h("p", { class: "done-box-body" }, t("done.corrected.body"))
+      ),
+
+      // 🔍 찾아낸 착각: 확실했는데 달랐던 것. 찾아낸 것 자체가 수확이라고 말해 준다
+      found.length > 0 && h("section", { class: "done-box warm" },
+        h("p", { class: "done-box-title" }, t("done.found.title", { k: found.length })),
+        chips(found, "warm"),
+        h("p", { class: "done-box-body" }, t("done.found.body"))
+      ),
+
+      h("div", { class: "done-actions" },
+        h("a", { class: "btn", href: "#/" }, t("nav.back")),
+        h("button", { class: "btn primary", type: "button", onclick: () => { state.extraGoal += 5; state.session = null; route(); } }, t("today.more"))
+      )
     )
-  ));
+  );
   state.session = null;
+}
+
+// 축하 종이 조각: 칭찬 단계가 높을수록 조각이 많아진다. 한 번만 떨어지고 사라진다.
+// 화면 움직임을 줄이도록 설정한 사람(prefers-reduced-motion)에게는 CSS에서 보이지 않게 한다.
+function confetti(tier) {
+  const colors = ["var(--accent)", "var(--pair-b)", "var(--pair-a-border)", "var(--gold)", "var(--warm)"];
+  const count = [0, 18, 28, 40, 56][tier];
+  const box = h("div", { class: "confetti", "aria-hidden": "true" });
+  for (let i = 0; i < count; i++) {
+    const piece = h("span", {});
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = colors[i % colors.length];
+    piece.style.animationDelay = `${Math.random() * 0.6}s`;
+    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+    box.append(piece);
+  }
+  setTimeout(() => box.remove(), 3000);
+  return box;
 }
 
 // 데이터 한계 안내는 처음 한 번만 짧게 보여 준다. "확인"을 누르면 다시 나오지 않는다.
@@ -766,6 +823,10 @@ function interviewPractice(term) {
     class: "btn small practice-btn",
     type: "button",
     onclick: () => {
+      // 전체 듣기가 읽는 중이면 멈춘다. 그대로 두면 읽기가 "모범 답변"에 닿을 때 답을 펼쳐 버린다.
+      // (멈춘 곳은 기억하므로 아래 "이어 듣기"로 계속 들을 수 있다)
+      if (speech.status === "playing") speech.pause();
+      document.querySelectorAll(".reading").forEach((e) => e.classList.remove("reading"));
       answer.open = false;
       start.hidden = true;
       start.after(ring.el);
@@ -1108,8 +1169,18 @@ const hasEnglishVoice = () => Boolean(speech.voiceFor("en-US"));
 
 function termPart(term) {
   return hasEnglishVoice()
-    ? { text: term.pronunciation.tts ?? term.term_en, lang: "en-US", sec: "term" }
+    ? { text: englishSay(term), lang: "en-US", sec: "term" }
     : { text: term.pronunciation.ko, lang: "ko-KR", sec: "term" };
+}
+
+// 영어 음성에게 줄 글자.
+// 한 글자씩 읽는 약어(read_as: "letters")는 글자 사이를 띄워 준다: "PoC" → "P O C"
+// 그대로 주면 영어 음성이 단어로 읽어 버린다 ("PoC" → "폭")
+function englishSay(term) {
+  const p = term.pronunciation;
+  if (p.tts) return p.tts;
+  if (p.read_as === "letters") return term.term_en.toUpperCase().replace(/[^A-Z0-9]/g, "").split("").join(" ");
+  return term.term_en;
 }
 
 function termOnlyParts(term) { return [termPart(term)]; }

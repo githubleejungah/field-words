@@ -20,6 +20,10 @@
   --warm: #8a5a3c;
   --warm-soft: #f6ece5;
   --warm-border: #e2cbbd;
+  /* 칭찬 색: 바로잡은 용어 (세이지·베이지와 어울리는 부드러운 금빛) */
+  --gold: #b8892e;
+  --gold-soft: #f8efd9;
+  --gold-border: #e6cf98;
 
   /* 혼동 쌍 색: A쪽 베이지, B쪽 세이지 */
   --pair-a: #f2e9e4;
@@ -49,6 +53,9 @@
     --warm: #e8b896;
     --warm-soft: #33291f;
     --warm-border: #5a4636;
+    --gold: #e6c06e;
+    --gold-soft: #352c18;
+    --gold-border: #6b5a2c;
 
     --pair-a: #3a322d;
     --pair-a-border: #7d6a5f;
@@ -613,8 +620,50 @@ body.has-bottom-bar .footer { display: none; }
 .study-more summary::-webkit-details-marker { display: none; }
 .study-more summary::before { content: "▸"; margin-right: 8px; }
 .study-more[open] summary::before { content: "▾"; }
-.done .praise { font-weight: 700; color: var(--accent); }
-.done-actions { display: flex; gap: 10px; margin-top: 20px; }
+/* ---------- 마침 화면 ---------- */
+.done-hero { display: flex; align-items: center; gap: 18px; }
+@media (max-width: 480px) { .done-hero { flex-direction: column; align-items: flex-start; gap: 12px; } }
+.done-hero h1 { font-size: 28px; }
+.done-sub { margin: 6px 0 0; color: var(--muted); }
+.done.tier-2 h1, .done.tier-3 h1 { color: var(--accent); }
+.done.tier-4 h1 { color: var(--gold); }
+.done.tier-4 { border: 2px solid var(--gold-border); }
+
+.done-box { margin-top: 20px; padding: 16px 18px; border-radius: var(--radius); }
+.done-box.gold { background: var(--gold-soft); border: 1.5px solid var(--gold-border); }
+.done-box.warm { background: var(--warm-soft); border: 1px solid var(--warm-border); }
+.done-box-title { margin: 0; font-size: 18px; font-weight: 700; }
+.done-box.gold .done-box-title { color: var(--gold); }
+.done-box.warm .done-box-title { color: var(--warm); }
+.done-box-body { margin: 10px 0 0; font-size: 15px; }
+.done-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.done-chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  background: var(--surface);
+}
+.done-chip.gold { border: 1.5px solid var(--gold); color: var(--gold); }
+.done-chip.gold::before { content: "✨ "; }
+.done-chip.warm { border: 1px solid var(--warm-border); color: var(--warm); }
+.done-actions { display: flex; gap: 10px; margin-top: 24px; }
+
+/* 축하 종이 조각: 위에서 한 번 떨어지고 사라진다 */
+.confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 20; }
+.confetti span {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0.9;
+  animation: confetti-fall 2.4s ease-in forwards;
+}
+@keyframes confetti-fall {
+  to { top: 105%; opacity: 0; margin-left: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .confetti { display: none; } }
 
 /* 말하기 모드 스스로 채점 */
 .grade-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; }
