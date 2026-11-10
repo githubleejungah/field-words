@@ -1,0 +1,19 @@
+# 줄바꿈 규칙: 모든 텍스트 파일을 LF(리눅스·맥 방식)로 저장한다.
+# Windows Git의 core.autocrlf 설정보다 이 파일이 우선하므로, 누가 어느 컴퓨터에서 받아도 같다.
+* text=auto eol=lf
+
+# Windows 전용 스크립트는 CRLF가 필요하다
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# 바이너리 파일은 건드리지 않는다
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.mp3 binary
+*.woff binary
+*.woff2 binary
