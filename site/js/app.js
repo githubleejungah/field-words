@@ -202,7 +202,8 @@ function renderList() {
     )
   );
 
-  app.replaceChildren(firstNotice() ?? "", todayPanel(), input, chips, results);
+  // 첫 방문 안내는 맨 아래에 둔다: 처음 화면의 주인공은 오늘의 학습과 용어 목록
+  app.replaceChildren(todayPanel(), input, chips, results, firstNotice() ?? "");
   update();
 }
 
@@ -289,10 +290,11 @@ function renderStudy() {
   const head = h("div", { class: "study-head" });
   const paintHead = () => {
     const done = Review.getToday().seen.length;
+    // 주의: replaceChildren에 undefined를 넘기면 글자 "undefined"가 찍힌다. 없을 때는 빈 글자("")를 넘긴다.
     head.replaceChildren(
       progressRing(done, goal, 36),
       h("span", {}, t("today.title", { done, goal })),
-      s.retries[term.id] && h("span", { class: "badge" }, t("study.again"))
+      s.retries[term.id] ? h("span", { class: "badge" }, t("study.again")) : ""
     );
   };
   paintHead();
@@ -362,11 +364,35 @@ function renderStudy() {
     const wrap = bad ? full : h("details", { class: "study-more" }, h("summary", {}, t("check.more")), full);
     card.after(wrap);
 
-    const nextBtn = h("button", { class: "ctrl main", type: "button", onclick: () => { s.i += 1; route(); } },
+    // 아래 막대: 카드 화면과 같은 자리 약속 — 가운데 큰 버튼은 "전체 듣기", 오른쪽은 "다음"
+    // 전체 듣기를 누르면 접혀 있던 카드도 펼치고, 읽는 구역에 색을 칠한다
+    speech.onSentence = (part) => highlight(full, part.sec);
+    const listen = listenButton(term, () => { if (wrap.tagName === "DETAILS") wrap.open = true; });
+    const nextBtn = h("button", { class: "ctrl go", type: "button", onclick: () => { s.i += 1; route(); } },
       h("span", {}, s.i + 1 < s.queue.length ? t("check.next") : t("check.finish")), icon("next"));
-    app.append(h("nav", { class: "bottom-bar", "aria-label": t("controls.label") }, h("div", { class: "bottom-inner" }, nextBtn)));
+    app.append(h("nav", { class: "bottom-bar", "aria-label": t("controls.label") }, h("div", { class: "bottom-inner" }, listen, nextBtn)));
     document.body.classList.add("has-bottom-bar");
   }
+}
+
+// 아래 막대의 "전체 듣기" 큰 버튼 (재생 ↔ 일시정지 ↔ 이어 듣기). beforePlay: 재생 전에 할 일
+function listenButton(term, beforePlay) {
+  const btn = h("button", { class: "ctrl main", type: "button", onclick: () => { beforePlay?.(); speech.toggle("all", () => fullParts(term)); } });
+  const paint = () => {
+    const mine = speech.owner === "all";
+    const playing = mine && speech.status === "playing";
+    const paused = mine && speech.status === "paused";
+    btn.classList.toggle("playing", playing);
+    btn.setAttribute("aria-pressed", String(playing));
+    btn.replaceChildren(
+      icon(playing ? "pause" : paused ? "play" : "speaker"),
+      h("span", {}, playing ? t("speak.pause") : paused ? t("speak.resume") : t("speak.all"))
+    );
+  };
+  speech.listeners.add(paint);
+  speech.listeners.add(() => { if (speech.status === "idle") document.querySelectorAll(".reading").forEach((e) => e.classList.remove("reading")); });
+  paint();
+  return btn;
 }
 
 function firstSentence(text) {
@@ -659,12 +685,13 @@ function modeBar(term, controls) {
 function buildCard(term, progressText) {
   const pron = term.pronunciation;
   return h("article", { class: "card" },
-    h("div", { class: "card-top" },
+    // 카드 머리: 단어(왼쪽) + 진행·단계·등급(오른쪽 위). 화면이 좁아 한 줄에 안 들어가면 진행 표시가 단어 위로 올라간다.
+    h("div", { class: "card-head" },
+      h("div", { class: "term-head", "data-sec": "term" },
+        h("h1", {}, term.term_en, h("span", { class: "pron" }, `[${pron.ko}]`)),
+        speech.supported && speakButton("term", t("speak.term"), () => termOnlyParts(term), "mini")
+      ),
       h("span", { class: "card-progress" }, progressText, progressText && " · ", t(`stage.${term.stage}`), " · ", t(`level.${term.level}`))
-    ),
-    h("div", { class: "term-head", "data-sec": "term" },
-      h("h1", {}, term.term_en, h("span", { class: "pron" }, `[${pron.ko}]`)),
-      speech.supported && speakButton("term", t("speak.term"), () => termOnlyParts(term), "mini")
     ),
     term.term_ko !== term.term_en && h("p", { class: "term-ko-big" }, term.term_ko),
     (pron.note || pron.variants?.length > 0) && h("p", { class: "pron-tip" },
