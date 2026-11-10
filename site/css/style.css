@@ -332,27 +332,80 @@ details.answer[open] summary::before { content: "▾"; }
 .list-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 4px; }
 .list-head p { margin: 0; }
 
-/* ---------- 이동 모드: 걸으면서 흘끗 봐도 읽히게 크게 ---------- */
-.walk {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 24px 8px 8px;
+/* ---------- 카드 화면: 단어가 맨 위 가까이 오도록 머리를 줄인다 ---------- */
+
+/* 맨 위 한 줄: ← 목록 | 필드워드 */
+.topbar.compact { padding: 8px 0; }
+.btn.small { min-height: 36px; padding: 0 12px; font-size: 14px; }
+.brand-mini { color: var(--muted); font-size: 14px; font-weight: 700; text-decoration: none; }
+
+/* 모드 전환 막대: 버튼 세 개를 한 줄로 붙인다 (세그먼트 버튼) */
+.modebar { margin-bottom: 10px; }
+.mode-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface);
 }
-.walk-progress { margin: 0; color: var(--muted); font-size: 15px; }
-.walk-term { margin: 16px 0 0; font-size: 40px; line-height: 1.2; word-break: keep-all; }
-.walk-term .pron { font-size: 20px; }
-.walk-sub { margin: 6px 0 0; font-size: 20px; }
-.walk-def { margin: 20px 0 0; color: var(--muted); max-width: 32em; }
-.walk-controls { display: flex; align-items: center; justify-content: center; gap: 20px; margin: 36px 0 12px; }
-.walk-btn {
+.mode-btn {
+  min-height: 40px;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mode-btn:first-child { border-left: 0; }
+.mode-btn[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.mode-desc { margin: 6px 4px 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+
+/* 카드 맨 윗줄: 3 / 24 · 단계 · 등급 */
+.card-top { margin-bottom: 6px; }
+.card-progress { color: var(--muted); font-size: 14px; }
+.term-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; border-radius: 8px; }
+.speak-btn.mini { min-width: 0; min-height: 36px; padding: 0 12px; font-size: 14px; }
+.speak-btn.mini .icon { width: 18px; height: 18px; }
+
+/* 지금 읽는 구역: 연한 색 바탕 + 왼쪽 굵은 막대 */
+.reading {
+  background: var(--accent-soft);
+  box-shadow: -4px 0 0 var(--accent);
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+/* ---------- 아래 고정 막대: ⏮ 재생/일시정지 ⏭ ---------- */
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 10px var(--gap) calc(10px + env(safe-area-inset-bottom));  /* 아이폰 아래 홈 막대 피하기 */
+}
+.bottom-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.ctrl {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 64px;
-  height: 64px;
+  width: 52px;
+  height: 52px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--surface);
@@ -360,20 +413,23 @@ details.answer[open] summary::before { content: "▾"; }
   font: inherit;
   cursor: pointer;
 }
-.walk-btn .icon { width: 28px; height: 28px; }
-.walk-btn:disabled { opacity: 0.35; cursor: default; }
-.walk-btn.main {
+.ctrl .icon { width: 24px; height: 24px; }
+.ctrl:disabled { opacity: 0.35; cursor: default; }
+.ctrl.main {
   width: auto;
-  min-width: 168px;
-  height: 80px;
-  padding: 0 28px;
+  flex: 1;
+  max-width: 240px;
+  height: 56px;
+  padding: 0 20px;
   border: 2px solid var(--accent);
   color: var(--accent);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   white-space: nowrap;
 }
-.walk-btn.main.playing { background: var(--accent); color: var(--surface); }
-.walk-note { margin-top: 20px; }
+.ctrl.main.playing { background: var(--accent); color: var(--surface); }
+/* 아래 막대에 마지막 내용이 가리지 않게 */
+body.has-bottom-bar { padding-bottom: 96px; }
+body.has-bottom-bar .footer { display: none; }
 
 .notice { padding: 16px; border-radius: var(--radius); background: var(--accent-soft); }

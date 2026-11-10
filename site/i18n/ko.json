@@ -57,14 +57,17 @@
   "speak.answer_prefix": "모범 답변",
 
   "walk.entry": "이동하며 듣기",
-  "walk.exit": "← 나가기",
-  "walk.start": "듣기 시작",
-  "walk.again": "처음부터 다시",
   "walk.prev": "이전 용어",
   "walk.next": "다음 용어",
-  "walk.empty": "들을 용어가 없어요. 목록에서 검색어나 단계를 바꿔 보세요.",
-  "walk.wake.on": "듣는 동안 화면이 꺼지지 않아요. 배터리를 조금 더 써요.",
-  "walk.wake.off": "이 브라우저는 화면 켜 두기를 지원하지 않아요. 화면이 꺼지면 읽기가 멈출 수 있어요.",
+
+  "mode.label": "학습 모드",
+  "mode.look": "👀 보기",
+  "mode.walk": "🚶 이동 중",
+  "mode.speak": "🗣️ 말하기",
+  "mode.look.desc": "보면서 공부해요. 듣고 싶을 때 아래 버튼을 눌러요.",
+  "mode.walk.desc": "자동으로 읽고 다음 용어로 넘어가요. 듣는 동안 화면이 켜져 있어요.",
+  "mode.speak.desc": "용어만 들려줘요. 소리 내어 설명해 보고, 아래 버튼으로 답을 들어요.",
+  "controls.label": "듣기 조작",
 
   "notice.short": "학습 기록은 이 기기에만 저장돼요. 틀린 설명이나 필요한 용어는 알려 주세요.",
   "notice.more": "자세히",
