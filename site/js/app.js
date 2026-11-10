@@ -20,6 +20,16 @@ const STAGES = ["discovery", "design", "build", "test", "deploy", "operate", "se
 const MODES = ["look", "walk", "speak"];
 const NEXT_CARD_DELAY_MS = 2000;
 
+// 의견 보내기 설정
+// - accessKey: Web3Forms(무료 양식 전송 서비스)에서 받은 키. 넣으면 앱 안에서 바로 전송되고 받는 메일로 도착한다.
+//   이 키는 공개돼도 괜찮게 설계된 값이라 코드에 둬도 된다. 받는 이메일 주소는 Web3Forms 쪽에만 저장된다.
+// - mailto: 키가 아직 없을 때 쓰는 대신 방법. 사용자의 메일 앱을 열어 내용을 채워 준다.
+const FEEDBACK = {
+  accessKey: "",
+  endpoint: "https://api.web3forms.com/submit",
+  mailto: "veryfar@naver.com",
+};
+
 // 앱이 기억하는 값(상태, State)을 한곳에 모은다.
 const state = {
   terms: [],          // 공개 중인 용어 (대체된 용어 제외)
@@ -240,7 +250,11 @@ function renderTerm(id) {
   const card = buildCard(term, seq.length > 1 ? `${index + 1} / ${seq.length}` : "");
   const controls = buildControls(term, index, seq.length, goTo);
 
+  // 🗣️ 말하기: 답(뜻·예문 등)을 가리고, 30초 동안 먼저 설명해 보게 한다
+  const practice = state.mode === "speak" ? speakPractice(card) : null;
+
   app.replaceChildren(modeBar(term, goTo, index, seq.length), card, controls.bar);
+  if (practice) (card.querySelector(".term-ko-big") ?? card.querySelector(".term-head")).after(practice);
   document.body.classList.add("has-bottom-bar");
   window.scrollTo(0, 0);
 
@@ -252,9 +266,45 @@ function renderTerm(id) {
   // 모드에 따라 카드를 열자마자 할 일
   const hold = state.hold;
   state.hold = false;
+  if (state.mode === "speak") {
+    // 용어를 들려준 뒤 30초 타이머를 시작한다 (소리를 못 내는 기기면 바로 시작)
+    if (!hold && speech.supported) speech.start("term", termOnlyParts(term), () => practice.startTimer());
+    else practice.startTimer();
+    return;
+  }
   if (hold || !speech.supported) return;
   if (state.mode === "walk") controls.playFull();
-  else if (state.mode === "speak") speech.start("term", termOnlyParts(term));
+}
+
+// 🗣️ 말하기 연습 상자: 답을 가린 채 "30초 안에 설명해 보세요" → 답 보기
+// 먼저 떠올려 말해 보고 나서 답을 보면 기억에 더 오래 남는다 (인출 연습).
+const SPEAK_SECONDS = 30;
+function speakPractice(card) {
+  card.classList.add("concealed");
+  const clock = h("span", { class: "speak-clock" }, `${SPEAK_SECONDS}`);
+  const reveal = () => {
+    clearInterval(state.speakTimer);
+    card.classList.remove("concealed");
+    box.remove();
+  };
+  const box = h("div", { class: "speak-box" },
+    h("p", { class: "speak-prompt" }, t("speak.prompt", { n: SPEAK_SECONDS })),
+    h("div", { class: "speak-row2" },
+      clock,
+      h("button", { class: "btn primary", type: "button", onclick: reveal }, t("speak.reveal"))
+    )
+  );
+  box.startTimer = () => {
+    clearInterval(state.speakTimer);
+    let left = SPEAK_SECONDS;
+    state.speakTimer = setInterval(() => {
+      left -= 1;
+      clock.textContent = left > 0 ? `${left}` : t("speak.timeup");
+      if (left <= 0) clearInterval(state.speakTimer);
+    }, 1000);
+  };
+  box.reveal = reveal;
+  return box;
 }
 
 // 모드 전환 막대: 늘 카드 위에 보인다. 한 줄 설명으로 무엇이 일어나는지 알려 준다.
@@ -273,6 +323,12 @@ function modeBar(term, goTo, index, total) {
   }
 
   function switchMode(mode) {
+    // 말하기는 답을 가리는 화면이라, 말하기로 들어가거나 나올 때는 카드를 새로 그린다
+    if (mode !== state.mode && (mode === "speak" || state.mode === "speak")) {
+      state.mode = mode;
+      route();
+      return;
+    }
     state.mode = mode;
     paint();
     if (mode !== "walk" && state.nextTimer) { clearTimeout(state.nextTimer); state.nextTimer = null; }
@@ -335,7 +391,8 @@ function buildCard(term, progressText) {
     term.also_stages?.length > 0 && section(null, t("card.also_stages"),
       h("div", { class: "badges" }, term.also_stages.map((s) => h("span", { class: "badge" }, t(`stage.${s}`))))
     ),
-    sourceSection(term)
+    sourceSection(term),
+    h("p", { class: "card-feedback" }, h("a", { href: `#/feedback/${term.id}` }, t("card.feedback")))
   );
 }
 
@@ -402,6 +459,7 @@ function buildControls(term, index, total, goTo) {
 
   // 전체 듣기. 이동 중 모드면 다 읽은 뒤 2초 쉬고 다음 카드로 넘어간다.
   const playFull = () => {
+    document.querySelector(".speak-box")?.reveal?.();   // 말하기 모드에서 답을 들으면 가린 답도 펼친다
     speech.start("all", fullParts(term), () => {
       if (state.mode !== "walk" || !hasNext) { syncWakeLock(); return; }
       state.nextTimer = setTimeout(() => { state.nextTimer = null; goTo(index + 1); }, NEXT_CARD_DELAY_MS);
@@ -760,8 +818,107 @@ function clearMediaSession() {
 
 /* ---------- 화면 3: 정보 ---------- */
 
+/* ---------- 화면 4: 의견 보내기 ---------- */
+// 이름·전화번호 같은 개인정보는 받지 않는다. 답장을 원할 때만 이메일을 선택으로 적는다.
+const FEEDBACK_KINDS = ["wrong", "confusing", "add", "app", "etc"];
+
+function renderFeedback(termId) {
+  renderTopbar("card");
+  document.body.classList.add("no-footer");
+  const term = termId ? state.allById.get(termId) : null;
+
+  const kind = h("select", { id: "fb-kind", name: "kind" },
+    FEEDBACK_KINDS.map((k) => h("option", { value: k }, t(`fb.kind.${k}`))));
+  const about = h("input", { id: "fb-term", name: "term", type: "text", placeholder: t("fb.term.ph"), value: term ? term.term_en : "" });
+  const message = h("textarea", { id: "fb-message", name: "message", rows: "6", placeholder: t("fb.message.ph") });
+  const email = h("input", { id: "fb-email", name: "email", type: "email", placeholder: "name@example.com", autocomplete: "email" });
+  // 사람에게는 보이지 않는 칸. 자동으로 글을 올리는 프로그램(스팸 봇)만 채운다 → 채워져 있으면 버린다 (허니팟)
+  const trap = h("input", { name: "botcheck", type: "checkbox", tabindex: "-1", class: "hp", "aria-hidden": "true" });
+  const error = h("p", { class: "field-error", role: "alert" });
+  const status = h("div", { role: "status" });
+  const send = h("button", { class: "btn primary", type: "submit" }, t("fb.send"));
+
+  message.addEventListener("input", () => { error.textContent = ""; });
+
+  const form = h("form", { class: "fb-form", novalidate: "" },
+    field("fb-kind", t("fb.kind"), kind),
+    field("fb-term", t("fb.term"), about),
+    field("fb-message", t("fb.message"), message, error),
+    field("fb-email", t("fb.email"), email, h("p", { class: "muted" }, t("fb.email.help"))),
+    trap,
+    h("p", { class: "muted" }, t("fb.privacy")),
+    send,
+    status
+  );
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = message.value.trim();
+    if (!text) { error.textContent = t("fb.error.empty"); message.focus(); return; }
+    if (trap.checked) return;
+
+    const data = {
+      kind: t(`fb.kind.${kind.value}`),
+      term: about.value.trim(),
+      message: text,
+      email: email.value.trim(),
+    };
+
+    // 키가 아직 없으면: 메일 앱을 열어 내용을 채워 준다
+    if (!FEEDBACK.accessKey) {
+      location.href = mailtoLink(data);
+      status.replaceChildren(h("p", { class: "notice" }, t("fb.mailto.opened")));
+      return;
+    }
+
+    send.disabled = true;
+    send.textContent = t("fb.sending");
+    try {
+      const res = await fetch(FEEDBACK.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: FEEDBACK.accessKey,
+          subject: `[필드워드 의견] ${data.kind}${data.term ? ` · ${data.term}` : ""}`,
+          from_name: "필드워드 앱",
+          종류: data.kind,
+          관련_용어: data.term || "-",
+          내용: data.message,
+          email: data.email || undefined,   // 적었으면 받은 메일에서 바로 '답장'할 수 있다
+          botcheck: false,
+        }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.message);
+      form.replaceWith(h("div", { class: "notice" }, h("p", {}, t("fb.done"))));
+    } catch {
+      send.disabled = false;
+      send.textContent = t("fb.send");
+      status.replaceChildren(h("p", { class: "field-error" }, t("fb.error.send"), " ",
+        h("a", { href: mailtoLink(data) }, t("fb.error.mailto"))));
+    }
+  });
+
+  app.replaceChildren(h("article", { class: "card" },
+    h("h1", {}, t("fb.title")),
+    h("p", { class: "muted" }, t("fb.intro")),
+    form
+  ));
+}
+
+function field(id, label, control, ...extra) {
+  return h("div", { class: "field" }, h("label", { for: id }, label), control, ...extra);
+}
+
+function mailtoLink(d) {
+  const subject = `[필드워드 의견] ${d.kind}${d.term ? ` · ${d.term}` : ""}`;
+  const body = `종류: ${d.kind}\n관련 용어: ${d.term || "-"}\n\n${d.message}\n`;
+  return `mailto:${FEEDBACK.mailto}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 function renderAbout() {
   renderTopbar("card");
+  document.body.classList.add("no-footer");   // 이 화면이 곧 "정보"라서 아래 링크는 숨긴다
   app.replaceChildren(
     h("article", { class: "card" },
       h("h1", {}, t("about.title")),
@@ -772,8 +929,10 @@ function renderAbout() {
           h("p", {}, t("about.data.body3"))
         )
       ),
-      // 피드백 창구가 정해지면 여기를 링크로 바꾼다 (docs/공개_체크리스트.md)
-      section(null, t("about.feedback"), h("p", { class: "muted" }, t("about.feedback.pending"))),
+      section(null, t("about.feedback"),
+        h("p", {}, t("about.feedback.body")),
+        h("p", {}, h("a", { class: "btn primary", href: "#/feedback" }, t("about.feedback")))
+      ),
       section(null, t("about.oss.title"), h("p", {}, t("about.oss.body"))),
       section(null, t("about.voice"), voiceInfo()),
       section(null, t("about.version"), h("p", { class: "muted" }, `v${APP_VERSION} · ${state.terms.length}개 용어`))
@@ -810,7 +969,8 @@ function route() {
   speech.onSentence = null;
   clearTimeout(state.nextTimer);
   state.nextTimer = null;
-  document.body.classList.remove("has-bottom-bar");
+  clearInterval(state.speakTimer);
+  document.body.classList.remove("has-bottom-bar", "no-footer");
 
   const hash = location.hash || "#/";
   if (hash.startsWith("#/term/")) {
@@ -819,7 +979,9 @@ function route() {
     state.hold = false;
     keepScreenOn(false);
     clearMediaSession();
-    if (hash === "#/about") renderAbout(); else renderList();
+    if (hash === "#/about") renderAbout();
+    else if (hash.startsWith("#/feedback")) renderFeedback(decodeURIComponent(hash.slice("#/feedback/".length)));
+    else renderList();
   }
 }
 

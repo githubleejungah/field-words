@@ -15,6 +15,7 @@
   --border: #e6e1dc;
   --accent: #3f6b57;          /* 버튼·링크 (세이지 계열의 진한 색) */
   --accent-soft: #e7efea;
+  --danger: #a3402d;          /* 입력 오류 안내 글자 */
 
   /* 혼동 쌍 색: A쪽 베이지, B쪽 세이지 */
   --pair-a: #f2e9e4;
@@ -40,6 +41,7 @@
     --border: #36322f;
     --accent: #9cc3ae;
     --accent-soft: #263129;
+    --danger: #f08a73;
 
     --pair-a: #3a322d;
     --pair-a-border: #7d6a5f;
@@ -372,6 +374,28 @@ details.answer[open] summary::before { content: "▾"; }
 .speak-btn.mini { min-width: 0; min-height: 36px; padding: 0 12px; font-size: 14px; }
 .speak-btn.mini .icon { width: 18px; height: 18px; }
 
+/* 🗣️ 말하기: 답(뜻·예문 등)을 가린다 */
+.concealed .section,
+.concealed .expansion,
+.concealed .badges,
+.concealed .pron-tip { display: none; }
+.speak-box {
+  margin-top: 20px;
+  padding: 18px;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+.speak-prompt { margin: 0; }
+.speak-row2 { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.speak-clock {
+  min-width: 72px;
+  font-size: 32px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;   /* 숫자가 바뀌어도 폭이 흔들리지 않게 */
+  color: var(--accent);
+}
+
 /* 지금 읽는 구역: 연한 색 바탕 + 왼쪽 굵은 막대 */
 .reading {
   background: var(--accent-soft);
@@ -431,5 +455,28 @@ details.answer[open] summary::before { content: "▾"; }
 /* 아래 막대에 마지막 내용이 가리지 않게 */
 body.has-bottom-bar { padding-bottom: 96px; }
 body.has-bottom-bar .footer { display: none; }
+
+/* ---------- 의견 보내기 ---------- */
+.fb-form { margin-top: 20px; }
+.field { margin-bottom: 20px; }
+.field label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 15px; }
+.field select, .field input, .field textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+.field textarea { resize: vertical; line-height: 1.6; }
+.field select:focus, .field input:focus, .field textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.field .muted { margin: 6px 0 0; font-size: 14px; }
+.field-error { margin: 6px 0 0; color: var(--danger); font-size: 14px; }
+.hp { position: absolute; left: -9999px; }      /* 스팸 봇용 숨은 칸 */
+.card-feedback { margin: 32px 0 0; text-align: right; font-size: 14px; }
+.card-feedback a { color: var(--muted); }
+body.no-footer .footer { display: none; }
 
 .notice { padding: 16px; border-radius: var(--radius); background: var(--accent-soft); }
