@@ -36,6 +36,7 @@
     "term": {
       "type": "object",
       "required": ["id", "term_en", "term_ko", "pronunciation", "stage", "level", "definition", "examples", "tags", "sources", "created_at", "updated_at"],
+      "dependentRequired": { "expansion": ["expansion_ko"] },
       "additionalProperties": false,
       "properties": {
         "id": { "$ref": "#/$defs/slug" },
@@ -48,6 +49,7 @@
           "uniqueItems": true
         },
         "expansion": { "description": "약어의 원래 이름. 예: API → Application Programming Interface", "type": "string", "minLength": 2 },
+        "expansion_ko": { "description": "약어를 단어별로 풀어 쓴 뜻. expansion이 있으면 필수. 예: Proof(증명) of Concept(개념) → 개념 증명", "type": "string", "minLength": 5 },
         "pronunciation": { "$ref": "#/$defs/pronunciation" },
         "stage": { "description": "주로 쓰이는 프로젝트 단계 하나", "$ref": "#/$defs/stage" },
         "also_stages": {
@@ -57,7 +59,7 @@
           "uniqueItems": true
         },
         "level": {
-          "description": "1=입문(비개발자도 들어 봄), 2=기본(개발 공부 첫 달), 3=실무(현업 회의에서 매일), 4=심화(설계 면접 깊은 질문)",
+          "description": "1=입문, 2=기본, 3=실무, 4=심화. 판단 질문은 docs/콘텐츠_작성_가이드.md 6장. 화면에는 숫자 대신 이름으로 표시한다",
           "type": "integer",
           "minimum": 1,
           "maximum": 4
