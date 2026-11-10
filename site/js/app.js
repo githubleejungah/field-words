@@ -117,13 +117,20 @@ function searchTerms() {
     if (score >= 0) results.push({ term, score });
   }
 
-  // 점수 높은 순 → 같은 점수면 단계 순서 → 영어 이름 순
-  results.sort((a, b) =>
-    b.score - a.score ||
-    STAGES.indexOf(a.term.stage) - STAGES.indexOf(b.term.stage) ||
-    a.term.term_en.localeCompare(b.term.term_en)
-  );
+  // 점수 높은 순 → 같은 점수면 영어 이름 A-B-C 순 (대소문자 구분 없이: MoSCoW, MVP 순)
+  // 데이터 파일에 어떤 순서로 넣든 화면에서는 늘 알파벳 순으로 보인다 → 새 용어도 자동으로 제자리에 들어간다
+  results.sort((a, b) => b.score - a.score || compareName(a.term, b.term));
   return results.map((r) => r.term);
+}
+
+function compareName(a, b) {
+  return a.term_en.localeCompare(b.term_en, "en", { sensitivity: "base", numeric: true });
+}
+
+// 목록 머리글자: A, B, C … (숫자나 기호로 시작하면 #)
+function initialOf(term) {
+  const c = term.term_en.trim().charAt(0).toUpperCase();
+  return /[A-Z]/.test(c) ? c : "#";
 }
 
 // 카드에서 이전·다음으로 넘길 순서. 목록에서 고른 단계·검색 결과를 그대로 따른다.
@@ -174,7 +181,7 @@ function renderList() {
         }, icon("walk"), t("walk.entry"))
       ),
       found.length
-        ? h("ul", { class: "list" }, found.map(listItem))
+        ? (state.query ? h("ul", { class: "list" }, found.map(listItem)) : alphabetList(found))
         : h("p", { class: "muted" }, t("search.empty"))
     );
   }
@@ -630,6 +637,22 @@ function firstNotice() {
     }, t("notice.ok"))
   );
   return box;
+}
+
+// 검색어가 없을 때: 알파벳 머리글자(A, B, C …)로 묶어서 보여 준다. 사전처럼 찾기 쉽게.
+// (검색 중에는 가장 잘 맞는 용어가 맨 위에 와야 해서 묶지 않는다)
+function alphabetList(terms) {
+  const groups = new Map();
+  for (const term of terms) {
+    const k = initialOf(term);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(term);
+  }
+  return h("div", {}, [...groups].map(([letter, list]) =>
+    h("section", { class: "alpha-group" },
+      h("h2", { class: "alpha-head" }, letter),
+      h("ul", { class: "list" }, list.map(listItem))
+    )));
 }
 
 function listItem(term) {

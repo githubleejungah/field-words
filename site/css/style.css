@@ -168,6 +168,19 @@ a { color: var(--accent); }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
 
 .list { list-style: none; margin: 0; padding: 0; }
+/* 알파벳 머리글자: 목록을 내릴 때 위에 붙어 있어 지금 어디쯤인지 알 수 있다 */
+.alpha-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 18px 0 0;
+  padding: 6px 4px;
+  background: var(--bg);
+  border-bottom: 2px solid var(--accent);
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 700;
+}
 .list a {
   display: block;
   padding: 14px 4px;
