@@ -495,6 +495,75 @@ details.answer[open] summary::before { content: "▾"; }
 body.has-bottom-bar { padding-bottom: 96px; }
 body.has-bottom-bar .footer { display: none; }
 
+/* ---------- 오늘의 학습 (목록 맨 위) ---------- */
+.today {
+  margin: 4px 0 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.today-main { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 14px; }
+/* 좁은 화면: 버튼은 아래 줄에 꽉 차게 */
+@media (max-width: 560px) {
+  .today-main > .btn { flex: 1 0 100%; justify-content: center; min-height: 48px; }
+}
+.today-text { flex: 1; min-width: 0; }
+.today-text p { margin: 0; }
+.today-title { font-weight: 700; font-size: 17px; white-space: nowrap; }
+.today-min { margin-left: 8px; font-size: 13px; color: var(--accent); }
+.pring { flex: none; transform: rotate(-90deg); }
+.pring circle { fill: none; stroke-width: 6; }
+.status-row { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 12px; }
+.status-chip { padding: 2px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); font-size: 13px; }
+.status-chip.misconception { border-color: var(--danger); }
+
+/* ---------- 체크 흐름 ---------- */
+.study-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; color: var(--muted); font-size: 15px; }
+.check { margin-top: 18px; }
+.check-prompt { margin: 0 0 14px; font-weight: 600; }
+.conf-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.btn.conf { justify-content: center; min-height: 56px; font-size: 16px; font-weight: 700; }
+.btn.conf.sure { border-color: var(--accent); color: var(--accent); }
+.options { display: grid; gap: 10px; }
+.option {
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.option:hover { border-color: var(--accent); }
+
+.result { display: grid; gap: 12px; }
+.result p { margin: 0; }
+.result-title { font-size: 19px; font-weight: 700; }
+.result-title.known, .result-title.shaky { color: var(--accent); }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 420px) { .cmp { grid-template-columns: 1fr; } }
+.cmp-box { display: grid; gap: 4px; padding: 14px; border-radius: var(--radius); border: 1.5px solid var(--border); line-height: 1.5; }
+.cmp-box.answer { border-color: var(--accent); background: var(--accent-soft); }
+.cmp-box.pair-a { background: var(--pair-a); border-color: var(--pair-a-border); color: var(--pair-a-ink); }
+.cmp-box.pair-b { background: var(--pair-b); border-color: var(--pair-b-border); color: var(--pair-b-ink); }
+.cmp-box.answer.pair-a, .cmp-box.answer.pair-b { border-width: 3px; }
+.cmp-label { font-size: 13px; font-weight: 700; }
+.study-full { margin-top: 16px; }
+.study-more { margin-top: 16px; }
+.study-more summary { cursor: pointer; color: var(--accent); font-weight: 600; min-height: 44px; display: flex; align-items: center; }
+.done .praise { font-weight: 700; color: var(--accent); }
+.done-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+/* 말하기 모드 스스로 채점 */
+.grade-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; }
+.grade-q { font-weight: 700; margin-right: 4px; }
+.btn.grade { min-height: 40px; }
+
 /* ---------- 의견 보내기 ---------- */
 .fb-form { margin-top: 20px; }
 .field { margin-bottom: 20px; }

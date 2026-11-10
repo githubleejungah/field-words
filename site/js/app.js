@@ -41,6 +41,8 @@ const state = {
   mode: "look",       // 학습 모드
   nextTimer: null,    // 이동 중 모드: 다음 카드로 넘어가기 전 2초 기다리는 타이머
   hold: false,        // true면 다음 카드를 열 때 자동으로 읽지 않는다 (사용자가 멈춘 채로 넘겼을 때)
+  session: null,      // 오늘의 학습 진행 중: { queue: [용어 id], i: 지금 몇 번째, retries: {id: 다시 나온 횟수} }
+  extraGoal: 0,       // 오늘 목표를 채운 뒤 "더 하기"로 늘린 장 수 (오늘만)
 };
 
 const app = document.getElementById("app");
@@ -200,8 +202,216 @@ function renderList() {
     )
   );
 
-  app.replaceChildren(firstNotice() ?? "", input, chips, results);
+  app.replaceChildren(firstNotice() ?? "", todayPanel(), input, chips, results);
   update();
+}
+
+// 목록 맨 위 "오늘의 학습": 진행 링 + 남은 양 + 시작 버튼 + 상태별 개수
+function todayPanel() {
+  const p = Review.plan(state.terms, { extra: state.extraGoal });
+  const { min_goal } = Review.getSettings();
+  const c = Review.counts(state.terms);
+  const left = p.queue.length;
+
+  const button = h("button", {
+    class: "btn primary",
+    type: "button",
+    onclick: () => {
+      if (!left) state.extraGoal += 5;                // 목표를 채운 뒤에는 5장 더
+      state.session = null;
+      location.hash = "#/study";
+    },
+  }, p.done === 0 ? t("today.start") : left ? t("today.continue") : t("today.more"));
+
+  const stats = c.unseen === state.terms.length ? null : h("div", { class: "status-row" },
+    ["known", "shaky", "confused", "misconception", "unknown"].map((k) =>
+      h("span", { class: `status-chip ${k}` }, `${t(`status.${k}`)} ${c[k]}`)),
+    h("span", { class: "status-chip longterm" }, `${t("status.longTerm")} ${c.longTerm}`)
+  );
+
+  return h("section", { class: "today" },
+    h("div", { class: "today-main" },
+      progressRing(p.done, p.goal, 56),
+      h("div", { class: "today-text" },
+        h("p", { class: "today-title" }, t("today.title", { done: p.done, goal: p.goal }),
+          p.done >= min_goal && h("span", { class: "today-min" }, t("today.min.ok"))),
+        h("p", { class: "muted" }, left
+          ? t("today.left", { n: left, m: p.minutesLeft, r: p.reviewCount, f: p.newCount })
+          : t("today.done"))
+      ),
+      button
+    ),
+    stats
+  );
+}
+
+// 진행 링: 오늘 목표 대비 채운 비율을 원으로 보여 준다
+function progressRing(done, goal, size) {
+  const ns = "http://www.w3.org/2000/svg";
+  const r = size / 2 - 5, len = 2 * Math.PI * r;
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+  svg.setAttribute("class", "pring");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `${done} / ${goal}`);
+  const circle = (cls, offset) => {
+    const c = document.createElementNS(ns, "circle");
+    c.setAttribute("cx", size / 2); c.setAttribute("cy", size / 2); c.setAttribute("r", r);
+    c.setAttribute("class", cls);
+    if (offset != null) { c.style.strokeDasharray = `${len}`; c.style.strokeDashoffset = `${offset}`; }
+    return c;
+  };
+  const ratio = goal ? Math.min(done / goal, 1) : 0;
+  svg.append(circle("ring-track"), circle("ring-bar", len * (1 - ratio)));
+  svg.style.width = svg.style.height = `${size}px`;
+  return svg;
+}
+
+/* ---------- 화면: 오늘의 학습 (체크) ---------- */
+// 한 장의 흐름: ① 떠올리기(확신도) → ② 확인 문제 → ③ 결과
+// "몰라요"는 확인 문제 없이 바로 카드를 펼쳐 공부한다. 틀리거나 모르면 3장 뒤에 다시 나온다.
+
+const REQUEUE_GAPS = [3, 10];   // 같은 학습 안에서 다시 나오는 간격: 처음 3장 뒤, 또 틀리면 10장 뒤
+
+function renderStudy() {
+  renderTopbar("card");
+  if (!state.session) {
+    const p = Review.plan(state.terms, { extra: state.extraGoal });
+    state.session = { queue: p.queue, i: 0, retries: {} };
+  }
+  const s = state.session;
+  if (s.i >= s.queue.length) { renderStudyDone(); return; }
+
+  const term = state.allById.get(s.queue[s.i]);
+  const goal = Review.getSettings().daily_goal + state.extraGoal;
+
+  // 위쪽 진행 표시: 답할 때마다 다시 그린다
+  const head = h("div", { class: "study-head" });
+  const paintHead = () => {
+    const done = Review.getToday().seen.length;
+    head.replaceChildren(
+      progressRing(done, goal, 36),
+      h("span", {}, t("today.title", { done, goal })),
+      s.retries[term.id] && h("span", { class: "badge" }, t("study.again"))
+    );
+  };
+  paintHead();
+
+  const card = h("article", { class: "card" },
+    h("div", { class: "term-head", "data-sec": "term" },
+      h("h1", {}, term.term_en, h("span", { class: "pron" }, `[${term.pronunciation.ko}]`)),
+      speech.supported && speakButton("term", t("speak.term"), () => termOnlyParts(term), "mini")
+    )
+  );
+  const panel = h("div", { class: "check" });
+  card.append(panel);
+  app.replaceChildren(head, card);
+  window.scrollTo(0, 0);
+  if (speech.supported) speech.start("term", termOnlyParts(term));
+
+  // ① 떠올리기: 확신도 한 번 누르기
+  panel.replaceChildren(
+    h("p", { class: "check-prompt" }, t("check.recall")),
+    h("div", { class: "conf-row" },
+      ["sure", "unsure", "dontknow"].map((c) =>
+        h("button", { class: `btn conf ${c}`, type: "button", onclick: () => onConfidence(c) }, t(`check.${c}`)))
+    )
+  );
+
+  function onConfidence(confidence) {
+    if (confidence === "dontknow") return finish({ confidence, correct: false, chosen: null, quiz: null });
+    showQuiz(confidence);
+  }
+
+  // ② 확인 문제: 4지선다, 한 번 누르면 바로 채점
+  function showQuiz(confidence) {
+    const quiz = Review.makeQuiz(term, state.terms, state.pairs);
+    const question = quiz.kind === "def"
+      ? t("check.q.def", { term: term.term_en })
+      : t("check.q.term", { def: firstSentence(term.definition) });
+    panel.replaceChildren(
+      h("p", { class: "check-prompt" }, question),
+      h("div", { class: "options" }, quiz.options.map((o) => {
+        const x = state.allById.get(o.id);
+        const label = quiz.kind === "def" ? firstSentence(x.definition) : `${x.term_en} · ${x.term_ko}`;
+        return h("button", { class: "option", type: "button", onclick: () => finish({ confidence, correct: o.correct, chosen: x, quiz }) }, label);
+      }))
+    );
+  }
+
+  // ③ 결과: 기록하고, 결과 화면과 카드 전체를 보여 준다
+  function finish({ confidence, correct, chosen, quiz }) {
+    const confusedWith = !correct && chosen ? chosen.id : null;
+    const { status } = Review.record(term.id, { confidence, correct, quiz: quiz?.kind ?? "recall", confusedWith });
+    const bad = status === "misconception" || status === "confused" || status === "unknown";
+    paintHead();
+
+    // 틀리거나 모르면 같은 학습 안에서 다시 나오게 한다 (3장 뒤 → 10장 뒤)
+    if (bad) {
+      const n = s.retries[term.id] ?? 0;
+      if (n < REQUEUE_GAPS.length) {
+        s.retries[term.id] = n + 1;
+        s.queue.splice(Math.min(s.i + 1 + REQUEUE_GAPS[n], s.queue.length), 0, term.id);
+      }
+    }
+
+    panel.replaceChildren(resultBox(term, status, chosen, quiz));
+    // 결과 아래에 카드 전체(뜻·예문·함정…)를 붙여 바로 공부할 수 있게 한다. 맞았으면 접어 둔다.
+    const full = buildCard(term, "");
+    full.classList.add("study-full");
+    const wrap = bad ? full : h("details", { class: "study-more" }, h("summary", {}, t("check.more")), full);
+    card.after(wrap);
+
+    const nextBtn = h("button", { class: "ctrl main", type: "button", onclick: () => { s.i += 1; route(); } },
+      h("span", {}, s.i + 1 < s.queue.length ? t("check.next") : t("check.finish")), icon("next"));
+    app.append(h("nav", { class: "bottom-bar", "aria-label": t("controls.label") }, h("div", { class: "bottom-inner" }, nextBtn)));
+    document.body.classList.add("has-bottom-bar");
+  }
+}
+
+function firstSentence(text) {
+  const m = text.match(/^.*?[.?!](?=\s|$)/);
+  return m ? m[0] : text;
+}
+
+// 결과 상자. 틀렸을 때는 빨간 ✗ 대신 내 답과 정답을 나란히 보여 준다 (콘텐츠 작성 가이드 8장)
+function resultBox(term, status, chosen, quiz) {
+  const title = h("p", { class: `result-title ${status}` }, t(`result.${status}`));
+  const parts = [title];
+
+  if (chosen && chosen.id !== term.id) {
+    const pair = state.pairs.find((p) => [p.a, p.b].includes(term.id) && [p.a, p.b].includes(chosen.id));
+    const side = (id) => (pair ? (pair.a === id ? "a" : "b") : null);
+    const show = (x, label, cls) => h("div", { class: `cmp-box ${cls} ${side(x.id) ? `pair-${side(x.id)}` : ""}` },
+      h("span", { class: "cmp-label" }, label),
+      h("b", {}, `${x.term_en} · ${x.term_ko}`),
+      h("span", {}, firstSentence(x.definition)));
+    parts.push(h("div", { class: "cmp" }, show(chosen, t("result.mine"), "mine"), show(term, t("result.answer"), "answer")));
+    if (pair) parts.push(h("p", { class: "pair-diff" }, h("b", {}, t("card.pair.diff")), pair.difference));
+  } else {
+    parts.push(h("p", {}, firstSentence(term.definition)));
+  }
+  if (status !== "known" && status !== "shaky" && term.pitfall) parts.push(h("p", { class: "pitfall" }, term.pitfall));
+  if (status === "misconception" || status === "confused" || status === "unknown") parts.push(h("p", { class: "muted" }, t("result.again")));
+  return h("div", { class: "result" }, parts);
+}
+
+// 오늘 할 카드를 다 했을 때: 구체적인 칭찬 + 상태별 개수 (오늘의 마무리 전체 버전은 다음 작업)
+function renderStudyDone() {
+  const today = Review.getToday();
+  const names = (ids) => ids.map((id) => state.allById.get(id)?.term_en).filter(Boolean).join(", ");
+  const corrected = today.corrected;
+  app.replaceChildren(h("article", { class: "card done" },
+    h("h1", {}, t("done.title")),
+    h("p", {}, t("done.count", { n: today.seen.length })),
+    corrected.length > 0 && h("p", { class: "praise" }, t("done.corrected", { names: names(corrected) })),
+    today.misconceptions.length > 0 && h("p", {}, t("done.misconceptions", { names: names(today.misconceptions) })),
+    h("div", { class: "done-actions" },
+      h("a", { class: "btn", href: "#/" }, t("nav.back")),
+      h("button", { class: "btn primary", type: "button", onclick: () => { state.extraGoal += 5; state.session = null; route(); } }, t("today.more"))
+    )
+  ));
+  state.session = null;
 }
 
 // 데이터 한계 안내는 처음 한 번만 짧게 보여 준다. "확인"을 누르면 다시 나오지 않는다.
@@ -339,9 +549,29 @@ function speakPractice(card, term, hasNext, goNext) {
   }
   box.reveal = reveal;
 
+  // 스스로 채점: 맞음 / 일부 / 아직 → 오늘의 학습과 같은 기록에 남긴다 (한 번 누르기)
+  //   맞음 = 확실하게 맞힘(✅ 앎), 일부 = 헷갈렸지만 맞힘(🟡 불안한 앎), 아직 = 모름(⚪)
+  const GRADES = { right: { confidence: "sure", correct: true }, partly: { confidence: "unsure", correct: true }, notyet: { confidence: "dontknow", correct: false } };
+  const graded = h("p", { class: "muted" });
+  const gradeRow = h("div", { class: "grade-row" },
+    h("span", { class: "grade-q" }, t("grade.q")),
+    Object.keys(GRADES).map((g) => h("button", {
+      class: `btn grade ${g}`,
+      type: "button",
+      onclick: () => {
+        Review.record(term.id, { ...GRADES[g], quiz: "speak" });
+        stopCountdown();
+        if (hasNext) goNext();
+        else { gradeRow.remove(); graded.textContent = t("grade.saved"); }
+      },
+    }, t(`grade.${g}`)))
+  );
+
   // 다음 용어로 넘어가기 전 안내 상자
   const countText = h("span", {});
   const nextBox = h("div", { class: "next-box" },
+    gradeRow,
+    graded,
     hasNext ? countText : h("span", {}, t("speak.last")),
     hasNext && h("div", { class: "next-actions" },
       h("button", { class: "btn", type: "button", onclick: stay }, t("speak.stay")),
@@ -1065,6 +1295,7 @@ function route() {
     keepScreenOn(false);
     clearMediaSession();
     if (hash === "#/about") renderAbout();
+    else if (hash === "#/study") renderStudy();
     else if (hash.startsWith("#/feedback")) renderFeedback(decodeURIComponent(hash.slice("#/feedback/".length)));
     else renderList();
   }

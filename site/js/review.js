@@ -1,0 +1,198 @@
+/* =========================================================
+   필드워드 — 학습 기록과 복습 규칙 (화면 없음)
+   화면(app.js)과 나눠 둔 이유: 규칙만 따로 시험할 수 있게 (관심사 분리)
+   브라우저에서는 전역 Review로, Node.js 시험에서는 require()로 쓴다.
+
+   저장 이름 규칙 (docs/data-model.md)
+     fw:v1:review:<용어 id>  복습 기록
+     fw:v1:today             오늘 기록
+     fw:v1:settings          하루 목표 등 설정
+   ========================================================= */
+
+const Review = (() => {
+  const PREFIX = "fw:v1:";
+
+  // 라이트너 상자 7개의 복습 간격(일). 상자 8 = 🏅 장기 기억 유지(120일마다 확인)
+  const INTERVALS = [1, 2, 4, 7, 15, 30, 60];
+  const MAINTAIN_BOX = 8;
+  const MAINTAIN_DAYS = 120;
+  const LONG_TERM_FROM_BOX = 6;     // 상자 6(30일 간격)에서 맞히면 = 30일 넘게 기억한 것 → 장기 기억
+  const DROP_TWO_FROM_BOX = 4;      // 상자 4 이상에서 틀리면 1번으로 가지 않고 두 칸만 내린다
+  const HISTORY_KEEP = 20;
+
+  const DEFAULT_SETTINGS = { daily_goal: 10, min_goal: 3 };
+  const SECONDS_PER_CARD = 30;      // 남은 시간 계산용 (한 장에 약 30초)
+
+  // ----- 저장소 -----
+  // 브라우저 localStorage를 쓰되, 못 쓰는 환경(사생활 보호 창, 시험)에서는 메모리에 둔다.
+  const memory = new Map();
+  let store = {
+    get: (k) => { try { return localStorage.getItem(k); } catch { return memory.get(k) ?? null; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch { memory.set(k, v); } },
+  };
+  function useStore(custom) { store = custom; }          // 시험에서 가짜 저장소를 끼울 때
+
+  const read = (key, fallback) => {
+    const raw = store.get(PREFIX + key);
+    if (raw == null) return fallback;
+    try { return JSON.parse(raw); } catch { return fallback; }
+  };
+  const write = (key, value) => store.set(PREFIX + key, JSON.stringify(value));
+
+  // ----- 날짜 (기기 시간대 기준 "YYYY-MM-DD") -----
+  let clock = () => new Date();
+  function useClock(fn) { clock = fn; }                    // 시험에서 날짜를 정할 때
+  const pad = (n) => String(n).padStart(2, "0");
+  function dateOf(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+  function today() { return dateOf(clock()); }
+  function addDays(date, n) {
+    const [y, m, d] = date.split("-").map(Number);
+    return dateOf(new Date(y, m - 1, d + n));
+  }
+
+  // ----- 5단계 상태: 확신도 × 정답 여부 -----
+  // confidence: "sure"(확실해요) / "unsure"(헷갈려요) / "dontknow"(몰라요)
+  function classify(confidence, correct) {
+    if (confidence === "dontknow") return "unknown";        // ⚪ 모름
+    if (confidence === "sure") return correct ? "known" : "misconception"; // ✅ 앎 / 🚨 착각
+    return correct ? "shaky" : "confused";                  // 🟡 불안한 앎 / 🟠 헷갈림
+  }
+
+  // ----- 상자 이동 규칙 -----
+  function nextBox(box, status) {
+    if (status === "known") return Math.min(Math.max(box, 0) + 1, MAINTAIN_BOX);
+    if (status === "shaky") return Math.max(box, 1);        // 같은 간격으로 한 번 더
+    return box >= DROP_TWO_FROM_BOX ? box - 2 : 1;          // 헷갈림·착각·모름
+  }
+  function intervalFor(box) {
+    return box >= MAINTAIN_BOX ? MAINTAIN_DAYS : INTERVALS[Math.max(box, 1) - 1];
+  }
+
+  function get(id) { return read(`review:${id}`, null); }
+
+  // 한 번 체크한 결과를 기록한다. 돌려주는 값: { status, record, firstToday }
+  function record(id, { confidence, correct, quiz = "def", confusedWith = null }) {
+    const now = today();
+    const prev = get(id) ?? { box: 0, lapses: 0, history: [] };
+    const status = classify(confidence, correct);
+    const box = nextBox(prev.box, status);
+
+    const rec = {
+      ...prev,
+      box,
+      status,
+      last_at: now,
+      next_review_at: addDays(now, intervalFor(box)),
+      lapses: prev.lapses + (status !== "known" && status !== "shaky" && prev.box >= DROP_TWO_FROM_BOX ? 1 : 0),
+      history: [...prev.history, { at: now, confidence, correct, quiz, confused_with: confusedWith }].slice(-HISTORY_KEEP),
+    };
+    if (status === "known" && prev.box >= LONG_TERM_FROM_BOX && !prev.long_term_at) rec.long_term_at = now;
+    write(`review:${id}`, rec);
+
+    const firstToday = markToday(id, status);
+    return { status, record: rec, firstToday };
+  }
+
+  // ----- 오늘 기록 (날짜가 바뀌면 새로 시작) -----
+  function getToday() {
+    const t = read("today", null);
+    if (t && t.date === today()) return t;
+    return { date: today(), seen: [], wrong: [], misconceptions: [], corrected: [] };
+  }
+  function markToday(id, status) {
+    const t = getToday();
+    const firstToday = !t.seen.includes(id);
+    if (firstToday) t.seen.push(id);
+    const bad = status === "confused" || status === "unknown" || status === "misconception";
+    if (bad && !t.wrong.includes(id)) t.wrong.push(id);
+    if (status === "misconception" && !t.misconceptions.includes(id)) t.misconceptions.push(id);
+    // 오늘 틀렸던 것을 오늘 다시 맞히면 "바로잡은 것"
+    if (!bad && t.wrong.includes(id) && !t.corrected.includes(id)) t.corrected.push(id);
+    write("today", t);
+    return firstToday;
+  }
+
+  function getSettings() { return { ...DEFAULT_SETTINGS, ...read("settings", {}) }; }
+  function setSettings(patch) { write("settings", { ...getSettings(), ...patch }); }
+
+  // ----- 오늘 할 카드 목록 만들기 -----
+  // 복습 예정 카드를 먼저(급한 상태 순), 남는 자리만큼 새 카드. 오늘 이미 본 카드는 다시 넣지 않는다.
+  const URGENCY = { misconception: 0, confused: 1, unknown: 2, shaky: 3, known: 4 };
+  // extra: 목표를 채운 뒤 "더 하기"를 눌렀을 때 오늘만 늘리는 장 수
+  function plan(terms, { extra = 0 } = {}) {
+    const daily_goal = getSettings().daily_goal + extra;
+    const t = getToday();
+    const now = today();
+    const due = [], fresh = [];
+    for (const term of terms) {
+      if (t.seen.includes(term.id)) continue;
+      const rec = get(term.id);
+      if (!rec) fresh.push(term);
+      else if (rec.next_review_at <= now) due.push({ term, rec });
+    }
+    due.sort((a, b) =>
+      URGENCY[a.rec.status] - URGENCY[b.rec.status] || a.rec.next_review_at.localeCompare(b.rec.next_review_at));
+    const left = Math.max(daily_goal - t.seen.length, 0);
+    const dueIds = due.map((d) => d.term.id);
+    const reviewPart = dueIds.slice(0, left);
+    const newPart = fresh.slice(0, Math.max(left - reviewPart.length, 0)).map((x) => x.id);
+    return {
+      goal: daily_goal,
+      done: t.seen.length,
+      queue: [...reviewPart, ...newPart],
+      reviewCount: reviewPart.length,
+      newCount: newPart.length,
+      dueTotal: dueIds.length,
+      minutesLeft: Math.ceil(((reviewPart.length + newPart.length) * SECONDS_PER_CARD) / 60),
+    };
+  }
+
+  // ----- 현황: 상태별 개수 -----
+  function counts(terms) {
+    const c = { known: 0, shaky: 0, confused: 0, misconception: 0, unknown: 0, longTerm: 0, unseen: 0 };
+    for (const term of terms) {
+      const rec = get(term.id);
+      if (!rec) { c.unseen += 1; continue; }
+      c[rec.status] += 1;
+      if (rec.long_term_at) c.longTerm += 1;
+    }
+    return c;
+  }
+
+  // ----- 확인 문제 만들기 (퀴즈 사다리) -----
+  // 상자 0~2: 용어 → 뜻 고르기 / 상자 3 이상: 뜻 → 용어 고르기
+  // 오답 보기(그럴듯한 틀린 보기): 혼동 쌍 → 같은 단계·같은 등급 → 같은 단계 → 나머지
+  function makeQuiz(term, terms, pairs, rnd = Math.random) {
+    const rec = get(term.id);
+    const kind = (rec?.box ?? 0) >= 3 ? "term" : "def";
+    const others = terms.filter((x) => x.id !== term.id);
+    const pairIds = pairs.filter((p) => p.a === term.id || p.b === term.id).map((p) => (p.a === term.id ? p.b : p.a));
+
+    const pick = [];
+    const add = (list) => { for (const x of shuffle(list, rnd)) if (pick.length < 3 && !pick.includes(x)) pick.push(x); };
+    add(others.filter((x) => pairIds.includes(x.id)));
+    add(others.filter((x) => x.stage === term.stage && x.level === term.level));
+    add(others.filter((x) => x.stage === term.stage));
+    add(others);
+
+    const options = shuffle([term, ...pick], rnd).map((x) => ({ id: x.id, correct: x.id === term.id }));
+    return { kind, options, pairIds };
+  }
+
+  function shuffle(list, rnd) {
+    const a = [...list];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  return {
+    classify, nextBox, intervalFor, record, get, getToday, getSettings, setSettings,
+    plan, counts, makeQuiz, today, addDays, useStore, useClock,
+    INTERVALS, MAINTAIN_BOX,
+  };
+})();
+
+if (typeof module !== "undefined") module.exports = Review;
