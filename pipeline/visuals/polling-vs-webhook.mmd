@@ -1,0 +1,16 @@
+%% 혼동 쌍 그림: 폴링(A, 베이지) vs 웹훅(B, 세이지)
+%% 이 파일은 원본이다. mermaid-cli로 site/visuals/polling-vs-webhook.svg를 만든다.
+sequenceDiagram
+    participant App as 우리 앱
+    participant Pay as 결제사
+    rect rgb(242, 233, 228)
+        Note over App,Pay: 🔁 폴링 — 우리가 계속 물어봄
+        App->>Pay: 결제 끝났어요?
+        Pay-->>App: 아직요
+        App->>Pay: 이제 끝났어요?
+        Pay-->>App: 네, 끝났어요
+    end
+    rect rgb(167, 196, 181)
+        Note over App,Pay: 🔔 웹훅 — 끝나면 결제사가 알려 줌
+        Pay->>App: 결제 끝났어요! (한 번만)
+    end

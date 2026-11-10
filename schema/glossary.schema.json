@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://field-words/schema/glossary.schema.json",
+  "title": "현장어 glossary.json",
+  "description": "관리자 파이프라인과 공개 사이트를 잇는 유일한 계약(Contract). 사람이 승인한 데이터만 들어간다.",
+  "type": "object",
+  "required": ["schema_version", "updated_at", "terms", "confusable_pairs"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "description": "구조가 바뀌면 올린다. 칸 추가는 1.1, 기존 칸의 뜻 변경·삭제는 2.0",
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "updated_at": { "$ref": "#/$defs/date" },
+    "terms": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/term" }
+    },
+    "confusable_pairs": {
+      "description": "혼동 쌍의 단일 진실 공급원. 용어별 confusable_with는 사이트가 여기서 계산한다",
+      "type": "array",
+      "items": { "$ref": "#/$defs/pair" }
+    }
+  },
+  "$defs": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "slug": {
+      "description": "영어 소문자·숫자·하이픈. 주소와 localStorage 키로 쓰므로 한 번 정하면 바꾸지 않는다",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "term": {
+      "type": "object",
+      "required": ["id", "term_en", "term_ko", "pronunciation", "stage", "level", "definition", "examples", "tags", "sources", "created_at", "updated_at"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "term_en": { "type": "string", "minLength": 1 },
+        "term_ko": { "description": "대표 한국어 이름", "type": "string", "minLength": 1 },
+        "aliases": {
+          "description": "검색용 다른 이름. 예: 오어스, 위임 인증",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "expansion": { "description": "약어의 원래 이름. 예: API → Application Programming Interface", "type": "string", "minLength": 2 },
+        "pronunciation": { "$ref": "#/$defs/pronunciation" },
+        "stage": { "description": "주로 쓰이는 프로젝트 단계 하나", "$ref": "#/$defs/stage" },
+        "also_stages": {
+          "description": "함께 쓰이는 다른 단계. 예: 보안 용어가 설계·배포에도 나올 때",
+          "type": "array",
+          "items": { "$ref": "#/$defs/stage" },
+          "uniqueItems": true
+        },
+        "level": {
+          "description": "1=입문(비개발자도 들어 봄), 2=기본(개발 공부 첫 달), 3=실무(현업 회의에서 매일), 4=심화(설계 면접 깊은 질문)",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "definition": { "description": "무엇인지 + 왜 쓰는지. 두 문장 안", "type": "string", "minLength": 10, "maxLength": 200 },
+        "pitfall": { "description": "현업에서 자주 틀리거나 사고 나는 지점 한 문장", "type": "string", "minLength": 10, "maxLength": 150 },
+        "interview_q": { "description": "면접에서 실제로 나올 법한 질문 한 개", "type": "string", "minLength": 10, "maxLength": 120 },
+        "interview_a": { "description": "interview_q의 모범 답변. 소리 내어 30초 안에 말할 수 있는 3문장 안팎(정의 → 이유·차이 → 내 경험이나 주의점)", "type": "string", "minLength": 30, "maxLength": 300 },
+        "prerequisites": {
+          "description": "먼저 알면 좋은 용어 id (선수 지식)",
+          "type": "array",
+          "items": { "$ref": "#/$defs/slug" },
+          "uniqueItems": true
+        },
+        "replaced_by": {
+          "description": "이 용어를 합치거나 이름을 바꿨을 때 옮겨 간 용어 id. 용어는 지우지 않고 이 칸을 채운다. 사이트는 목록에서 숨기고 복습 기록을 옮긴다",
+          "$ref": "#/$defs/slug"
+        },
+        "analogy": { "description": "일상 비유 한 문장", "type": "string", "maxLength": 150 },
+        "examples": {
+          "description": "상황별 예문 2~3개. 같은 상황은 한 번만",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/example" }
+        },
+        "tags": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "related": {
+          "description": "함께 보면 좋은 용어의 id",
+          "type": "array",
+          "items": { "$ref": "#/$defs/slug" },
+          "uniqueItems": true
+        },
+        "sources": {
+          "description": "이 용어를 어디서 만났는지. 강의에서 다시 나오면 여기에 추가한다",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/source" }
+        },
+        "visual": { "$ref": "#/$defs/visual" },
+        "learn_more": {
+          "description": "더 배우기 링크. 공식 문서 우선. 제휴·후원 링크는 kind로 반드시 구분한다",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["title", "url", "kind"],
+            "additionalProperties": false,
+            "properties": {
+              "title": { "type": "string" },
+              "url": { "type": "string", "pattern": "^https://" },
+              "kind": { "enum": ["docs", "article", "affiliate", "sponsor"] }
+            }
+          }
+        },
+        "created_at": { "$ref": "#/$defs/date" },
+        "updated_at": { "$ref": "#/$defs/date" }
+      }
+    },
+    "stage": {
+      "description": "프로젝트 지도 9단계. discovery=발견·기획, design=설계, build=개발, test=테스트·품질, deploy=배포, operate=운영, secure=보안·개인정보, grow=개선·확장, automate=자동화·지속 개선",
+      "enum": ["discovery", "design", "build", "test", "deploy", "operate", "secure", "grow", "automate"]
+    },
+    "pronunciation": {
+      "description": "현업에서 실제로 읽는 발음. Claude가 제안하고 사람이 승인한다",
+      "type": "object",
+      "required": ["ko", "read_as"],
+      "additionalProperties": false,
+      "properties": {
+        "ko": { "description": "화면에 [오-어스]처럼 표시. 소리를 꺼도 발음을 알 수 있다", "type": "string", "minLength": 1 },
+        "read_as": {
+          "description": "letters=한 글자씩(API), word=단어처럼(SaaS), mixed=섞어서(OAuth2: 오어스 투)",
+          "enum": ["letters", "word", "mixed"]
+        },
+        "tts": { "description": "영어 음성이 정확히 읽도록 고친 철자. 없으면 term_en을 읽는다", "type": "string", "minLength": 1 },
+        "variants": {
+          "description": "현업에서 함께 쓰는 다른 발음. 예: SQL의 시퀄",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "note": { "description": "발음 팁 한 문장", "type": "string", "maxLength": 100 }
+      }
+    },
+    "example": {
+      "type": "object",
+      "required": ["context", "sentence"],
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "description": "meeting=업무 회의, interview=면접 답변, review=문서·코드 리뷰. 화면 표시 이름은 사이트가 정한다",
+          "enum": ["meeting", "interview", "review"]
+        },
+        "sentence": { "type": "string", "minLength": 10, "maxLength": 200 }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["type", "label", "date"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "description": "conversation=Claude와의 대화, lecture=FDE 강의, youtube, news, claude=Claude가 제안, planning=이 앱의 기획 과정",
+          "enum": ["conversation", "lecture", "youtube", "news", "claude", "planning"]
+        },
+        "label": { "description": "예: FDE 1회차, 기획 2026-11-10", "type": "string" },
+        "url": { "description": "공개 출처일 때만. 강의 자료 링크는 넣지 않는다", "type": "string", "pattern": "^https://" },
+        "date": { "$ref": "#/$defs/date" }
+      }
+    },
+    "visual": {
+      "description": "용어 그림. 없으면 칸 자체를 생략한다 (ADR-0002)",
+      "type": "object",
+      "required": ["kind", "format", "file", "alt"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "description": "problem-solution=문제→해결, sequence=순서 흐름, structure=구조, compare=비교, screen=화면 모형",
+          "enum": ["problem-solution", "sequence", "structure", "compare", "screen"]
+        },
+        "format": { "description": "원본 형식. 사이트에는 항상 SVG로 나간다", "enum": ["mermaid", "svg"] },
+        "file": { "description": "site/ 기준 경로", "type": "string", "pattern": "^visuals/[a-z0-9-]+\\.svg$" },
+        "alt": { "description": "그림을 못 볼 때 대신 읽는 문장. 듣기 모드에서 TTS가 읽는다", "type": "string", "minLength": 10, "maxLength": 200 }
+      }
+    },
+    "pair": {
+      "type": "object",
+      "required": ["id", "a", "b", "difference", "check"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "description": "보통 a-vs-b", "$ref": "#/$defs/slug" },
+        "a": { "description": "A쪽 용어 id. 화면에서 베이지(#f2e9e4)", "$ref": "#/$defs/slug" },
+        "b": { "description": "B쪽 용어 id. 화면에서 세이지(#a7c4b5)", "$ref": "#/$defs/slug" },
+        "difference": { "description": "차이를 한 문장으로", "type": "string", "minLength": 10, "maxLength": 150 },
+        "visual": { "$ref": "#/$defs/visual" },
+        "check": {
+          "description": "혼동 쌍 품질 장치 기록",
+          "type": "object",
+          "required": ["decided_by", "judged_by", "judged_at"],
+          "additionalProperties": false,
+          "properties": {
+            "decided_by": { "const": "claude" },
+            "judged_by": { "description": "LLM-as-a-Judge 검사 통과 기록", "type": "string" },
+            "judged_at": { "$ref": "#/$defs/date" }
+          }
+        }
+      }
+    }
+  }
+}

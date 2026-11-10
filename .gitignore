@@ -1,0 +1,24 @@
+# 비밀 값 (API 키)
+.env
+.env.*
+!.env.example
+
+# 다른 기획의 조사 자료 (기관 통화·민원 내용). 저장소 밖으로 옮겼지만 실수 방지용으로 남겨 둔다.
+research/
+
+# 관리자 파이프라인의 승인 전 후보 (공개 전 데이터)
+pipeline/inbox/
+pipeline/candidates/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node.js (mermaid-cli 등)
+node_modules/
+
+# 운영체제·편집기
+.DS_Store
+Thumbs.db
+.vscode/

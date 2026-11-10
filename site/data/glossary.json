@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-11-10",
+  "terms": [
+    {
+      "id": "polling",
+      "term_en": "Polling",
+      "term_ko": "폴링",
+      "aliases": ["주기적 조회"],
+      "pronunciation": { "ko": "폴링", "read_as": "word" },
+      "stage": "build",
+      "level": 3,
+      "definition": "결과가 나왔는지 우리 쪽에서 정해진 간격으로 계속 물어보는 방식. 상대 서비스가 먼저 알려 주는 기능이 없을 때 쓴다.",
+      "pitfall": "간격을 너무 짧게 잡으면 외부 API 호출 한도를 넘기고, 너무 길게 잡으면 결과를 늦게 안다.",
+      "interview_q": "폴링과 웹훅의 차이와, 각각 언제 쓰는지 설명해 보세요.",
+      "interview_a": "폴링은 우리가 정해진 간격으로 상대에게 결과를 계속 물어보는 방식이고, 웹훅은 일이 끝나면 상대가 우리에게 먼저 알려 주는 방식입니다. 상대 서비스가 웹훅을 지원하면 요청이 적고 빠른 웹훅을 쓰고, 지원하지 않으면 폴링을 씁니다. 폴링을 쓸 때는 호출 한도를 넘지 않게 간격을 정합니다.",
+      "prerequisites": ["api"],
+      "analogy": "택배가 왔는지 10분마다 현관문을 열어 보는 것.",
+      "examples": [
+        { "context": "meeting", "sentence": "결제사가 웹훅을 지원하지 않아서, 일단 1분 간격 폴링으로 결제 상태를 확인하겠습니다." },
+        { "context": "interview", "sentence": "처음에는 폴링으로 만들었지만 빈 요청이 너무 많아 웹훅으로 바꿔 서버 부하를 줄였습니다." },
+        { "context": "review", "sentence": "폴링 간격이 1초라 외부 API 호출 한도를 넘을 수 있어요. 간격을 늘리거나 웹훅을 검토해 주세요." }
+      ],
+      "tags": ["시스템", "연동"],
+      "related": ["webhook"],
+      "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
+      "created_at": "2026-11-10",
+      "updated_at": "2026-11-10"
+    },
+    {
+      "id": "webhook",
+      "term_en": "Webhook",
+      "term_ko": "웹훅",
+      "aliases": ["콜백 URL"],
+      "pronunciation": { "ko": "웹훅", "read_as": "word", "tts": "web hook", "note": "'웹후크'가 아니라 '웹훅'으로 짧게 읽는다" },
+      "stage": "build",
+      "level": 3,
+      "definition": "어떤 일이 끝나면 상대 서비스가 우리에게 먼저 알려 주도록 주소를 등록해 두는 방식. 계속 물어보지 않아도 돼서 빠르고 요청이 적다.",
+      "pitfall": "같은 알림이 두 번 올 수 있다. 이미 처리한 알림인지 확인하지 않으면 결제가 두 번 처리된다.",
+      "interview_q": "웹훅 요청이 진짜 상대 서비스에서 왔는지 어떻게 확인하나요?",
+      "interview_a": "웹훅 주소는 외부에 열려 있어서 누구나 가짜 요청을 보낼 수 있습니다. 그래서 상대 서비스가 비밀 키로 만든 서명을 함께 보내면, 우리 쪽에서 같은 키로 서명을 다시 계산해 일치하는지 확인합니다. 여기에 같은 알림을 두 번 처리하지 않도록 이미 처리했는지도 확인합니다.",
+      "prerequisites": ["api"],
+      "analogy": "택배 기사님이 도착하면 초인종을 눌러 주는 것.",
+      "examples": [
+        { "context": "meeting", "sentence": "결제 완료는 웹훅으로 받으면 주문 상태가 거의 실시간으로 바뀝니다." },
+        { "context": "interview", "sentence": "웹훅 요청이 진짜 결제사에서 왔는지 서명을 검증해서 위조 요청을 막았습니다." },
+        { "context": "review", "sentence": "웹훅이 같은 알림을 두 번 보낼 수 있어요. 이미 처리한 결제인지 확인하는 코드가 필요합니다." }
+      ],
+      "tags": ["시스템", "연동"],
+      "related": ["polling"],
+      "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
+      "created_at": "2026-11-10",
+      "updated_at": "2026-11-10"
+    },
+    {
+      "id": "oauth",
+      "term_en": "OAuth",
+      "term_ko": "오어스",
+      "aliases": ["위임 인증", "소셜 로그인 연동"],
+      "expansion": "Open Authorization",
+      "pronunciation": { "ko": "오-어스", "read_as": "word", "tts": "oh auth", "variants": ["오쓰"], "note": "O를 한 글자로 읽고 Auth를 붙인다. 현업에서는 대부분 '오어스'" },
+      "stage": "secure",
+      "also_stages": ["build"],
+      "level": 3,
+      "definition": "비밀번호를 넘겨주지 않고, 구글·네이버 같은 플랫폼이 직접 \"이 앱에 권한을 줄까요?\"라고 묻는 표준 승인 방식. 앱이 남의 비밀번호를 보관하지 않아도 된다.",
+      "pitfall": "OAuth는 '권한을 빌려주는' 규격이다. '누구인지 확인하는' 로그인은 그 위의 OpenID Connect가 맡는다.",
+      "interview_q": "OAuth를 쓰면 왜 우리 서비스가 비밀번호를 보관하지 않아도 되나요?",
+      "interview_a": "OAuth에서는 사용자가 구글 같은 플랫폼에서 직접 로그인하고 권한을 허락합니다. 우리 서비스는 비밀번호 대신 권한 범위와 기한이 정해진 토큰만 받습니다. 그래서 비밀번호가 새어 나갈 위험이 없고, 사용자는 언제든 플랫폼에서 권한을 취소할 수 있습니다.",
+      "prerequisites": ["api", "token"],
+      "analogy": "호텔 마스터키 대신 특정 층만 열리는 카드키를 받는 것.",
+      "examples": [
+        { "context": "meeting", "sentence": "네이버 연동은 OAuth로 붙이면 고객 비밀번호를 저희가 보관할 필요가 없습니다." },
+        { "context": "interview", "sentence": "계정 연동은 OAuth로 처리해서 앱이 비밀번호를 저장하지 않게 설계했습니다." },
+        { "context": "review", "sentence": "토큰 만료 시 OAuth 리프레시 흐름이 빠져 있어요. 재인증 처리를 추가해 주세요." }
+      ],
+      "tags": ["보안", "인증"],
+      "related": ["sso", "passkey"],
+      "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
+      "created_at": "2026-11-10",
+      "updated_at": "2026-11-10"
+    },
+    {
+      "id": "design-token",
+      "term_en": "Design Token",
+      "term_ko": "디자인 토큰",
+      "pronunciation": { "ko": "디자인 토큰", "read_as": "word" },
+      "stage": "design",
+      "level": 2,
+      "definition": "색·글자 크기·간격 같은 디자인 값에 이름을 붙여 한곳에서 관리하는 방식. 값 하나만 바꾸면 모든 화면이 함께 바뀐다.",
+      "pitfall": "토큰을 만들어 놓고 코드 곳곳에 색 값을 직접 쓰면, 바꿀 때 빠진 곳이 생긴다.",
+      "analogy": "집 전체 조명을 벽의 스위치 하나로 한 번에 바꾸는 것.",
+      "examples": [
+        { "context": "meeting", "sentence": "브랜드 색이 바뀌어도 디자인 토큰 값만 고치면 모든 화면에 한 번에 반영됩니다." },
+        { "context": "review", "sentence": "버튼 색이 #a7c4b5로 직접 적혀 있어요. --pair-b 디자인 토큰을 써 주세요." }
+      ],
+      "tags": ["화면", "디자인"],
+      "sources": [{ "type": "planning", "label": "기획 2026-11-10 (혼동 쌍 색 정하기)", "date": "2026-11-10" }],
+      "created_at": "2026-11-10",
+      "updated_at": "2026-11-10"
+    }
+  ],
+  "confusable_pairs": [
+    {
+      "id": "polling-vs-webhook",
+      "a": "polling",
+      "b": "webhook",
+      "difference": "폴링은 우리가 계속 물어보고, 웹훅은 일이 끝나면 상대가 먼저 알려 준다.",
+      "visual": {
+        "kind": "compare",
+        "format": "mermaid",
+        "file": "visuals/polling-vs-webhook.svg",
+        "alt": "폴링은 우리 앱이 결제사에 끝났는지 여러 번 묻고, 웹훅은 결제가 끝났을 때 결제사가 한 번 알려 준다."
+      },
+      "check": { "decided_by": "claude", "judged_by": "claude (별도 검사 프롬프트)", "judged_at": "2026-11-10" }
+    }
+  ]
+}
