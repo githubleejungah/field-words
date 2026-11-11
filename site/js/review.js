@@ -97,6 +97,47 @@ const Review = (() => {
     return { status, record: rec, firstToday };
   }
 
+  // ----- 오늘의 마무리 (Must #15) -----
+  // 하루 학습 끝에 2~3분, 오늘 본 카드를 "다시 읽기"가 아니라 "다시 떠올리기"로 한 번 더 푼다.
+  // 순서: 🚨 착각 → 🟠 틀림·헷갈림 → 혼동 쌍이 있는 오늘 용어 → 맞힌 것 2개 (섞어서) → 마지막은 맞힌 카드로 끝내기
+  // 마무리 답은 복습 상자(다음 복습 날짜)를 바꾸지 않는다. 같은 날 두 번 올리면 간격 반복이 무너지기 때문이다.
+  const WRAP_MAX_HARD = 3;   // 착각·틀림은 최대 3장
+  const WRAP_GOOD = 2;       // 맞힌 것 2장
+
+  function planWrap(pairs = [], rnd = Math.random) {
+    const t = getToday();
+    const done = new Set(t.wrapped ?? []);
+    const fresh = (ids) => ids.filter((id) => !done.has(id));
+    const seen = fresh(t.seen);
+    if (seen.length === 0) return [];
+
+    const hard = [...new Set([...fresh(t.misconceptions), ...fresh(t.wrong)])].slice(0, WRAP_MAX_HARD);
+    const goodAll = shuffle(seen.filter((id) => !t.wrong.includes(id)), rnd);
+    const hasPair = (id) => pairs.some((p) => p.a === id || p.b === id);
+    const pairPick = shuffle(seen.filter((id) => hasPair(id) && !hard.includes(id)), rnd)[0];
+    const good = goodAll.filter((id) => id !== pairPick).slice(0, WRAP_GOOD);
+
+    // 틀린 것이 없고 본 카드도 3장보다 적으면 마무리할 것이 거의 없으니 건너뛴다
+    if (hard.length === 0 && seen.length < 3) return [];
+
+    const body = shuffle([...hard, ...(pairPick ? [pairPick] : []), ...good.slice(0, -1)], rnd);
+    const last = good.at(-1);   // 확실히 맞힐 카드로 끝낸다 (끝이 좋아야 다음 날 다시 온다: 피크엔드 법칙)
+    return [...new Set([...body, ...(last ? [last] : [])])];
+  }
+
+  // 마무리에서 푼 결과: 오늘 기록과 일지에만 남긴다 (복습 상자는 그대로)
+  function practice(id, correct) {
+    const status = correct ? "known" : "confused";
+    markToday(id, status);
+    markLog(today(), id, status, {});
+    return status;
+  }
+  function markWrapped(ids) {
+    const t = getToday();
+    t.wrapped = [...new Set([...(t.wrapped ?? []), ...ids])];
+    write("today", t);
+  }
+
   // ----- 날짜별 학습 일지 (성장 기록용, 지우지 않고 계속 쌓는다) -----
   // fw:v1:log = { "2026-11-11": { seen:[id], new:[id], wrong:[id], misconceptions:[id], corrected:[id], long_term:[id] } }
   // "오늘 기록(today)"은 날짜가 바뀌면 새로 시작하지만, 일지는 날짜마다 남는다. 하루 약 1KB, 1년 약 0.3MB.
@@ -277,9 +318,10 @@ const Review = (() => {
   // ----- 확인 문제 만들기 (퀴즈 사다리) -----
   // 상자 0~2: 용어 → 뜻 고르기 / 상자 3 이상: 뜻 → 용어 고르기
   // 오답 보기(그럴듯한 틀린 보기): 혼동 쌍 → 같은 단계·같은 등급 → 같은 단계 → 나머지
-  function makeQuiz(term, terms, pairs, rnd = Math.random) {
+  // force: 문제 종류를 정해서 낼 때 (오늘의 마무리는 한 칸 쉬운 "def"로 낸다)
+  function makeQuiz(term, terms, pairs, rnd = Math.random, force = null) {
     const rec = get(term.id);
-    const kind = (rec?.box ?? 0) >= 3 ? "term" : "def";
+    const kind = force ?? ((rec?.box ?? 0) >= 3 ? "term" : "def");
     const others = terms.filter((x) => x.id !== term.id);
     const pairIds = pairs.filter((p) => p.a === term.id || p.b === term.id).map((p) => (p.a === term.id ? p.b : p.a));
 
@@ -306,7 +348,7 @@ const Review = (() => {
   return {
     classify, nextBox, intervalFor, record, get, getToday, getSettings, setSettings,
     plan, counts, makeQuiz, today, addDays, useStore, useClock,
-    getLog, ensureLog, stats, exportAll, importAll,
+    getLog, ensureLog, stats, exportAll, importAll, planWrap, practice, markWrapped,
     INTERVALS, MAINTAIN_BOX,
   };
 })();

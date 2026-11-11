@@ -70,10 +70,12 @@ JSON Schema는 **모양**만 검사합니다. "webhook이라는 id가 실제로 
 glossary.json 밖에 있는, 사람마다 다른 데이터입니다. 이름을 미리 정해 두면 나중에 구조를 바꿀 때 옛 기록을 새 구조로 옮길 수 있습니다. 이 작업을 **마이그레이션(Migration)**이라고 합니다.
 
 ```
-fw:v1:review:<용어 id>     복습 기록   { box, next_review_at, history[], confidence, lapses, long_term_at? }
+fw:v1:review:<용어 id>     복습 기록   { box, status, first_at, last_at, next_review_at, history[최근 20개], lapses, long_term_at? }
                                         box: 1~7 = 라이트너 상자(1·2·4·7·15·30·60일), 8 = 🏅 장기 기억 유지(120일마다)
                                         lapses: 높은 상자에서 잊은 횟수 / long_term_at: 처음 장기 기억이 된 날
-fw:v1:today                오늘 기록   { date, seen[], wrong[], misconceptions[], corrected[] } ← 오늘의 마무리용
+fw:v1:today                오늘 기록   { date, seen[], wrong[], misconceptions[], corrected[], wrapped[] } ← 오늘의 마무리용
+fw:v1:log                  날짜별 학습 일지 { "YYYY-MM-DD": { seen[], new[], wrong[], misconceptions[], corrected[], long_term[] } } ← 내 기록 화면. 지우지 않는다
+fw:v1:log_built            일지 되살리기를 마쳤는지 (true)
 fw:v1:pair:<혼동 쌍 id>     혼동 쌍 퀴즈 기록
 fw:v1:settings             프리셋, 하루 목표, 언어
 fw:v1:onboarding           첫 실행 설문 결과

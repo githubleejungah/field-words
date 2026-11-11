@@ -299,7 +299,16 @@ function renderStudy() {
   }
   const s = state.session;
   s.kinds ??= {};
-  if (s.i >= s.queue.length) { renderStudyDone(); return; }
+  if (s.i >= s.queue.length) {
+    // 오늘 할 카드를 다 했으면: 마무리할 것이 있으면 오늘의 마무리 안내, 없으면 마침 화면
+    if (!s.wrapOffered) {
+      s.wrapOffered = true;
+      const ids = Review.planWrap(state.pairs);
+      if (ids.length) { state.wrap = { ids, i: 0, step: "intro", right: [], fixed: [], retried: [] }; renderWrap(); return; }
+    }
+    renderStudyDone();
+    return;
+  }
 
   const term = state.allById.get(s.queue[s.i]);
   const goal = Review.getSettings().daily_goal + state.extraGoal;
@@ -555,6 +564,13 @@ function renderStudyDone() {
         )
       ),
 
+      // 🌙 마무리 결과: 구체적으로 칭찬한다 (몇 개를 다시 떠올렸는지, 어떤 것을 바로잡았는지)
+      state.wrapResult && h("section", { class: "done-box wrapbox" },
+        h("p", { class: "done-box-title" }, t("wrap.result", { r: state.wrapResult.right, n: state.wrapResult.total })),
+        state.wrapResult.fixed.length > 0 && h("p", { class: "done-box-body" },
+          t("wrap.fixed", { names: state.wrapResult.fixed.map((id) => state.allById.get(id)?.term_en).join(", ") }))
+      ),
+
       // ✨ 바로잡은 용어: 틀렸다가 다시 맞힌 것. 실력이 느는 순간이라 가장 크게 칭찬한다
       corrected.length > 0 && h("section", { class: "done-box gold" },
         h("p", { class: "done-box-title" }, t("done.corrected.title", { k: corrected.length })),
@@ -571,12 +587,82 @@ function renderStudyDone() {
 
       h("div", { class: "done-actions" },
         h("a", { class: "btn", href: "#/" }, t("nav.back")),
+        h("a", { class: "btn", href: "#/progress" }, t("prog.link")),
         moreAction(today)
       ),
       moreLeft(today) === 0 && h("p", { class: "muted done-note" }, t("done.allseen", { n: state.terms.length }))
     )
   );
   state.session = null;
+  state.wrapResult = null;
+}
+
+/* ---------- 화면: 오늘의 마무리 (Must #15) ---------- */
+// 2~3분 동안 오늘 카드를 다시 떠올린다. 한 칸 쉬운 문제(용어 → 뜻 고르기)로, 확신도는 묻지 않는다.
+// 틀린 카드는 마무리 끝에서 한 번 더 나온다. 답은 복습 날짜를 바꾸지 않는다 (Review.practice).
+function renderWrap() {
+  renderTopbar("card");
+  speech.stop();
+  const w = state.wrap;
+  const total = w.ids.length;
+
+  if (w.step === "intro") {
+    app.replaceChildren(h("article", { class: "card wrap" },
+      h("h1", {}, t("wrap.title")),
+      h("p", {}, t("wrap.intro", { n: total, m: Math.max(1, Math.round((total * 20) / 60)) })),
+      h("p", { class: "muted" }, t("wrap.note")),
+      h("div", { class: "done-actions" },
+        h("button", { class: "btn", type: "button", onclick: endWrap }, t("wrap.skip")),
+        h("button", { class: "btn primary", type: "button", onclick: () => { w.step = "q"; renderWrap(); } }, t("wrap.start")))
+    ));
+    return;
+  }
+  if (w.i >= w.ids.length) { endWrap(); return; }
+
+  const term = state.allById.get(w.ids[w.i]);
+  const quiz = Review.makeQuiz(term, state.terms, state.pairs, Math.random, "def");
+  const panel = h("div", { class: "check" });
+  app.replaceChildren(
+    h("div", { class: "study-head" }, h("span", { class: "badge" }, t("wrap.badge")), h("span", {}, t("wrap.progress", { i: w.i + 1, n: w.ids.length }))),
+    h("article", { class: "card" },
+      h("div", { class: "term-head" }, h("h1", {}, term.term_en, h("span", { class: "pron" }, `[${term.pronunciation.ko}]`))),
+      panel)
+  );
+  window.scrollTo(0, 0);
+  panel.replaceChildren(
+    h("p", { class: "check-prompt" }, t("check.q.def", { term: term.term_en })),
+    h("div", { class: "options" }, quiz.options.map((o) => {
+      const x = state.allById.get(o.id);
+      return h("button", { class: "option", type: "button", onclick: () => answer(o.correct, x) }, firstSentence(x.definition));
+    }))
+  );
+
+  function answer(correct, chosen) {
+    const wasWrong = Review.getToday().wrong.includes(term.id);
+    Review.practice(term.id, correct);
+    if (correct) {
+      // "바로 떠올린 것"은 첫 번째에 맞힌 것만 센다 (다시 나와서 맞힌 것은 "바로잡은 것"으로 따로 칭찬)
+      if (!w.retried.includes(term.id) && !w.right.includes(term.id)) w.right.push(term.id);
+      if (wasWrong && !w.fixed.includes(term.id)) w.fixed.push(term.id);
+    } else if (!w.retried.includes(term.id)) {
+      // 틀리면 마무리 끝에서 한 번 더. 단, 마지막 "맞힐 카드"보다는 앞에 둔다
+      w.retried.push(term.id);
+      w.ids.splice(Math.max(w.ids.length - 1, w.i + 1), 0, term.id);
+    }
+    panel.replaceChildren(resultBox(term, correct ? "known" : "confused", correct ? null : chosen, quiz));
+    if (!correct && term.pitfall) panel.append(h("p", { class: "muted" }, h("b", {}, t("card.pitfall")), " ", term.pitfall));
+    panel.append(h("div", { class: "done-actions" },
+      h("button", { class: "btn primary", type: "button", onclick: () => { w.i += 1; renderWrap(); } },
+        w.i + 1 < w.ids.length ? t("check.next") : t("wrap.finish"))));
+  }
+}
+
+function endWrap() {
+  const w = state.wrap;
+  Review.markWrapped(w.ids);
+  state.wrapResult = w.step === "intro" ? null : { total: new Set(w.ids).size, right: w.right.length, fixed: w.fixed };
+  state.wrap = null;
+  renderStudyDone();
 }
 
 // 오늘 더 낼 수 있는 새·복습 카드 수 (5장 더 하기를 눌렀을 때 실제로 나올 장 수)

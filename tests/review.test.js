@@ -177,3 +177,35 @@ test("백업: 내보낸 기록을 빈 저장소에 가져오면 그대로 돌아
   assert.equal(Review.get("api").status, "known");
   assert.throws(() => Review.importAll({ app: "other" }));
 });
+
+// ----- 오늘의 마무리 (2026-11-11 추가) -----
+test("마무리: 착각·틀림을 먼저 담고, 맞힌 카드로 끝낸다", () => {
+  fresh("2026-11-11");
+  Review.record("api", { confidence: "sure", correct: true });
+  Review.record("poc", { confidence: "sure", correct: false });        // 착각
+  Review.record("mvp", { confidence: "unsure", correct: false });      // 헷갈림
+  Review.record("kpi", { confidence: "sure", correct: true });
+  const pairs = [{ a: "api", b: "sdk" }];
+  const plan = Review.planWrap(pairs, () => 0.3);
+  assert.ok(plan.includes("poc") && plan.includes("mvp"));
+  assert.ok(["api", "kpi"].includes(plan.at(-1)));                     // 마지막은 맞힌 카드
+  assert.equal(new Set(plan).size, plan.length);                       // 중복 없음
+});
+
+test("마무리: 복습 상자는 바꾸지 않고, 다시 맞히면 바로잡은 것으로 센다", () => {
+  fresh("2026-11-11");
+  Review.record("poc", { confidence: "sure", correct: false });
+  const before = Review.get("poc");
+  Review.practice("poc", true);
+  assert.deepEqual(Review.get("poc"), before);
+  assert.deepEqual(Review.getToday().corrected, ["poc"]);
+  assert.deepEqual(Review.getLog()["2026-11-11"].corrected, ["poc"]);
+  Review.markWrapped(["poc"]);
+  assert.deepEqual(Review.planWrap([]), []);                           // 이미 마무리한 것은 다시 내지 않음
+});
+
+test("마무리: 본 카드가 적고 틀린 것도 없으면 건너뛴다", () => {
+  fresh("2026-11-11");
+  Review.record("api", { confidence: "sure", correct: true });
+  assert.deepEqual(Review.planWrap([]), []);
+});
