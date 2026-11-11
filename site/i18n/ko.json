@@ -184,5 +184,9 @@
   "about.voice.ko": "한국어",
   "about.voice.en": "영어",
   "about.voice.none": "없음 (한글 발음으로 대신 읽어요)",
-  "about.version": "버전"
+  "about.version": "버전",
+  "about.count": "용어 {n}개",
+  "filter.stage": "단계",
+  "speak.pair": "헷갈리기 쉬운 짝은 {name}",
+  "error.load": "데이터를 불러오지 못했어요. 잠시 뒤 새로고침해 주세요."
 }

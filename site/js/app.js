@@ -151,12 +151,12 @@ function renderTopbar(kind) {
   if (kind === "home") {
     topbar.className = "topbar";
     topbar.replaceChildren(h("a", { class: "brand", href: "#/" },
-      "필드워드 ", h("span", { class: "brand-en" }, "Field Words"), h("small", {}, t("app.subtitle"))));
+      t("app.name") + " ", h("span", { class: "brand-en" }, "Field Words"), h("small", {}, t("app.subtitle"))));
   } else {
     topbar.className = "topbar compact";
     topbar.replaceChildren(
       h("a", { class: "btn small", href: "#/" }, t("nav.back")),
-      h("a", { class: "brand-mini", href: "#/" }, "필드워드 ", h("span", { class: "brand-mini-en" }, "Field Words"))
+      h("a", { class: "brand-mini", href: "#/" }, t("app.name") + " ", h("span", { class: "brand-mini-en" }, "Field Words"))
     );
   }
 }
@@ -195,7 +195,7 @@ function renderList() {
     oninput: (e) => { state.query = e.target.value; update(); },
   });
 
-  const chips = h("div", { class: "chips", role: "group", "aria-label": "단계" },
+  const chips = h("div", { class: "chips", role: "group", "aria-label": t("filter.stage") },
     ["all", ...STAGES].map((stage) =>
       h("button", {
         class: "chip",
@@ -1330,7 +1330,7 @@ function fullParts(term) {
     term.pitfall && ko(`${t("card.pitfall")}. ${term.pitfall}`, "pitfall"),
     ...pairs.map((p) => {
       const otherId = p.a === term.id ? p.b : p.a;
-      return ko(`${t("card.pair")}은 ${sayName(otherId)}. ${t("card.pair.diff")}. ${p.difference}`, "pair");
+      return ko(`${t("speak.pair", { name: sayName(otherId) })}. ${t("card.pair.diff")}. ${p.difference}`, "pair");
     }),
     term.interview_q && ko(`${t("card.interview")}. ${term.interview_q}`, "interview"),
     term.interview_q && term.interview_a && { pause: 3000, sec: "interview" },
@@ -1546,7 +1546,7 @@ function renderAbout() {
       ),
       section(null, t("about.oss.title"), h("p", {}, t("about.oss.body"))),
       section(null, t("about.voice"), voiceInfo()),
-      section(null, t("about.version"), h("p", { class: "muted" }, `v${APP_VERSION} · ${state.terms.length}개 용어`))
+      section(null, t("about.version"), h("p", { class: "muted" }, `v${APP_VERSION} · ${t("about.count", { n: state.terms.length })}`))
     )
   );
 }
@@ -1605,5 +1605,5 @@ loadData()
   })
   .catch((err) => {
     console.error(err);
-    app.replaceChildren(h("p", {}, "데이터를 불러오지 못했어요. 잠시 뒤 새로고침해 주세요."));
+    app.replaceChildren(h("p", {}, state.text["error.load"] || "데이터를 불러오지 못했어요. 잠시 뒤 새로고침해 주세요."));
   });
