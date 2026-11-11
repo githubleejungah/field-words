@@ -1,0 +1,49 @@
+# main에 올릴 때마다: 데이터 검사 + 복습 규칙 시험 → 통과하면 site/ 폴더만 GitHub Pages로 배포
+# 검사가 실패하면 배포하지 않는다 (틀린 데이터가 수강생에게 나가지 않게)
+name: 검사 후 배포
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # GitHub 화면에서 손으로 다시 실행할 수 있게
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r pipeline/requirements.txt
+      - name: 데이터 검사 (스키마 + 참조)
+        run: python pipeline/validate.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: 복습 규칙 단위 테스트
+        run: node --test tests/review.test.js
+
+  deploy:
+    needs: check
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
