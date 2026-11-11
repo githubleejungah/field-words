@@ -111,3 +111,69 @@ test("확인 문제 종류: 상자 3부터는 뜻 → 용어 고르기", () => {
   mem.set("fw:v1:review:t1", JSON.stringify({ box: 3, history: [], lapses: 0 }));
   assert.equal(Review.makeQuiz(terms[0], terms, []).kind, "term");
 });
+
+// ----- 날짜별 일지와 성장 통계 (2026-11-11 추가) -----
+const T = (id, stage = "build") => ({ id, stage });
+
+test("일지: 날짜가 바뀌어도 지난 날 기록이 남는다", () => {
+  fresh("2026-11-10");
+  Review.record("api", { confidence: "sure", correct: true });
+  Review.record("poc", { confidence: "sure", correct: false });
+  setDate("2026-11-11");
+  Review.record("poc", { confidence: "sure", correct: true });
+  const log = Review.getLog();
+  assert.deepEqual(log["2026-11-10"].seen, ["api", "poc"]);
+  assert.deepEqual(log["2026-11-10"].new, ["api", "poc"]);
+  assert.deepEqual(log["2026-11-10"].misconceptions, ["poc"]);
+  assert.deepEqual(log["2026-11-11"].seen, ["poc"]);
+  assert.deepEqual(log["2026-11-11"].new, []);            // 다시 본 것은 새 용어가 아님
+  assert.equal(Review.get("poc").first_at, "2026-11-10");
+});
+
+test("일지 되살리기: 일지가 없던 때의 이력으로 날짜별 기록을 만든다", () => {
+  const mem = fresh("2026-11-08");
+  Review.record("api", { confidence: "unsure", correct: false });
+  setDate("2026-11-09");
+  Review.record("api", { confidence: "sure", correct: true });
+  // 일지가 생기기 전 상태로 만들기: 일지와 first_at 지우기
+  mem.delete("fw:v1:log");
+  const rec = JSON.parse(mem.get("fw:v1:review:api"));
+  delete rec.first_at;
+  mem.set("fw:v1:review:api", JSON.stringify(rec));
+
+  assert.equal(Review.ensureLog(["api", "poc"]), true);
+  const log = Review.getLog();
+  assert.deepEqual(log["2026-11-08"].new, ["api"]);
+  assert.deepEqual(log["2026-11-08"].wrong, ["api"]);
+  assert.deepEqual(log["2026-11-09"].seen, ["api"]);
+  assert.equal(Review.ensureLog(["api"]), false);        // 한 번만 한다
+});
+
+test("성장 통계: 연속 공부일, 누적, 단계별", () => {
+  fresh("2026-11-09");
+  Review.record("api", { confidence: "sure", correct: true });
+  setDate("2026-11-10");
+  Review.record("poc", { confidence: "sure", correct: true });
+  setDate("2026-11-11");
+  Review.record("mvp", { confidence: "dontknow", correct: false });
+  const s = Review.stats([T("api"), T("poc", "discovery"), T("mvp", "discovery"), T("kpi", "discovery")]);
+  assert.equal(s.studyDays, 3);
+  assert.equal(s.streak, 3);
+  assert.equal(s.seenTerms, 3);
+  assert.deepEqual(s.cumulative.map((c) => c.seen), [1, 2, 3]);
+  assert.deepEqual(s.byStage.discovery, { total: 3, seen: 2, known: 1, longTerm: 0 });
+  setDate("2026-11-13");                                   // 하루 건너뜀
+  assert.equal(Review.stats([T("api")]).streak, 0);
+});
+
+test("백업: 내보낸 기록을 빈 저장소에 가져오면 그대로 돌아온다", () => {
+  const mem = fresh("2026-11-11");
+  Review.useStore({ get: (k) => mem.get(k) ?? null, set: (k, v) => mem.set(k, v), keys: () => [...mem.keys()] });
+  Review.record("api", { confidence: "sure", correct: true });
+  const backup = JSON.parse(JSON.stringify(Review.exportAll()));
+  const mem2 = new Map();
+  Review.useStore({ get: (k) => mem2.get(k) ?? null, set: (k, v) => mem2.set(k, v), keys: () => [...mem2.keys()] });
+  assert.ok(Review.importAll(backup) >= 3);
+  assert.equal(Review.get("api").status, "known");
+  assert.throws(() => Review.importAll({ app: "other" }));
+});

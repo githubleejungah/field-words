@@ -93,6 +93,8 @@ async function loadData() {
   state.pairs = glossary.confusable_pairs;
   for (const term of glossary.terms) state.allById.set(term.id, term);
   state.terms = glossary.terms.filter((term) => !term.replaced_by);
+  // 날짜별 일지가 생기기 전에 공부한 기록을 한 번만 되살린다 (2026-11-11 추가)
+  Review.ensureLog([...state.allById.keys()]);
 }
 
 /* ---------- 검색 ---------- */
@@ -238,7 +240,8 @@ function todayPanel() {
   const stats = c.unseen === state.terms.length ? null : h("div", { class: "status-row" },
     ["known", "shaky", "confused", "misconception", "unknown"].map((k) =>
       h("span", { class: `status-chip ${k}` }, `${t(`status.${k}`)} ${c[k]}`)),
-    h("span", { class: "status-chip longterm" }, `${t("status.longTerm")} ${c.longTerm}`)
+    h("span", { class: "status-chip longterm" }, `${t("status.longTerm")} ${c.longTerm}`),
+    h("a", { class: "status-chip progress-link", href: "#/progress" }, t("prog.link"))
   );
 
   return h("section", { class: "today" },
@@ -1195,14 +1198,25 @@ const speech = {
   },
 
   // from번째 문장부터 한 문장씩 읽는다. 한 문장이 끝나면(onend) 다음 문장을 읽는다.
+  //
+  // 휴대폰 브라우저에서 생기는 문제와 대비 (2026-11-11, "전체 듣기가 안 된다" 신고)
+  //  ① 고른 음성이 그 기기에서 안 되는 경우 → 오류가 나거나 소리 없이 끝난다
+  //     → 음성을 지정하지 않고(기기 기본 음성) 같은 문장을 한 번 더 읽고, 그 뒤로는 기본 음성만 쓴다
+  //  ② 문장이 끝나도 끝 신호(onend)가 오지 않는 경우 → 다음 문장으로 안 넘어가 멈춘 것처럼 보인다
+  //     → 0.5초마다 "지금 말하는 중인지" 직접 확인해서, 말이 끝났으면 다음 문장으로 넘긴다 (감시 타이머)
+  //  ③ 아이폰은 버튼을 누른 그 순간에 한 번 말을 시작해야 그 뒤 소리를 허락한다
+  //     → 버튼을 누를 때 빈 문장을 먼저 말해서 잠금을 푼다
+  //  ④ 소리가 "일시정지"에 걸린 채 남아 있는 경우(크롬) → 말하기 전에 resume()을 부른다
   run(from) {
     if (!this.supported) return;
     this.halt();
     const myToken = this.token;
     this.setStatus("playing");
+    this.unlock();
 
     const next = (i) => {
       if (myToken !== this.token) return;     // 그사이 멈췄거나 다른 재생이 시작됨
+      clearInterval(this.watch);
       this.index = i;
       if (i >= this.queue.length) {           // 다 읽음
         const done = this.onFinish;
@@ -1215,18 +1229,74 @@ const speech = {
       const p = this.queue[i];
       this.onSentence?.(p);
       if (p.pause) { this.timer = setTimeout(() => next(i + 1), p.pause); return; }
+      say(p, i, false);
+    };
 
+    const say = (p, i, isRetry) => {
       const u = new SpeechSynthesisUtterance(p.text);
       u.lang = p.lang;
-      const voice = this.voiceFor(p.lang);
+      const voice = this.useDefaultVoice ? null : this.voiceFor(p.lang);
       if (voice) u.voice = voice;
       u.rate = 0.95;
-      u.onend = () => next(i + 1);
-      u.onerror = () => next(i + 1);
+
+      let started = false;
+      let finished = false;
+      const sentAt = Date.now();
+      const finish = () => { if (!finished) { finished = true; next(i + 1); } };
+      const fail = (reason) => {
+        if (finished || myToken !== this.token) return;
+        this.lastError = reason;
+        // ① 지정한 음성으로 실패했으면 기본 음성으로 한 번 더
+        if (voice && !isRetry) {
+          finished = true;
+          this.useDefaultVoice = true;
+          clearInterval(this.watch);
+          speechSynthesis.cancel();
+          say(p, i, true);
+          return;
+        }
+        finish();
+      };
+      u.onstart = () => { started = true; };
+      u.onend = () => (started || Date.now() - sentAt > 300 ? finish() : fail("소리 없이 끝남"));
+      u.onerror = (e) => {
+        if (e.error === "interrupted" || e.error === "canceled") return;   // 우리가 멈춘 것
+        fail(e.error || "오류");
+      };
+
+      speechSynthesis.resume();               // ④
       speechSynthesis.speak(u);
+
+      // ② 감시 타이머: 끝 신호가 안 와도 다음 문장으로 넘어가게 한다
+      clearInterval(this.watch);
+      this.watch = setInterval(() => {
+        if (finished || myToken !== this.token) { clearInterval(this.watch); return; }
+        const waited = Date.now() - sentAt;
+        const busy = speechSynthesis.speaking || speechSynthesis.pending;
+        if (!started && !busy && waited > 1500) fail("시작되지 않음");
+        else if (started && !busy && waited > 800) finish();
+        else if (!started && waited > 4000) fail("시작되지 않음");
+      }, 500);
     };
+
     next(from);
   },
+
+  // ③ 아이폰 잠금 풀기: 버튼을 누른 순간에 빈 문장을 한 번 말한다
+  unlock() {
+    if (this.unlocked) return;
+    this.unlocked = true;
+    try {
+      const u = new SpeechSynthesisUtterance(" ");
+      u.volume = 0;
+      speechSynthesis.speak(u);
+    } catch { /* 무시 */ }
+  },
+
+  useDefaultVoice: false, // 고른 음성이 이 기기에서 안 되면 true (그 뒤로는 기기 기본 음성)
+  unlocked: false,
+  watch: null,
+  lastError: "",          // 정보 화면에 보여 줄 마지막 음성 오류 (문제 신고용)
 
   pause() { this.halt(); this.setStatus("paused"); },
 
@@ -1243,6 +1313,7 @@ const speech = {
   halt() {
     this.token += 1;
     clearTimeout(this.timer);
+    clearInterval(this.watch);
     if (this.supported) speechSynthesis.cancel();
   },
 
@@ -1255,7 +1326,8 @@ const speech = {
   sentences(text, lang) {
     let s = this.clean(text);
     if (lang.startsWith("ko")) s = koreanCounters(s);
-    return s.split(/(?<=[.?!])\s+/).filter(Boolean);
+    // 문장 끝(. ? !) 뒤의 빈칸에서 나눈다. (오래된 아이폰은 "뒤를 보는 정규식"을 몰라서 쓰지 않는다)
+    return s.replace(/([.?!])\s+/g, "$1\n").split("\n").map((x) => x.trim()).filter(Boolean);
   },
 };
 
@@ -1561,12 +1633,239 @@ function voiceInfo() {
     const en = speech.voiceFor("en-US");
     box.replaceChildren(
       h("span", {}, `${t("about.voice.ko")}: ${ko ? ko.name : t("about.voice.none")}`), h("br"),
-      h("span", {}, `${t("about.voice.en")}: ${en ? en.name : t("about.voice.none")}`)
+      h("span", {}, `${t("about.voice.en")}: ${en ? en.name : t("about.voice.none")}`),
+      // 문제 신고용: 이 기기에서 음성이 실패한 적이 있으면 그 이유를 보여 준다
+      speech.useDefaultVoice ? h("span", {}, h("br"), t("about.voice.fallback")) : "",
+      speech.lastError ? h("span", {}, h("br"), `${t("about.voice.error")}: ${speech.lastError}`) : ""
     );
   };
   fill();
   if (speech.supported) speechSynthesis.addEventListener("voiceschanged", fill, { once: true });
   return box;
+}
+
+/* ---------- 화면: 내 기록 (성장 대시보드) ---------- */
+// 지난날 무엇을 공부했고 얼마나 늘었는지 보여 준다. 데이터는 이 브라우저의 일지(Review.stats)뿐이다.
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+function sv(tag, attrs = {}, ...children) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) if (v != null) el.setAttribute(k, v);
+  for (const c of children.flat()) if (c != null && c !== false) el.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  return el;
+}
+const shortDate = (d) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
+
+function renderProgress() {
+  renderTopbar("card");
+  const s = Review.stats(state.terms);
+  const nameOf = (id) => state.allById.get(id)?.term_en ?? id;
+
+  const tile = (value, label, sub) =>
+    h("div", { class: "stat-tile" }, h("span", { class: "stat-value" }, value), h("span", { class: "stat-label" }, label),
+      sub ? h("span", { class: "stat-sub" }, sub) : "");
+
+  const tiles = h("div", { class: "stat-tiles" },
+    tile(s.studyDays, t("prog.days"), s.firstDate ? t("prog.since", { d: shortDate(s.firstDate) }) : ""),
+    tile(s.streak, t("prog.streak")),
+    tile(`${s.seenTerms}`, t("prog.seen"), t("prog.of", { n: state.terms.length })),
+    tile(`🏅 ${s.longTerm}`, t("prog.longterm"), t("prog.longterm.sub")),
+    tile(s.totalCorrected, t("prog.corrected"), t("prog.misconceptions", { n: s.totalMisconceptions }))
+  );
+
+  if (!s.studyDays) {
+    app.replaceChildren(h("article", { class: "card" }, h("h1", {}, t("prog.title")), tiles,
+      h("p", { class: "muted" }, t("prog.empty")), backupSection()));
+    return;
+  }
+
+  const days = h("div", { class: "day-list" });
+  const openDay = (date) => {
+    const el = days.querySelector(`[data-date="${date}"]`);
+    if (!el) return;
+    el.hidden = false;
+    el.open = true;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  app.replaceChildren(
+    h("article", { class: "card progress" },
+      h("h1", {}, t("prog.title")),
+      tiles,
+      section(null, t("prog.heat.title"), heatmap(s, openDay)),
+      section(null, t("prog.growth.title"), growthChart(s)),
+      section(null, t("prog.stage.title"), stageBars(s)),
+      section(null, t("prog.days.title"), days),
+      backupSection()
+    )
+  );
+
+  // 날짜별 기록: 최근 날짜가 위로. 첫 날짜만 펼쳐 둔다. 처음엔 30일만, 나머지는 "더 보기"로.
+  const SHOW = 30;
+  const allDates = [...s.dates].reverse();
+  if (allDates.length > SHOW) {
+    const more = h("button", { class: "btn small", type: "button", onclick: () => {
+      days.querySelectorAll(".day[hidden]").forEach((el) => { el.hidden = false; });
+      more.remove();
+    } }, t("prog.days.more", { n: allDates.length - SHOW }));
+    queueMicrotask(() => days.after(more));
+  }
+  allDates.forEach((date, k) => {
+    const d = s.log[date];
+    const mark = (id) => [
+      d.new.includes(id) && t("prog.mark.new"),
+      d.misconceptions.includes(id) ? t("prog.mark.misconception") : d.wrong.includes(id) && t("prog.mark.wrong"),
+      d.corrected.includes(id) && t("prog.mark.corrected"),
+      d.long_term.includes(id) && "🏅",
+    ].filter(Boolean).join(" ");
+    days.append(h("details", { class: "day", "data-date": date, open: k === 0 ? "" : undefined, hidden: k >= SHOW ? "" : undefined },
+      h("summary", {}, h("strong", {}, date), " ",
+        h("span", { class: "muted" }, t("prog.day.sum", { n: d.seen.length, f: d.new.length, w: d.wrong.length }))),
+      h("div", { class: "day-terms" },
+        d.seen.map((id) => h("a", { class: `day-term${d.corrected.includes(id) ? " corrected" : ""}`, href: `#/term/${encodeURIComponent(id)}` },
+          nameOf(id), mark(id) ? h("span", { class: "day-mark" }, mark(id)) : "")))
+    ));
+  });
+}
+
+// 잔디: 최근 12주, 하루 한 칸. 진할수록 많이 본 날. 칸을 누르면 그날 기록으로 내려간다.
+function heatmap(s, openDay) {
+  const WEEKS = 12, CELL = 14, GAP = 3, LEFT = 22, TOP = 16;
+  const today = Review.today();
+  const [y, m, d] = today.split("-").map(Number);
+  const dow = (new Date(y, m - 1, d).getDay() + 6) % 7;          // 월=0 … 일=6
+  const start = Review.addDays(today, -(dow + 7 * (WEEKS - 1)));  // 12주 전 월요일
+  const level = (n) => (n === 0 ? 0 : n < 5 ? 1 : n < 10 ? 2 : n < 20 ? 3 : 4);
+
+  const width = LEFT + WEEKS * (CELL + GAP), height = TOP + 7 * (CELL + GAP);
+  const svg = sv("svg", { viewBox: `0 0 ${width} ${height}`, class: "heat", role: "img",
+    "aria-label": t("prog.heat.aria", { n: s.studyDays }) });
+  ["월", "수", "금"].forEach((label, k) =>
+    svg.append(sv("text", { x: 0, y: TOP + k * 2 * (CELL + GAP) + CELL - 3, class: "axis-text" }, label)));
+
+  for (let w = 0; w < WEEKS; w++) {
+    for (let r = 0; r < 7; r++) {
+      const date = Review.addDays(start, w * 7 + r);
+      if (date > today) continue;
+      if (r === 0 && (w === 0 || date.slice(8) <= "07")) {
+        svg.append(sv("text", { x: LEFT + w * (CELL + GAP), y: 10, class: "axis-text" }, `${Number(date.slice(5, 7))}월`));
+      }
+      const n = s.log[date]?.seen.length ?? 0;
+      const cell = sv("rect", {
+        x: LEFT + w * (CELL + GAP), y: TOP + r * (CELL + GAP), width: CELL, height: CELL, rx: 3,
+        class: `heat-${level(n)}${date === today ? " heat-today" : ""}`,
+      }, sv("title", {}, t("prog.heat.cell", { d: date, n })));
+      if (n) { cell.style.cursor = "pointer"; cell.addEventListener("click", () => openDay(date)); }
+      svg.append(cell);
+    }
+  }
+  const legend = h("div", { class: "heat-legend muted" }, t("prog.heat.less"),
+    [0, 1, 2, 3, 4].map((k) => h("span", { class: `heat-swatch heat-${k}` })), t("prog.heat.more"));
+  return h("div", {}, h("div", { class: "heat-wrap" }, svg), legend);
+}
+
+// 성장 그래프: 날짜별 누적 "본 용어"와 "🏅 장기 기억". 축은 하나(같은 단위: 용어 수).
+function growthChart(s) {
+  const pts = s.cumulative;
+  if (pts.length < 2) return h("p", { class: "muted" }, t("prog.growth.wait"));
+
+  const W = 360, H = 200, L = 30, R = 84, T = 12, B = 24;   // 휴대폰 폭(약 360px)에서 글자가 실제 크기로 보이게
+  const first = new Date(pts[0].date), last = new Date(pts.at(-1).date);
+  const span = Math.max(last - first, 1);
+  const x = (date) => L + ((new Date(date) - first) / span) * (W - L - R);
+  // 세로축 눈금은 읽기 쉬운 숫자로 4칸 (예: 0·25·50·75·100)
+  const max = Math.max(...pts.map((p) => p.seen));
+  const step = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500].find((n) => n * 4 >= max) ?? Math.ceil(max / 4);
+  const top = step * 4;
+  const y = (v) => T + (1 - v / top) * (H - T - B);
+
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, class: "growth", role: "img",
+    "aria-label": t("prog.growth.aria", { s: pts.at(-1).seen, l: pts.at(-1).longTerm }) });
+  for (let k = 0; k <= 4; k++) {
+    const v = (top / 4) * k;
+    svg.append(sv("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: k ? "grid" : "baseline" }));
+    svg.append(sv("text", { x: L - 6, y: y(v) + 4, class: "axis-text", "text-anchor": "end" }, Math.round(v)));
+  }
+  svg.append(sv("text", { x: L, y: H - 6, class: "axis-text" }, shortDate(pts[0].date)));
+  svg.append(sv("text", { x: W - R, y: H - 6, class: "axis-text", "text-anchor": "end" }, shortDate(pts.at(-1).date)));
+
+  const series = [
+    { key: "seen", cls: "line-seen", label: t("prog.seen") },
+    { key: "longTerm", cls: "line-long", label: t("prog.longterm") },
+  ];
+  for (const sr of series) {
+    const d = pts.map((p, k) => `${k ? "L" : "M"}${x(p.date).toFixed(1)},${y(p[sr.key]).toFixed(1)}`).join(" ");
+    svg.append(sv("path", { d, class: `line ${sr.cls}` }));
+    const end = pts.at(-1);
+    svg.append(sv("circle", { cx: x(end.date), cy: y(end[sr.key]), r: 4, class: `dot ${sr.cls}` }));
+    svg.append(sv("text", { x: x(end.date) + 8, y: y(end[sr.key]) + 4, class: "end-label" }, `${sr.label} ${end[sr.key]}`));
+  }
+
+  // 마우스·손가락을 올리면 가장 가까운 날짜의 숫자를 보여 준다
+  const guide = sv("line", { y1: T, y2: H - B, class: "guide", visibility: "hidden" });
+  const tip = h("div", { class: "chart-tip", hidden: "" });
+  svg.append(guide);
+  const wrap = h("div", { class: "growth-wrap" }, svg, tip);
+  const show = (ev) => {
+    const box = svg.getBoundingClientRect();
+    const px = ((ev.clientX - box.left) / box.width) * W;
+    const p = pts.reduce((a, b) => (Math.abs(x(b.date) - px) < Math.abs(x(a.date) - px) ? b : a));
+    guide.setAttribute("x1", x(p.date)); guide.setAttribute("x2", x(p.date)); guide.setAttribute("visibility", "visible");
+    tip.replaceChildren(h("strong", {}, p.date), h("br"), `${t("prog.seen")} ${p.seen}`, h("br"), `${t("prog.longterm")} ${p.longTerm}`);
+    tip.hidden = false;
+    tip.style.left = `${Math.max(0, Math.min((x(p.date) / W) * box.width + 12, box.width - 150))}px`;
+  };
+  svg.addEventListener("pointermove", show);
+  svg.addEventListener("pointerdown", show);
+  svg.addEventListener("pointerleave", () => { guide.setAttribute("visibility", "hidden"); tip.hidden = true; });
+
+  const legend = h("div", { class: "chart-legend" },
+    series.map((sr) => h("span", {}, h("span", { class: `legend-swatch ${sr.cls}` }), sr.label)));
+  return h("div", {}, legend, wrap);
+}
+
+// 단계별 진행: 단계마다 "본 용어 / 전체". 막대 하나 = 한 단계
+function stageBars(s) {
+  return h("div", { class: "stage-bars" }, STAGES.map((stage) => {
+    const b = s.byStage[stage] ?? { total: 0, seen: 0, longTerm: 0 };
+    const pct = b.total ? Math.round((b.seen / b.total) * 100) : 0;
+    return h("div", { class: "stage-bar" },
+      h("span", { class: "stage-name" }, t(`stage.${stage}`)),
+      h("span", { class: "bar-track", role: "img", "aria-label": `${b.seen} / ${b.total}` },
+        h("span", { class: "bar-fill", style: `width:${pct}%` })),
+      h("span", { class: "stage-num" }, `${b.seen}/${b.total}${b.longTerm ? ` · 🏅${b.longTerm}` : ""}`));
+  }));
+}
+
+// 기록 백업: 브라우저 데이터를 지우거나 휴대폰을 바꿔도 이어서 쓸 수 있게 파일로 보관
+function backupSection() {
+  const msg = h("p", { class: "muted", "aria-live": "polite" });
+  const save = () => {
+    const blob = new Blob([JSON.stringify(Review.exportAll())], { type: "application/json" });
+    const a = h("a", { href: URL.createObjectURL(blob), download: `fieldwords-backup-${Review.today()}.json` });
+    document.body.append(a); a.click(); a.remove();
+    msg.textContent = t("prog.backup.saved");
+  };
+  const input = h("input", { type: "file", accept: "application/json,.json", hidden: "" });
+  input.addEventListener("change", async () => {
+    const file = input.files[0];
+    if (!file) return;
+    if (!confirm(t("prog.backup.confirm"))) { input.value = ""; return; }
+    try {
+      const n = Review.importAll(JSON.parse(await file.text()));
+      msg.textContent = t("prog.backup.loaded", { n });
+      setTimeout(route, 800);
+    } catch {
+      msg.textContent = t("prog.backup.bad");
+    }
+    input.value = "";
+  });
+  return section(null, t("prog.backup.title"),
+    h("p", { class: "muted" }, t("prog.backup.why")),
+    h("div", { class: "btn-row" },
+      h("button", { class: "btn", type: "button", onclick: save }, t("prog.backup.save")),
+      h("button", { class: "btn", type: "button", onclick: () => input.click() }, t("prog.backup.load"))),
+    input, msg);
 }
 
 /* ---------- 주소에 따라 화면 고르기 (해시 라우팅) ---------- */
@@ -1592,6 +1891,7 @@ function route() {
     clearMediaSession();
     if (hash === "#/about") renderAbout();
     else if (hash === "#/study") renderStudy();
+    else if (hash === "#/progress") renderProgress();
     else if (hash.startsWith("#/feedback")) renderFeedback(decodeURIComponent(hash.slice("#/feedback/".length)));
     else renderList();
   }
