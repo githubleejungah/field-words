@@ -410,3 +410,11 @@
 **AI·음성**: STT, ASR, TTS, 화자 분리(Speaker Diarization), 사용자 사전(Custom Vocabulary), RAG, 평가 데이터셋(Evaluation Dataset), 온디바이스(On-device), 오픈소스(Open Source)
 
 **보안·개인정보**: 위협 모델링(Threat Modeling), 스미싱(Smishing), OAuth, SSO, 패스키(Passkey), FIDO2/WebAuthn, 비밀번호 없는 인증(Passwordless), 단일 실패 지점(SPOF), 도메인 허용 목록(Allowlist), 심층 방어(Defense in Depth), 데이터 최소화(Data Minimization), 비식별화(De-identification), 보안 중심 설계(Security by Design), 사전 동의(Informed Consent)
+
+### 강의 용어 해설집(2026-11-06)에서 고른 후보 (2026-11-11 검토)
+원칙: 강의 자료는 **용어 이름만** 참고하고, 설명·예문은 새로 쓴다. 이미 카드가 있는 용어(API, CI/CD, RAG, PoC, ADR, 캐시, 스키마, 롤백, 레이트 리밋, 최소 권한, 단일 진실 공급원, 환각, A/B 테스트 등)는 뺐다.
+
+- **1차 (2026-11-11 후보 작성)**: IaaS, PaaS, SaaS, 온프레미스, 컨테이너, 모놀리식, MSA, RDB, NoSQL, 임베딩, 벡터 DB, 청킹, 컨텍스트 윈도우, MCP, 바이브 코딩, 에이전틱 코딩, 가드레일, 프롬프트 인젝션, 수용 기준, 스모크 테스트, 관측성 + 혼동 쌍 6개
+- **2차 (다음 강의 주)**: 쿠버네티스, 오토스케일, 로드밸런서, API 게이트웨이, IaC, 하이브리드 클라우드, 가상머신, SQL, Text-to-SQL, REST, 비동기, 배치 vs 스트리밍, 타임아웃·재시도, 지수 백오프, 하드코딩, 키 회전, 샌드박스, 블루·그린 배포, E2E 테스트, TDD, 명세(Spec)·SDD, 멀티에이전트, 서브에이전트, 하네스, 워크플로 vs 에이전트, 퓨샷 vs 제로샷, CoT, 템퍼러처, 함수 호출, 파인튜닝, 오픈 가중치 모델, 하이브리드 검색, 리랭킹, 메타데이터
+- **3차 (필요할 때)**: ETL, 데이터 파이프라인 정제, 데이터 레이크 vs 웨어하우스, 데이터 계보, 거버넌스, 레거시, 스트랭글러 전환, 마이그레이션, 애자일 vs 폭포수, 런북, 텔레메트리, 벤치마크, 쿼터, 세션, 엔드포인트, SDK, WebSocket, 웹 방화벽(WAF), GPU, 멀티모달, OCR, AI 토큰(보안 토큰과 구분)
+- **넣지 않음**: 특정 제품·도구 이름(Azure 개별 서비스, Flowise, n8n, LangGraph, crewai, Spring, JDK, pandas, Ollama, Nginx, kind, WSL2 등), 강의 실습 전용 말(compileall, exit 0, permissionMode, CLAUDE.md 등), 너무 깊은 검색 알고리즘(BM25, RRF, HNSW, ANN, L2 정규화 등. 등급 4 묶음으로 나중에 검토)
