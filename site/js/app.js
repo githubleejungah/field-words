@@ -237,11 +237,12 @@ function todayPanel() {
     },
   }, p.done === 0 ? t("today.start") : left ? t("today.continue") : more >= 5 ? t("today.more") : t("today.more.n", { n: more }));
 
-  const stats = c.unseen === state.terms.length ? null : h("div", { class: "status-row" },
+  const progressLink = h("a", { class: "status-chip progress-link", href: "#/progress" }, t("prog.link"));
+  const stats = c.unseen === state.terms.length ? h("div", { class: "status-row" }, progressLink) : h("div", { class: "status-row" },
     ["known", "shaky", "confused", "misconception", "unknown"].map((k) =>
       h("span", { class: `status-chip ${k}` }, `${t(`status.${k}`)} ${c[k]}`)),
     h("span", { class: "status-chip longterm" }, `${t("status.longTerm")} ${c.longTerm}`),
-    h("a", { class: "status-chip progress-link", href: "#/progress" }, t("prog.link"))
+    progressLink
   );
 
   return h("section", { class: "today" },
@@ -1325,7 +1326,7 @@ const speech = {
   // 기호를 정리하고 문장 단위로 나눈다. 긴 문단을 나누는 이유: 일부 브라우저는 15초가 넘는 문장을 중간에 끊는다.
   sentences(text, lang) {
     let s = this.clean(text);
-    if (lang.startsWith("ko")) s = koreanCounters(s);
+    if (lang.startsWith("ko")) s = fixKoreanSpeech(koreanCounters(s));
     // 문장 끝(. ? !) 뒤의 빈칸에서 나눈다. (오래된 아이폰은 "뒤를 보는 정규식"을 몰라서 쓰지 않는다)
     return s.replace(/([.?!])\s+/g, "$1\n").split("\n").map((x) => x.trim()).filter(Boolean);
   },
@@ -1340,6 +1341,16 @@ function nativeNumber(n) {
   const tens = Math.floor(n / 10), ones = n % 10;
   return NATIVE_TENS[tens] + NATIVE_ONES[ones];
 }
+// 음성 엔진이 잘못 읽는 낱말 고침표. 화면 글자는 그대로 두고, 소리로 읽을 때만 바꾼다.
+// 기기마다 음성 엔진이 달라서 생기는 문제라, 신고가 들어온 낱말만 하나씩 추가한다.
+//   2026-11-11 "어댑터"를 "어댐터"로 읽음 (사용자 휴대폰) → 띄어 읽게 해서 받침 ㅂ이 ㅁ으로 바뀌지 않게 한다
+const SPEECH_FIXES = [
+  [/어댑터/g, "어댑 터"],
+];
+function fixKoreanSpeech(text) {
+  return SPEECH_FIXES.reduce((s, [from, to]) => s.replace(from, to), text);
+}
+
 function koreanCounters(text) {
   return text.replace(/(\d{1,2})\s?(번|개|명|장|시간|가지|달|군데|살|마리|권)/g,
     (all, num, unit) => {
@@ -1897,9 +1908,27 @@ function route() {
   }
 }
 
+/* ---------- 앱 안 브라우저 안내 ---------- */
+// 카카오톡·인스타그램 같은 앱 안에서 링크를 열면 그 앱의 작은 브라우저가 열린다.
+// 이 브라우저는 음성·화면 켜 두기·잠금 화면 조작이 막혀 있는 경우가 많아 "이동 중" 모드가 안 된다. (2026-11-11 신고)
+// → 맨 위에 안내를 띄우고, 카카오톡이면 버튼 하나로 기본 브라우저(크롬·사파리)에서 다시 연다.
+function inAppNotice() {
+  const ua = navigator.userAgent;
+  const kakao = /KAKAOTALK/i.test(ua);
+  const other = /NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp|; wv\)/i.test(ua);
+  if (!kakao && !other) return;
+  const box = h("div", { class: "inapp-notice", role: "status" },
+    h("p", {}, kakao ? t("inapp.kakao") : t("inapp.other")),
+    kakao && h("a", { class: "btn small primary",
+      href: "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href) }, t("inapp.open"))
+  );
+  document.querySelector(".wrap").prepend(box);
+}
+
 /* ---------- 시작 ---------- */
 loadData()
   .then(() => {
+    inAppNotice();
     window.addEventListener("hashchange", route);
     route();
   })

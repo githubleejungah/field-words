@@ -782,3 +782,7 @@ body.no-footer .footer { display: none; }
 .day-term.corrected { background: var(--gold-soft); border-color: var(--gold-border); }
 .day-mark { margin-left: 4px; font-size: 12px; color: var(--muted); }
 .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* 앱 안 브라우저(카카오톡 등) 안내 */
+.inapp-notice { margin: 8px 0 4px; padding: 12px 14px; border: 1px solid var(--warm-border); background: var(--warm-soft); border-radius: var(--radius); }
+.inapp-notice p { margin: 0 0 8px; color: var(--text); font-size: 14px; line-height: 1.6; }
