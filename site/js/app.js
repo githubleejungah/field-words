@@ -231,7 +231,7 @@ function todayPanel() {
     class: "btn primary",
     type: "button",
     onclick: () => {
-      if (!left) state.extraGoal += 5;                // 목표를 채운 뒤에는 5장 더
+      if (!left) state.extraGoal = moreExtra();        // 목표를 채운 뒤에는 5장 더
       state.session = null;
       location.hash = "#/study";
     },
@@ -665,9 +665,17 @@ function endWrap() {
   renderStudyDone();
 }
 
+// "5장 더 하기"를 눌렀을 때의 추가 장 수: 오늘 실제로 한 장 수 기준으로 5장을 더한다.
+// (2026-11-11 버그: 앱을 다시 열면 extraGoal이 0으로 돌아가, 이미 15장을 했는데 "10+5=15장 → 남은 0장"으로 계산돼 버튼이 사라졌다)
+function moreExtra() {
+  const done = Review.getToday().seen.length;
+  const base = Review.getSettings().daily_goal;
+  return Math.max(state.extraGoal, done - base) + 5;
+}
+
 // 오늘 더 낼 수 있는 새·복습 카드 수 (5장 더 하기를 눌렀을 때 실제로 나올 장 수)
 function moreLeft() {
-  return Review.plan(state.terms, { extra: state.extraGoal + 5 }).queue.length;
+  return Review.plan(state.terms, { extra: moreExtra() }).queue.length;
 }
 
 // 마침 화면의 두 번째 버튼
@@ -676,7 +684,7 @@ function moreLeft() {
 function moreAction(today) {
   const left = moreLeft();
   if (left > 0) {
-    return h("button", { class: "btn primary", type: "button", onclick: () => { state.extraGoal += 5; state.session = null; route(); } },
+    return h("button", { class: "btn primary", type: "button", onclick: () => { state.extraGoal = moreExtra(); state.session = null; route(); } },
       left >= 5 ? t("today.more") : t("today.more.n", { n: left }));
   }
   const again = [...new Set(today.wrong)];
