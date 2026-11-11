@@ -23,3 +23,6 @@ node_modules/
 .DS_Store
 Thumbs.db
 .vscode/
+
+# 나만 보는 문서 (면접 준비 등). 공개 저장소에 올리지 않는다.
+private/
