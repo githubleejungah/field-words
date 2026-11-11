@@ -1434,7 +1434,22 @@ const SPEECH_FIXES = [
   [/어댑터/g, "어댑 터"],
 ];
 function fixKoreanSpeech(text) {
-  return SPEECH_FIXES.reduce((s, [from, to]) => s.replace(from, to), text);
+  const fixed = SPEECH_FIXES.reduce((s, [from, to]) => s.replace(from, to), text);
+  return sayTermsInKorean(fixed);
+}
+
+// 한국어 문장 속 영어 용어는 한국어 음성이 제멋대로 읽는다 (2026-11-11 "MoSCoW"를 "모스크바"로 읽음).
+// → 우리 용어집에 있는 영어 이름(term_en)이 보이면, 그 용어의 현업 발음(pronunciation.ko)으로 바꿔 읽는다.
+//   예: "MoSCoW로 나눴습니다" → "모스코우로 나눴습니다", "PoC를" → "피오씨를"
+//   앞뒤가 영어 글자면 바꾸지 않는다 (예: "Git"이 "GitHub" 안에 있을 때). 긴 이름부터 바꾼다.
+let termSayList = null;
+function sayTermsInKorean(text) {
+  if (!/[A-Za-z]/.test(text)) return text;
+  termSayList ??= state.terms
+    .filter((x) => /[A-Za-z]/.test(x.term_en) && x.pronunciation?.ko && !/[A-Za-z]/.test(x.pronunciation.ko))
+    .sort((a, b) => b.term_en.length - a.term_en.length)
+    .map((x) => [new RegExp(`(^|[^A-Za-z])${x.term_en.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![A-Za-z])`, "g"), x.pronunciation.ko]);
+  return termSayList.reduce((s, [re, ko]) => s.replace(re, (_, before) => before + ko), text);
 }
 
 function koreanCounters(text) {
