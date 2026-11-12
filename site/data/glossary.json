@@ -7,7 +7,7 @@
       "term_en": "Polling",
       "term_ko": "폴링",
       "aliases": ["주기적 조회"],
-      "pronunciation": { "ko": "폴링", "read_as": "word" },
+      "pronunciation": { "ko": "폴링", "read_as": "word", "ipa": "ˈpoʊlɪŋ" },
       "stage": "build",
       "level": 3,
       "definition": "결과가 나왔는지 우리 쪽에서 정해진 간격으로 계속 물어보는 방식입니다. 상대 서비스가 먼저 알려 주는 기능이 없을 때 씁니다.",
@@ -25,14 +25,14 @@
       "related": ["webhook"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "webhook",
       "term_en": "Webhook",
       "term_ko": "웹훅",
       "aliases": ["콜백 URL"],
-      "pronunciation": { "ko": "웹훅", "read_as": "word", "tts": "web hook", "note": "'웹후크'가 아니라 '웹훅'으로 짧게 읽습니다" },
+      "pronunciation": { "ko": "웹훅", "read_as": "word", "ipa": "ˈwɛbhʊk", "tts": "web hook", "note": "'웹후크'가 아니라 '웹훅'으로 짧게 읽습니다" },
       "stage": "build",
       "level": 3,
       "definition": "어떤 일이 끝나면 상대 서비스가 우리에게 먼저 알려 주도록 주소를 등록해 두는 방식입니다. 계속 물어보지 않아도 돼서 빠르고 요청이 적습니다.",
@@ -50,7 +50,7 @@
       "related": ["polling"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "oauth",
@@ -59,7 +59,7 @@
       "aliases": ["위임 인증", "소셜 로그인 연동"],
       "expansion": "Open Authorization",
       "expansion_ko": "Open(개방형, 누구나 쓸 수 있는 공개 표준) Authorization(권한 부여) → 개방형 권한 위임 표준",
-      "pronunciation": { "ko": "오-어스", "read_as": "word", "tts": "oh auth", "note": "O를 한 글자로 읽고 Auth를 붙여 '오어스'라고 읽습니다" },
+      "pronunciation": { "ko": "오-어스", "read_as": "word", "ipa": "ˈoʊɔθ", "tts": "oh auth", "note": "O를 한 글자로 읽고 Auth를 붙여 '오어스'라고 읽습니다" },
       "stage": "secure",
       "also_stages": ["build"],
       "level": 3,
@@ -78,13 +78,13 @@
       "related": ["sso", "passkey"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "design-token",
       "term_en": "Design Token",
       "term_ko": "디자인 토큰",
-      "pronunciation": { "ko": "디자인 토큰", "read_as": "word" },
+      "pronunciation": { "ko": "디자인 토큰", "read_as": "word", "ipa": "dɪˈzaɪn ˌtoʊkən" },
       "stage": "design",
       "level": 2,
       "definition": "색·글자 크기·간격 같은 디자인 값에 이름을 붙여 한곳에서 관리하는 방식입니다. 값 하나만 바꾸면 모든 화면이 함께 바뀝니다.",
@@ -99,14 +99,14 @@
       "tags": ["화면", "디자인"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (혼동 쌍 색 정하기)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "requirements",
       "term_en": "Requirements",
       "term_ko": "요구사항",
       "aliases": ["요구 사항", "리콰이어먼트", "요건"],
-      "pronunciation": { "ko": "리콰이어먼츠", "read_as": "word", "note": "회의에서는 대부분 한국어로 '요구사항'이라고 말합니다" },
+      "pronunciation": { "ko": "리콰이어먼츠", "read_as": "word", "ipa": "rɪˈkwaɪərmənts", "note": "회의에서는 대부분 한국어로 '요구사항'이라고 말합니다" },
       "stage": "discovery",
       "level": 2,
       "definition": "시스템이 무엇을 해야 하고 어떤 조건을 지켜야 하는지 정리한 것입니다. 만들기 전에 고객과 같은 그림을 그리려고 씁니다.",
@@ -123,14 +123,14 @@
       "related": ["moscow", "scope-creep", "stakeholder"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "stakeholder",
       "term_en": "Stakeholder",
       "term_ko": "이해관계자",
       "aliases": ["스테이크홀더", "스테이크 홀더", "이해 관계자"],
-      "pronunciation": { "ko": "스테이크홀더", "read_as": "word" },
+      "pronunciation": { "ko": "스테이크홀더", "read_as": "word", "ipa": "ˈsteɪkˌhoʊldər" },
       "stage": "discovery",
       "level": 3,
       "definition": "프로젝트 결과에 영향을 받거나 결정에 영향을 주는 모든 사람입니다. 누구의 승인과 의견이 필요한지 미리 알아야 일이 막히지 않습니다.",
@@ -146,14 +146,14 @@
       "related": ["requirements", "user-interview"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ①단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "user-interview",
       "term_en": "User Interview",
       "term_ko": "사용자 인터뷰",
       "aliases": ["유저 인터뷰", "고객 인터뷰"],
-      "pronunciation": { "ko": "유저 인터뷰", "read_as": "word" },
+      "pronunciation": { "ko": "유저 인터뷰", "read_as": "word", "ipa": "ˈjuzər ˈɪntərˌvju" },
       "stage": "discovery",
       "level": 2,
       "definition": "실제 사용자를 만나 겪는 문제와 지금 쓰는 방법을 직접 듣는 조사입니다. 만들기 전에 '정말 필요한가'를 확인하려고 합니다.",
@@ -169,14 +169,14 @@
       "related": ["hypothesis-validation", "stakeholder"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "hypothesis-validation",
       "term_en": "Hypothesis Validation",
       "term_ko": "가설 검증",
       "aliases": ["가설검증"],
-      "pronunciation": { "ko": "하이파써시스 밸리데이션", "read_as": "word", "note": "회의에서는 대부분 '가설 검증'이라고 한국어로 말합니다" },
+      "pronunciation": { "ko": "하이파써시스 밸리데이션", "read_as": "word", "ipa": "haɪˈpɑθəsɪs ˌvæləˈdeɪʃən", "note": "회의에서는 대부분 '가설 검증'이라고 한국어로 말합니다" },
       "stage": "discovery",
       "level": 3,
       "definition": "'이 문제가 있고, 이렇게 풀면 쓸 것이다'라는 추측을 작은 실험으로 확인하는 일입니다. 크게 만들기 전에 틀린 방향을 일찍 버리려고 합니다.",
@@ -192,7 +192,7 @@
       "related": ["mvp", "pivot", "baseline"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "mvp",
@@ -201,7 +201,7 @@
       "aliases": ["엠브이피", "최소 실행 가능 제품"],
       "expansion": "Minimum Viable Product",
       "expansion_ko": "Minimum(최소한의) Viable(실제로 쓸 수 있는) Product(제품) → 최소 기능 제품",
-      "pronunciation": { "ko": "엠브이피", "read_as": "letters", "note": "스포츠의 MVP(최우수 선수)와 글자가 같지만 뜻이 다릅니다" },
+      "pronunciation": { "ko": "엠브이피", "read_as": "letters", "ipa": "ˌɛmviˈpi", "note": "스포츠의 MVP(최우수 선수)와 글자가 같지만 뜻이 다릅니다" },
       "stage": "discovery",
       "level": 2,
       "definition": "가설을 확인할 수 있는 가장 작은 버전의 제품입니다. 실제 사용자가 써 보게 해서 다음에 무엇을 만들지 배우려고 만듭니다.",
@@ -219,7 +219,7 @@
       "prerequisites": ["hypothesis-validation"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "poc",
@@ -228,7 +228,7 @@
       "aliases": ["피오씨", "개념검증", "개념 증명", "개념증명"],
       "expansion": "Proof of Concept",
       "expansion_ko": "Proof(증명) of Concept(개념) → 개념 증명. 우리말로는 '개념 검증'이라고도 합니다",
-      "pronunciation": { "ko": "피오씨", "read_as": "letters", "note": "P, O, C를 한 글자씩 읽습니다" },
+      "pronunciation": { "ko": "피오씨", "read_as": "letters", "ipa": "ˌpioʊˈsi", "note": "P, O, C를 한 글자씩 읽습니다" },
       "stage": "discovery",
       "level": 3,
       "definition": "새 기술이나 아이디어가 실제로 가능한지 작게 만들어 확인하는 실험입니다. 기술적으로 실현할 수 있는지 확인하고, 초기에 생길 수 있는 문제점과 위험(리스크)을 큰 비용을 쓰기 전에 미리 찾으려고 합니다.",
@@ -245,7 +245,7 @@
       "related": ["mvp"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (FDE 업무 흐름)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "moscow",
@@ -254,7 +254,7 @@
       "aliases": ["모스크바", "모스코우", "MoSCoW 기법"],
       "expansion": "Must have, Should have, Could have, Won't have",
       "expansion_ko": "Must(꼭 있어야 함) · Should(있으면 좋음) · Could(여유 있으면) · Won't(이번엔 안 함)의 첫 글자. 사이의 소문자 o는 읽기 좋게 넣은 글자",
-      "pronunciation": { "ko": "모스코우", "read_as": "word", "tts": "Moscow", "variants": ["모스크바"], "note": "영어 Moscow처럼 '모스코우'라고 읽습니다. 국내 회의에서는 '모스크바'라고도 합니다. 소문자 o는 읽기 좋게 넣은 글자입니다" },
+      "pronunciation": { "ko": "모스코우", "read_as": "word", "ipa": "ˈmɑskoʊ", "tts": "Moscow", "variants": ["모스크바"], "note": "영어 Moscow처럼 '모스코우'라고 읽습니다. 국내 회의에서는 '모스크바'라고도 합니다. 소문자 o는 읽기 좋게 넣은 글자입니다" },
       "stage": "discovery",
       "level": 2,
       "definition": "기능을 '꼭 / 있으면 좋음 / 여유 있으면 / 이번엔 안 함' 네 가지로 나누는 우선순위 분류법입니다. 시간과 돈이 한정될 때 무엇부터 할지 합의하려고 씁니다.",
@@ -270,14 +270,14 @@
       "related": ["mvp", "scope-creep", "requirements"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "scope-creep",
       "term_en": "Scope Creep",
       "term_ko": "범위 확대",
       "aliases": ["스코프 크립", "스코프크립", "범위 증식"],
-      "pronunciation": { "ko": "스코프 크립", "read_as": "word" },
+      "pronunciation": { "ko": "스코프 크립", "read_as": "word", "ipa": "ˈskoʊp ˌkrip" },
       "stage": "discovery",
       "also_stages": ["build"],
       "level": 3,
@@ -294,14 +294,14 @@
       "related": ["moscow", "requirements"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "pivot",
       "term_en": "Pivot",
       "term_ko": "피벗",
       "aliases": ["방향 전환"],
-      "pronunciation": { "ko": "피벗", "read_as": "word" },
+      "pronunciation": { "ko": "피벗", "read_as": "word", "ipa": "ˈpɪvət" },
       "stage": "discovery",
       "also_stages": ["grow"],
       "level": 3,
@@ -319,14 +319,14 @@
       "prerequisites": ["hypothesis-validation"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "baseline",
       "term_en": "Baseline",
       "term_ko": "기준선",
       "aliases": ["베이스라인", "베이스 라인", "기준값"],
-      "pronunciation": { "ko": "베이스라인", "read_as": "word" },
+      "pronunciation": { "ko": "베이스라인", "read_as": "word", "ipa": "ˈbeɪsˌlaɪn" },
       "stage": "discovery",
       "also_stages": ["test"],
       "level": 3,
@@ -343,7 +343,7 @@
       "related": ["hypothesis-validation"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "api",
@@ -352,7 +352,7 @@
       "aliases": ["에이피아이", "오픈 API", "API 연동"],
       "expansion": "Application Programming Interface",
       "expansion_ko": "Application(응용 프로그램) Programming(프로그래밍) Interface(접점) → 프로그램끼리 대화하는 정해진 창구",
-      "pronunciation": { "ko": "에이피아이", "read_as": "letters" },
+      "pronunciation": { "ko": "에이피아이", "read_as": "letters", "ipa": "ˌeɪpiˈaɪ" },
       "stage": "design",
       "also_stages": ["build"],
       "level": 1,
@@ -370,7 +370,7 @@
       "related": ["webhook", "polling", "adapter-pattern"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "json",
@@ -379,7 +379,7 @@
       "aliases": ["제이선", "JSON 파일"],
       "expansion": "JavaScript Object Notation",
       "expansion_ko": "JavaScript(자바스크립트) Object(객체) Notation(표기법) → 자바스크립트 객체 표기법. 이름과 달리 거의 모든 언어에서 씁니다",
-      "pronunciation": { "ko": "제이슨", "read_as": "word", "tts": "jason" },
+      "pronunciation": { "ko": "제이슨", "read_as": "word", "ipa": "ˈdʒeɪsən", "tts": "jason" },
       "stage": "design",
       "also_stages": ["build"],
       "level": 2,
@@ -396,14 +396,14 @@
       "related": ["schema", "api"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (개념 지도)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "schema",
       "term_en": "Schema",
       "term_ko": "스키마",
       "aliases": ["스키머", "데이터 구조 규칙", "JSON 스키마"],
-      "pronunciation": { "ko": "스키마", "read_as": "word" },
+      "pronunciation": { "ko": "스키마", "read_as": "word", "ipa": "ˈskimə" },
       "stage": "design",
       "level": 2,
       "definition": "데이터가 어떤 칸을 가져야 하고 각 칸에 어떤 값이 들어갈 수 있는지 정한 규칙입니다. 잘못된 데이터가 들어오는 것을 자동으로 막으려고 씁니다.",
@@ -421,14 +421,14 @@
       "prerequisites": ["json"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (glossary.json 설계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "data-modeling",
       "term_en": "Data Modeling",
       "term_ko": "데이터 모델링",
       "aliases": ["데이터모델링", "데이터 설계"],
-      "pronunciation": { "ko": "데이터 모델링", "read_as": "word" },
+      "pronunciation": { "ko": "데이터 모델링", "read_as": "word", "ipa": "ˈdeɪtə ˌmɑdəlɪŋ" },
       "stage": "design",
       "level": 3,
       "definition": "어떤 정보를 어떤 칸과 관계로 저장할지 설계하는 일입니다. 화면과 기능이 모두 이 구조 위에서 돌아가기 때문에 초기에 정합니다.",
@@ -444,14 +444,14 @@
       "related": ["schema", "single-source-of-truth"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (개념 지도)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "architecture",
       "term_en": "Architecture",
       "term_ko": "아키텍처",
       "aliases": ["아키텍쳐", "시스템 구조", "구조 설계"],
-      "pronunciation": { "ko": "아키텍처", "read_as": "word" },
+      "pronunciation": { "ko": "아키텍처", "read_as": "word", "ipa": "ˈɑrkɪˌtɛktʃər" },
       "stage": "design",
       "level": 2,
       "definition": "시스템을 어떤 큰 부분으로 나누고 그 부분들이 어떻게 연결되는지 정한 전체 구조입니다. 나중에 바꾸기 가장 어려운 결정들이 여기에 모입니다.",
@@ -468,7 +468,7 @@
       "related": ["adr", "separation-of-concerns", "static-site"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ②단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "adr",
@@ -477,7 +477,7 @@
       "aliases": ["에이디알", "구조 결정 기록", "설계 결정 기록"],
       "expansion": "Architecture Decision Record",
       "expansion_ko": "Architecture(아키텍처, 구조) Decision(결정) Record(기록) → 구조 결정 기록",
-      "pronunciation": { "ko": "에이디알", "read_as": "letters" },
+      "pronunciation": { "ko": "에이디알", "read_as": "letters", "ipa": "ˌeɪdiˈɑr" },
       "stage": "design",
       "level": 3,
       "definition": "중요한 구조 결정을 '배경 → 선택지 → 결정 → 결과' 순서로 짧게 남긴 문서입니다. 나중에 합류한 사람도 왜 그렇게 했는지 알 수 있게 합니다.",
@@ -495,14 +495,14 @@
       "prerequisites": ["architecture"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (ADR-0001 작성)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "separation-of-concerns",
       "term_en": "Separation of Concerns",
       "term_ko": "관심사 분리",
       "aliases": ["관심사분리", "SoC"],
-      "pronunciation": { "ko": "세퍼레이션 오브 컨선스", "read_as": "word", "note": "회의에서는 대부분 '관심사 분리'라고 한국어로 말합니다" },
+      "pronunciation": { "ko": "세퍼레이션 오브 컨선스", "read_as": "word", "ipa": "ˌsɛpəˈreɪʃən əv kənˈsɝnz", "note": "회의에서는 대부분 '관심사 분리'라고 한국어로 말합니다" },
       "stage": "design",
       "level": 3,
       "definition": "프로그램을 맡은 일(관심사)에 따라 나눠서, 한 부분이 바뀌어도 다른 부분에 영향을 덜 주게 하는 설계 원칙입니다.",
@@ -519,14 +519,14 @@
       "related": ["architecture", "adapter-pattern"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (개념 지도)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "adapter-pattern",
       "term_en": "Adapter Pattern",
       "term_ko": "어댑터 패턴",
       "aliases": ["어댑터", "어답터 패턴"],
-      "pronunciation": { "ko": "어댑터 패턴", "read_as": "word" },
+      "pronunciation": { "ko": "어댑터 패턴", "read_as": "word", "ipa": "əˈdæptər ˌpætərn" },
       "stage": "design",
       "also_stages": ["build"],
       "level": 3,
@@ -545,14 +545,14 @@
       "prerequisites": ["api"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "static-site",
       "term_en": "Static Site",
       "term_ko": "정적 사이트",
       "aliases": ["스태틱 사이트", "정적 웹사이트"],
-      "pronunciation": { "ko": "스태틱 사이트", "read_as": "word", "note": "회의에서는 대부분 '정적 사이트'라고 한국어로 말합니다" },
+      "pronunciation": { "ko": "스태틱 사이트", "read_as": "word", "ipa": "ˈstætɪk ˈsaɪt", "note": "회의에서는 대부분 '정적 사이트'라고 한국어로 말합니다" },
       "stage": "design",
       "also_stages": ["deploy"],
       "level": 2,
@@ -570,14 +570,14 @@
       "related": ["architecture"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (ADR-0001)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "single-source-of-truth",
       "term_en": "Single Source of Truth",
       "term_ko": "단일 진실 공급원",
       "aliases": ["SSOT", "싱글 소스 오브 트루스", "단일 원천"],
-      "pronunciation": { "ko": "싱글 소스 오브 트루스", "read_as": "word", "note": "줄여서 '에스에스오티'라고도 합니다" },
+      "pronunciation": { "ko": "싱글 소스 오브 트루스", "read_as": "word", "ipa": "ˈsɪŋɡəl ˈsɔrs əv ˈtruθ", "note": "줄여서 '에스에스오티'라고도 합니다" },
       "stage": "design",
       "level": 3,
       "definition": "같은 정보를 여러 곳에 따로 적지 않고 한곳에만 두고, 다른 곳은 그것을 가져다 쓰게 하는 원칙입니다. 한쪽만 고쳐서 정보가 서로 달라지는 실수를 막습니다.",
@@ -593,14 +593,14 @@
       "related": ["data-modeling"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (혼동 쌍 저장 방식)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "git",
       "term_en": "Git",
       "term_ko": "깃",
       "aliases": ["깃", "버전 관리"],
-      "pronunciation": { "ko": "깃", "read_as": "word" },
+      "pronunciation": { "ko": "깃", "read_as": "word", "ipa": "ɡɪt" },
       "stage": "build",
       "level": 2,
       "definition": "코드의 변경 기록을 시점별로 저장하고, 여러 사람이 같은 코드를 나눠 고친 뒤 합칠 수 있게 해 주는 버전 관리 도구입니다. 언제 누가 무엇을 바꿨는지 되돌아볼 수 있습니다.",
@@ -617,14 +617,14 @@
       "related": ["commit", "branch"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (저장소 만들기)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "branch",
       "term_en": "Branch",
       "term_ko": "브랜치",
       "aliases": ["가지", "작업 줄기"],
-      "pronunciation": { "ko": "브랜치", "read_as": "word" },
+      "pronunciation": { "ko": "브랜치", "read_as": "word", "ipa": "bræntʃ" },
       "stage": "build",
       "level": 2,
       "definition": "기존 코드를 건드리지 않고 따로 갈라져 나와 작업하는 작업 줄기입니다. 작업이 끝나면 원래 줄기에 합칩니다.",
@@ -641,14 +641,14 @@
       "prerequisites": ["git"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ③단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "commit",
       "term_en": "Commit",
       "term_ko": "커밋",
       "aliases": ["커밋하다", "저장 기록"],
-      "pronunciation": { "ko": "커밋", "read_as": "word" },
+      "pronunciation": { "ko": "커밋", "read_as": "word", "ipa": "kəˈmɪt" },
       "stage": "build",
       "level": 2,
       "definition": "변경한 내용을 설명 한 줄과 함께 기록으로 저장하는 것입니다. 나중에 이 기록 단위로 되돌리거나 무엇이 바뀌었는지 볼 수 있습니다.",
@@ -666,14 +666,14 @@
       "prerequisites": ["git"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (첫 커밋)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "pull-request",
       "term_en": "Pull Request",
       "term_ko": "풀 리퀘스트",
       "aliases": ["PR", "피알", "풀리퀘", "머지 리퀘스트", "MR"],
-      "pronunciation": { "ko": "풀 리퀘스트", "read_as": "word", "note": "줄여서 'PR(피알)'이라고 많이 말합니다. GitLab에서는 Merge Request(MR)라고 부릅니다" },
+      "pronunciation": { "ko": "풀 리퀘스트", "read_as": "word", "ipa": "ˈpʊl rɪˌkwɛst", "note": "줄여서 'PR(피알)'이라고 많이 말합니다. GitLab에서는 Merge Request(MR)라고 부릅니다" },
       "stage": "build",
       "level": 3,
       "definition": "내 브랜치의 변경을 기본 브랜치에 합쳐 달라고 요청하고, 동료가 검토할 수 있게 올리는 것입니다. 리뷰와 자동 검사를 통과해야 합쳐집니다.",
@@ -691,14 +691,14 @@
       "prerequisites": ["branch"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ③단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "code-review",
       "term_en": "Code Review",
       "term_ko": "코드 리뷰",
       "aliases": ["리뷰", "코드리뷰"],
-      "pronunciation": { "ko": "코드 리뷰", "read_as": "word" },
+      "pronunciation": { "ko": "코드 리뷰", "read_as": "word", "ipa": "ˈkoʊd rɪˌvju" },
       "stage": "build",
       "also_stages": ["test"],
       "level": 2,
@@ -716,14 +716,14 @@
       "related": ["pull-request", "refactoring"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (예문 상황: 문서·코드 리뷰)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "frontend",
       "term_en": "Frontend",
       "term_ko": "프런트엔드",
       "aliases": ["프론트엔드", "프론트", "FE", "front-end"],
-      "pronunciation": { "ko": "프런트엔드", "read_as": "word", "note": "'프론트엔드', 줄여서 '프론트'라고도 많이 말합니다" },
+      "pronunciation": { "ko": "프런트엔드", "read_as": "word", "ipa": "ˈfrʌntˌɛnd", "note": "'프론트엔드', 줄여서 '프론트'라고도 많이 말합니다" },
       "stage": "build",
       "level": 2,
       "definition": "사용자가 직접 보고 누르는 화면 쪽을 만드는 부분입니다. 웹에서는 주로 HTML, CSS, JavaScript로 만듭니다.",
@@ -740,14 +740,14 @@
       "related": ["backend", "framework"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (개념 지도)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "backend",
       "term_en": "Backend",
       "term_ko": "백엔드",
       "aliases": ["BE", "서버 개발", "back-end"],
-      "pronunciation": { "ko": "백엔드", "read_as": "word" },
+      "pronunciation": { "ko": "백엔드", "read_as": "word", "ipa": "ˈbækˌɛnd" },
       "stage": "build",
       "level": 2,
       "definition": "사용자 눈에 보이지 않는 서버 쪽에서 데이터를 저장하고, 계산하고, 권한을 확인하는 부분입니다. 화면(프런트엔드)의 요청을 받아 결과를 돌려줍니다.",
@@ -765,14 +765,14 @@
       "prerequisites": ["api"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (ADR-0001)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "library",
       "term_en": "Library",
       "term_ko": "라이브러리",
       "aliases": ["라이브러리 추가", "외부 라이브러리"],
-      "pronunciation": { "ko": "라이브러리", "read_as": "word" },
+      "pronunciation": { "ko": "라이브러리", "read_as": "word", "ipa": "ˈlaɪˌbrɛri" },
       "stage": "build",
       "level": 2,
       "definition": "다른 사람이 만들어 둔 기능 묶음을 내 코드에서 필요할 때 불러다 쓰는 것입니다. 흐름은 내 코드가 정하고, 라이브러리는 부른 기능만 해 줍니다.",
@@ -788,14 +788,14 @@
       "related": ["framework"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (그림·아이콘 라이선스)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "framework",
       "term_en": "Framework",
       "term_ko": "프레임워크",
       "aliases": ["프레임 워크"],
-      "pronunciation": { "ko": "프레임워크", "read_as": "word" },
+      "pronunciation": { "ko": "프레임워크", "read_as": "word", "ipa": "ˈfreɪmˌwɝk" },
       "stage": "build",
       "level": 2,
       "definition": "앱을 만드는 정해진 틀과 흐름을 제공하고, 나는 그 틀의 빈칸에 코드를 채워 넣는 방식입니다. 흐름은 프레임워크가 정하고, 필요할 때 내 코드를 부릅니다.",
@@ -811,14 +811,14 @@
       "related": ["library", "frontend"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (Streamlit 대신 직접 만들기)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "environment-variable",
       "term_en": "Environment Variable",
       "term_ko": "환경 변수",
       "aliases": ["환경변수", "env", ".env", "닷 env"],
-      "pronunciation": { "ko": "인바이런먼트 베리어블", "read_as": "word", "note": "회의에서는 대부분 '환경 변수', 또는 파일 이름대로 '닷 env'라고 말합니다" },
+      "pronunciation": { "ko": "인바이런먼트 베리어블", "read_as": "word", "ipa": "ɪnˈvaɪrənmənt ˈvɛriəbəl", "note": "회의에서는 대부분 '환경 변수', 또는 파일 이름대로 '닷 env'라고 말합니다" },
       "stage": "build",
       "also_stages": ["deploy", "secure"],
       "level": 2,
@@ -836,14 +836,14 @@
       "related": ["static-site", "git"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (개념 지도: 비밀 관리)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "refactoring",
       "term_en": "Refactoring",
       "term_ko": "리팩터링",
       "aliases": ["리팩토링", "리펙토링", "코드 정리"],
-      "pronunciation": { "ko": "리팩터링", "read_as": "word", "note": "'리팩토링'이라고도 많이 말합니다" },
+      "pronunciation": { "ko": "리팩터링", "read_as": "word", "ipa": "riˈfæktərɪŋ", "note": "'리팩토링'이라고도 많이 말합니다" },
       "stage": "build",
       "level": 3,
       "definition": "프로그램이 하는 일은 그대로 두고, 코드 구조만 읽기 쉽고 고치기 쉽게 다듬는 일입니다. 나중에 기능을 더할 때 실수를 줄이려고 합니다.",
@@ -859,14 +859,14 @@
       "related": ["code-review", "unit-test"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (화면 코드 다시 짜기)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "unit-test",
       "term_en": "Unit Test",
       "term_ko": "단위 테스트",
       "aliases": ["유닛 테스트", "단위테스트", "unit test"],
-      "pronunciation": { "ko": "유닛 테스트", "read_as": "word", "note": "'유닛 테스트'와 '단위 테스트'를 둘 다 씁니다" },
+      "pronunciation": { "ko": "유닛 테스트", "read_as": "word", "ipa": "ˈjunɪt ˌtɛst", "note": "'유닛 테스트'와 '단위 테스트'를 둘 다 씁니다" },
       "stage": "test",
       "level": 2,
       "definition": "함수 하나처럼 작은 부분만 떼어 내어, 정해진 입력에 기대한 결과가 나오는지 자동으로 확인하는 시험입니다. 코드를 고친 뒤에도 예전 기능이 그대로인지 빠르게 확인하려고 씁니다.",
@@ -883,14 +883,14 @@
       "related": ["integration-test", "edge-case", "regression"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (review.test.js)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "integration-test",
       "term_en": "Integration Test",
       "term_ko": "통합 테스트",
       "aliases": ["통합테스트", "integration test"],
-      "pronunciation": { "ko": "인티그레이션 테스트", "read_as": "word", "note": "회의에서는 대부분 '통합 테스트'라고 말합니다" },
+      "pronunciation": { "ko": "인티그레이션 테스트", "read_as": "word", "ipa": "ˌɪntəˈɡreɪʃən ˌtɛst", "note": "회의에서는 대부분 '통합 테스트'라고 말합니다" },
       "stage": "test",
       "level": 3,
       "definition": "여러 부분을 실제로 합쳐서 함께 잘 동작하는지 확인하는 시험입니다. 화면, 서버, 데이터처럼 서로 연결된 곳에서 생기는 문제를 잡으려고 합니다.",
@@ -907,14 +907,14 @@
       "prerequisites": ["unit-test"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ④단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "validation",
       "term_en": "Validation",
       "term_ko": "유효성 검사",
       "aliases": ["밸리데이션", "입력 검증", "검증", "유효성검사"],
-      "pronunciation": { "ko": "밸리데이션", "read_as": "word", "note": "회의에서는 '밸리데이션' 또는 '검증'이라고 많이 말합니다" },
+      "pronunciation": { "ko": "밸리데이션", "read_as": "word", "ipa": "ˌvæləˈdeɪʃən", "note": "회의에서는 '밸리데이션' 또는 '검증'이라고 많이 말합니다" },
       "stage": "test",
       "also_stages": ["build"],
       "level": 2,
@@ -933,14 +933,14 @@
       "prerequisites": ["schema"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (validate.py)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "regression",
       "term_en": "Regression",
       "term_ko": "회귀 버그",
       "aliases": ["리그레션", "회귀", "회귀 테스트", "regression test"],
-      "pronunciation": { "ko": "리그레션", "read_as": "word" },
+      "pronunciation": { "ko": "리그레션", "read_as": "word", "ipa": "rɪˈɡrɛʃən" },
       "stage": "test",
       "level": 3,
       "definition": "잘 되던 기능이 다른 곳을 고친 뒤에 다시 고장 나는 것입니다. 이를 막으려고 고칠 때마다 예전 기능을 다시 확인하는 시험을 회귀 테스트라고 합니다.",
@@ -957,14 +957,14 @@
       "related": ["unit-test", "qa"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ④단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "edge-case",
       "term_en": "Edge Case",
       "term_ko": "엣지 케이스",
       "aliases": ["경계 사례", "예외 경우", "엣지케이스", "극단적 경우"],
-      "pronunciation": { "ko": "엣지 케이스", "read_as": "word" },
+      "pronunciation": { "ko": "엣지 케이스", "read_as": "word", "ipa": "ˈɛdʒ ˌkeɪs" },
       "stage": "test",
       "level": 3,
       "definition": "보통 쓰임에서 벗어난 극단적이거나 드문 경우입니다. 빈 값, 아주 긴 글자, 0개나 맨 마지막 하나 같은 상황에서도 프로그램이 깨지지 않는지 확인하려고 따져 봅니다.",
@@ -980,14 +980,14 @@
       "related": ["validation", "unit-test"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (5장 더 하기 버그)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "mock-api",
       "term_en": "Mock API",
       "term_ko": "모의 API",
       "aliases": ["목 API", "Mock", "목업 API", "가짜 API", "모의API"],
-      "pronunciation": { "ko": "목 에이피아이", "read_as": "mixed" },
+      "pronunciation": { "ko": "목 에이피아이", "read_as": "mixed", "ipa": "ˈmɑk ˌeɪpiˈaɪ" },
       "stage": "test",
       "also_stages": ["build"],
       "level": 3,
@@ -1005,14 +1005,14 @@
       "prerequisites": ["api"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "evaluation-dataset",
       "term_en": "Evaluation Dataset",
       "term_ko": "평가 데이터셋",
       "aliases": ["평가셋", "eval set", "이밸 셋", "골든셋", "테스트셋"],
-      "pronunciation": { "ko": "이밸류에이션 데이터셋", "read_as": "word", "note": "줄여서 '이밸 셋(eval set)'이라고도 합니다" },
+      "pronunciation": { "ko": "이밸류에이션 데이터셋", "read_as": "word", "ipa": "ɪˌvæljuˈeɪʃən ˈdeɪtəˌsɛt", "note": "줄여서 '이밸 셋(eval set)'이라고도 합니다" },
       "stage": "test",
       "also_stages": ["automate"],
       "level": 3,
@@ -1031,14 +1031,14 @@
       "prerequisites": ["baseline"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "dogfooding",
       "term_en": "Dogfooding",
       "term_ko": "도그푸딩",
       "aliases": ["독푸딩", "자사 제품 써 보기", "dog fooding"],
-      "pronunciation": { "ko": "도그푸딩", "read_as": "word", "note": "'Eating your own dog food(자기 개 사료 먹어 보기)'라는 말에서 나왔습니다" },
+      "pronunciation": { "ko": "도그푸딩", "read_as": "word", "ipa": "ˈdɔɡˌfudɪŋ", "note": "'Eating your own dog food(자기 개 사료 먹어 보기)'라는 말에서 나왔습니다" },
       "stage": "test",
       "also_stages": ["grow"],
       "level": 3,
@@ -1055,7 +1055,7 @@
       "related": ["user-interview", "qa"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "qa",
@@ -1064,7 +1064,7 @@
       "aliases": ["큐에이", "QA 돌리다", "품질 검사", "테스터"],
       "expansion": "Quality Assurance",
       "expansion_ko": "Quality(품질) Assurance(보증) → 품질 보증",
-      "pronunciation": { "ko": "큐에이", "read_as": "letters", "note": "'QA 돌린다'는 '출시 전에 품질 점검을 한다'는 뜻으로 현업에서 자주 씁니다" },
+      "pronunciation": { "ko": "큐에이", "read_as": "letters", "ipa": "ˌkjuˈeɪ", "note": "'QA 돌린다'는 '출시 전에 품질 점검을 한다'는 뜻으로 현업에서 자주 씁니다" },
       "stage": "test",
       "level": 2,
       "definition": "제품이 요구사항대로 동작하고 품질 기준을 지키는지 출시 전에 체계적으로 확인하는 일, 또는 그 일을 맡은 역할입니다.",
@@ -1080,7 +1080,7 @@
       "related": ["regression", "requirements"],
       "sources": [{ "type": "conversation", "label": "기획 대화 (한국 현업 표현)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "ci-cd",
@@ -1089,7 +1089,7 @@
       "aliases": ["씨아이씨디", "CICD", "지속적 통합", "지속적 배포"],
       "expansion": "Continuous Integration / Continuous Deployment",
       "expansion_ko": "Continuous(지속적인) Integration(통합) / Continuous(지속적인) Deployment(배포) → 지속적 통합과 지속적 배포",
-      "pronunciation": { "ko": "씨아이 씨디", "read_as": "letters" },
+      "pronunciation": { "ko": "씨아이 씨디", "read_as": "letters", "ipa": "ˌsiˈaɪ ˌsiˈdi" },
       "stage": "deploy",
       "also_stages": ["test"],
       "level": 3,
@@ -1107,14 +1107,14 @@
       "related": ["pipeline", "deployment", "unit-test"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (개념 지도: CI/CD)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "pipeline",
       "term_en": "Pipeline",
       "term_ko": "파이프라인",
       "aliases": ["빌드 파이프라인", "배포 파이프라인", "데이터 파이프라인"],
-      "pronunciation": { "ko": "파이프라인", "read_as": "word" },
+      "pronunciation": { "ko": "파이프라인", "read_as": "word", "ipa": "ˈpaɪpˌlaɪn" },
       "stage": "deploy",
       "also_stages": ["automate"],
       "level": 2,
@@ -1131,14 +1131,14 @@
       "related": ["ci-cd"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (관리자 파이프라인)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "deployment",
       "term_en": "Deployment",
       "term_ko": "배포",
       "aliases": ["디플로이", "deploy", "릴리스", "출시"],
-      "pronunciation": { "ko": "디플로이먼트", "read_as": "word", "note": "회의에서는 대부분 '배포' 또는 '디플로이'라고 말합니다" },
+      "pronunciation": { "ko": "디플로이먼트", "read_as": "word", "ipa": "dɪˈplɔɪmənt", "note": "회의에서는 대부분 '배포' 또는 '디플로이'라고 말합니다" },
       "stage": "deploy",
       "level": 2,
       "definition": "만든 코드를 사용자가 실제로 쓰는 서버나 사이트에 올려 바꾸는 일입니다.",
@@ -1155,14 +1155,14 @@
       "related": ["staging", "production", "rollback"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑤단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "staging",
       "term_en": "Staging",
       "term_ko": "스테이징 환경",
       "aliases": ["스테이징", "검증 환경", "테스트 서버", "stage"],
-      "pronunciation": { "ko": "스테이징", "read_as": "word" },
+      "pronunciation": { "ko": "스테이징", "read_as": "word", "ipa": "ˈsteɪdʒɪŋ" },
       "stage": "deploy",
       "also_stages": ["test"],
       "level": 3,
@@ -1179,14 +1179,14 @@
       "related": ["production", "deployment"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑤단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "production",
       "term_en": "Production",
       "term_ko": "운영 환경",
       "aliases": ["프로덕션", "프로드", "prod", "라이브", "상용 환경"],
-      "pronunciation": { "ko": "프로덕션", "read_as": "word", "note": "줄여서 '프로드(prod)'라고도 합니다" },
+      "pronunciation": { "ko": "프로덕션", "read_as": "word", "ipa": "prəˈdʌkʃən", "note": "줄여서 '프로드(prod)'라고도 합니다" },
       "stage": "deploy",
       "also_stages": ["operate"],
       "level": 3,
@@ -1203,14 +1203,14 @@
       "related": ["staging", "incident"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑤단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "rollback",
       "term_en": "Rollback",
       "term_ko": "롤백",
       "aliases": ["되돌리기", "원복", "롤 백"],
-      "pronunciation": { "ko": "롤백", "read_as": "word", "note": "현업에서는 '원복(원래대로 복구)'이라고도 합니다" },
+      "pronunciation": { "ko": "롤백", "read_as": "word", "ipa": "ˈroʊlˌbæk", "note": "현업에서는 '원복(원래대로 복구)'이라고도 합니다" },
       "stage": "deploy",
       "also_stages": ["operate"],
       "level": 3,
@@ -1228,14 +1228,14 @@
       "related": ["deployment", "hotfix", "incident"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑤단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "cache",
       "term_en": "Cache",
       "term_ko": "캐시",
       "aliases": ["캐싱", "캐쉬", "캐시 버스팅"],
-      "pronunciation": { "ko": "캐시", "read_as": "word" },
+      "pronunciation": { "ko": "캐시", "read_as": "word", "ipa": "kæʃ" },
       "stage": "deploy",
       "also_stages": ["operate"],
       "level": 2,
@@ -1253,7 +1253,7 @@
       "related": ["deployment"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (캐시 때문에 옛 화면이 보인 문제)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "pwa",
@@ -1262,7 +1262,7 @@
       "aliases": ["피더블유에이", "웹앱", "홈 화면에 추가"],
       "expansion": "Progressive Web App",
       "expansion_ko": "Progressive(점진적으로 기능이 더해지는) Web(웹) App(앱) → 앱처럼 설치해 쓰는 웹사이트",
-      "pronunciation": { "ko": "피더블유에이", "read_as": "letters" },
+      "pronunciation": { "ko": "피더블유에이", "read_as": "letters", "ipa": "ˌpi ˌdʌbəljuˈeɪ" },
       "stage": "deploy",
       "also_stages": ["build"],
       "level": 3,
@@ -1279,14 +1279,14 @@
       "related": ["static-site", "cache"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (앱 스토어 배포 검토)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "serverless",
       "term_en": "Serverless",
       "term_ko": "서버리스",
       "aliases": ["서버리스 함수", "서버 없는", "FaaS"],
-      "pronunciation": { "ko": "서버리스", "read_as": "word" },
+      "pronunciation": { "ko": "서버리스", "read_as": "word", "ipa": "ˈsɝvərləs" },
       "stage": "deploy",
       "also_stages": ["design"],
       "level": 3,
@@ -1303,14 +1303,14 @@
       "related": ["static-site", "backend", "environment-variable"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-09 (ADR-0001 감수하는 점)", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "log",
       "term_en": "Log",
       "term_ko": "로그",
       "aliases": ["로그 기록", "로깅", "logging"],
-      "pronunciation": { "ko": "로그", "read_as": "word" },
+      "pronunciation": { "ko": "로그", "read_as": "word", "ipa": "lɔɡ" },
       "stage": "operate",
       "level": 2,
       "definition": "프로그램이 언제 무엇을 했는지, 어떤 오류가 났는지 시간 순서로 남긴 기록입니다. 문제가 생겼을 때 원인을 거꾸로 추적하려고 씁니다.",
@@ -1326,14 +1326,14 @@
       "related": ["monitoring", "incident"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑥단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "monitoring",
       "term_en": "Monitoring",
       "term_ko": "모니터링",
       "aliases": ["감시", "관제", "모니터링 대시보드"],
-      "pronunciation": { "ko": "모니터링", "read_as": "word" },
+      "pronunciation": { "ko": "모니터링", "read_as": "word", "ipa": "ˈmɑnɪtərɪŋ" },
       "stage": "operate",
       "level": 2,
       "definition": "서비스가 잘 돌아가는지 응답 시간, 오류 수, 사용량 같은 숫자를 계속 지켜보는 일입니다. 사용자가 알기 전에 문제를 먼저 알아채려고 합니다.",
@@ -1349,14 +1349,14 @@
       "related": ["log", "sla", "incident"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑥단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "incident",
       "term_en": "Incident",
       "term_ko": "장애",
       "aliases": ["인시던트", "서비스 장애", "사고"],
-      "pronunciation": { "ko": "인시던트", "read_as": "word", "note": "회의에서는 대부분 '장애'라고 말합니다" },
+      "pronunciation": { "ko": "인시던트", "read_as": "word", "ipa": "ˈɪnsɪdənt", "note": "회의에서는 대부분 '장애'라고 말합니다" },
       "stage": "operate",
       "level": 2,
       "definition": "서비스가 멈추거나 느려져서 사용자가 정상적으로 쓰지 못하는 상황입니다.",
@@ -1372,7 +1372,7 @@
       "related": ["rollback", "root-cause-analysis", "monitoring"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑥단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "sla",
@@ -1381,7 +1381,7 @@
       "aliases": ["에스엘에이", "서비스 수준 계약", "가동률 약속"],
       "expansion": "Service Level Agreement",
       "expansion_ko": "Service(서비스) Level(수준) Agreement(협약) → 서비스 수준 협약",
-      "pronunciation": { "ko": "에스엘에이", "read_as": "letters" },
+      "pronunciation": { "ko": "에스엘에이", "read_as": "letters", "ipa": "ˌɛsɛlˈeɪ" },
       "stage": "operate",
       "also_stages": ["discovery"],
       "level": 3,
@@ -1398,14 +1398,14 @@
       "related": ["availability", "monitoring"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑥단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "availability",
       "term_en": "Availability",
       "term_ko": "가용성",
       "aliases": ["가동률", "업타임", "uptime"],
-      "pronunciation": { "ko": "어베일러빌리티", "read_as": "word", "note": "회의에서는 '가용성' 또는 '가동률'이라고 말합니다" },
+      "pronunciation": { "ko": "어베일러빌리티", "read_as": "word", "ipa": "əˌveɪləˈbɪləti", "note": "회의에서는 '가용성' 또는 '가동률'이라고 말합니다" },
       "stage": "operate",
       "also_stages": ["design"],
       "level": 3,
@@ -1422,14 +1422,14 @@
       "related": ["sla", "monitoring"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑥단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "root-cause-analysis",
       "term_en": "Root Cause Analysis",
       "term_ko": "근본 원인 분석",
       "aliases": ["RCA", "알씨에이", "원인 분석", "포스트모템", "회고"],
-      "pronunciation": { "ko": "루트 코즈 애널리시스", "read_as": "word", "note": "줄여서 'RCA'라고 합니다. 장애 뒤에 쓰는 보고서는 '포스트모템(Postmortem)'이라고도 부릅니다" },
+      "pronunciation": { "ko": "루트 코즈 애널리시스", "read_as": "word", "ipa": "ˈrut ˈkɔz əˈnæləsɪs", "note": "줄여서 'RCA'라고 합니다. 장애 뒤에 쓰는 보고서는 '포스트모템(Postmortem)'이라고도 부릅니다" },
       "stage": "operate",
       "level": 3,
       "definition": "겉으로 보이는 증상이 아니라, 문제를 만든 가장 깊은 원인을 찾는 일입니다. 같은 문제가 다시 생기지 않게 하려고 합니다.",
@@ -1445,14 +1445,14 @@
       "related": ["incident", "regression"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "hotfix",
       "term_en": "Hotfix",
       "term_ko": "핫픽스",
       "aliases": ["긴급 수정", "급한 수정", "핫 픽스"],
-      "pronunciation": { "ko": "핫픽스", "read_as": "word" },
+      "pronunciation": { "ko": "핫픽스", "read_as": "word", "ipa": "ˈhɑtˌfɪks" },
       "stage": "operate",
       "also_stages": ["deploy"],
       "level": 3,
@@ -1469,14 +1469,14 @@
       "related": ["rollback", "incident"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑥단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "rate-limit",
       "term_en": "Rate Limit",
       "term_ko": "호출 한도",
       "aliases": ["레이트 리밋", "요청 제한", "쓰로틀링", "throttling", "429"],
-      "pronunciation": { "ko": "레이트 리밋", "read_as": "word" },
+      "pronunciation": { "ko": "레이트 리밋", "read_as": "word", "ipa": "ˈreɪt ˌlɪmɪt" },
       "stage": "operate",
       "also_stages": ["build"],
       "level": 3,
@@ -1494,14 +1494,14 @@
       "prerequisites": ["api"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (API 호출 한도 함정)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "token",
       "term_en": "Token",
       "term_ko": "토큰",
       "aliases": ["액세스 토큰", "access token", "인증 토큰", "JWT"],
-      "pronunciation": { "ko": "토큰", "read_as": "word" },
+      "pronunciation": { "ko": "토큰", "read_as": "word", "ipa": "ˈtoʊkən" },
       "stage": "secure",
       "also_stages": ["build"],
       "level": 2,
@@ -1518,14 +1518,14 @@
       "related": ["oauth", "authentication"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑦단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "authentication",
       "term_en": "Authentication",
       "term_ko": "인증",
       "aliases": ["어센티케이션", "AuthN", "본인 확인", "로그인"],
-      "pronunciation": { "ko": "어센티케이션", "read_as": "word", "note": "회의에서는 대부분 '인증'이라고 말합니다" },
+      "pronunciation": { "ko": "어센티케이션", "read_as": "word", "ipa": "ɔˌθɛntɪˈkeɪʃən", "note": "회의에서는 대부분 '인증'이라고 말합니다" },
       "stage": "secure",
       "level": 2,
       "definition": "상대가 정말 그 사람인지 확인하는 일입니다. 비밀번호, 지문, 인증 문자처럼 '누구인가'를 확인합니다.",
@@ -1541,14 +1541,14 @@
       "related": ["authorization", "mfa", "passkey"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑦단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "authorization",
       "term_en": "Authorization",
       "term_ko": "인가",
       "aliases": ["오소라이제이션", "AuthZ", "권한 부여", "권한 확인"],
-      "pronunciation": { "ko": "오소라이제이션", "read_as": "word", "note": "회의에서는 '인가' 또는 '권한'이라고 말합니다" },
+      "pronunciation": { "ko": "오소라이제이션", "read_as": "word", "ipa": "ˌɔθərəˈzeɪʃən", "note": "회의에서는 '인가' 또는 '권한'이라고 말합니다" },
       "stage": "secure",
       "level": 3,
       "definition": "확인된 사용자가 특정 데이터나 기능을 써도 되는지 허락하는 일입니다. '무엇을 해도 되는가'를 정합니다.",
@@ -1565,7 +1565,7 @@
       "prerequisites": ["authentication"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑦단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "sso",
@@ -1574,7 +1574,7 @@
       "aliases": ["에스에스오", "싱글 사인온", "통합 인증", "한 번 로그인"],
       "expansion": "Single Sign-On",
       "expansion_ko": "Single(한 번의) Sign-On(로그인) → 한 번 로그인으로 여러 서비스 이용",
-      "pronunciation": { "ko": "에스에스오", "read_as": "letters" },
+      "pronunciation": { "ko": "에스에스오", "read_as": "letters", "ipa": "ˌɛsɛsˈoʊ" },
       "stage": "secure",
       "level": 2,
       "definition": "한 번 로그인하면 연결된 여러 서비스를 다시 로그인하지 않고 쓰게 하는 방식입니다. 회사에서 메일, 메신저, 문서 도구를 하나의 계정으로 쓰는 것이 대표적입니다.",
@@ -1590,14 +1590,14 @@
       "related": ["oauth", "mfa", "authentication"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "passkey",
       "term_en": "Passkey",
       "term_ko": "패스키",
       "aliases": ["패스 키", "비밀번호 없는 로그인", "FIDO2", "WebAuthn", "Passwordless"],
-      "pronunciation": { "ko": "패스키", "read_as": "word" },
+      "pronunciation": { "ko": "패스키", "read_as": "word", "ipa": "ˈpæsˌki" },
       "stage": "secure",
       "level": 2,
       "definition": "비밀번호 대신 휴대폰의 지문·얼굴 인식이나 화면 잠금으로 로그인하는 방식입니다. 외울 비밀번호가 없어서 유출과 피싱에 강합니다.",
@@ -1613,7 +1613,7 @@
       "related": ["mfa", "authentication", "oauth"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "mfa",
@@ -1622,7 +1622,7 @@
       "aliases": ["2단계 인증", "이중 인증", "2FA", "엠에프에이"],
       "expansion": "Multi-Factor Authentication",
       "expansion_ko": "Multi(여러) Factor(요소) Authentication(인증) → 두 가지 이상의 방법으로 확인하는 인증",
-      "pronunciation": { "ko": "엠에프에이", "read_as": "letters", "note": "일상에서는 '2단계 인증'이라고 많이 말합니다" },
+      "pronunciation": { "ko": "엠에프에이", "read_as": "letters", "ipa": "ˌɛmɛfˈeɪ", "note": "일상에서는 '2단계 인증'이라고 많이 말합니다" },
       "stage": "secure",
       "level": 1,
       "definition": "비밀번호에 더해 휴대폰 인증 번호나 지문처럼 다른 종류의 확인을 하나 더 거치는 로그인 방식입니다. 비밀번호가 새어 나가도 계정을 지키려고 씁니다.",
@@ -1638,14 +1638,14 @@
       "related": ["authentication", "passkey", "sso"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "threat-modeling",
       "term_en": "Threat Modeling",
       "term_ko": "위협 모델링",
       "aliases": ["위협 분석", "위협모델링"],
-      "pronunciation": { "ko": "스렛 모델링", "read_as": "word", "note": "회의에서는 대부분 '위협 모델링'이라고 말합니다" },
+      "pronunciation": { "ko": "스렛 모델링", "read_as": "word", "ipa": "ˈθrɛt ˌmɑdəlɪŋ", "note": "회의에서는 대부분 '위협 모델링'이라고 말합니다" },
       "stage": "secure",
       "also_stages": ["design"],
       "level": 4,
@@ -1662,14 +1662,14 @@
       "related": ["defense-in-depth", "least-privilege"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "least-privilege",
       "term_en": "Least Privilege",
       "term_ko": "최소 권한",
       "aliases": ["최소 권한 원칙", "PoLP", "최소권한"],
-      "pronunciation": { "ko": "리스트 프리빌리지", "read_as": "word", "note": "회의에서는 대부분 '최소 권한'이라고 말합니다" },
+      "pronunciation": { "ko": "리스트 프리빌리지", "read_as": "word", "ipa": "ˈlist ˈprɪvəlɪdʒ", "note": "회의에서는 대부분 '최소 권한'이라고 말합니다" },
       "stage": "secure",
       "level": 3,
       "definition": "사람이나 프로그램에 일하는 데 꼭 필요한 권한만 주는 원칙입니다. 계정이 뚫려도 피해 범위를 작게 하려고 지킵니다.",
@@ -1686,14 +1686,14 @@
       "prerequisites": ["authorization"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑦단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "defense-in-depth",
       "term_en": "Defense in Depth",
       "term_ko": "심층 방어",
       "aliases": ["다층 방어", "겹겹이 방어"],
-      "pronunciation": { "ko": "디펜스 인 뎁스", "read_as": "word", "note": "회의에서는 '심층 방어' 또는 '다층 방어'라고 말합니다" },
+      "pronunciation": { "ko": "디펜스 인 뎁스", "read_as": "word", "ipa": "dɪˈfɛns ɪn ˈdɛpθ", "note": "회의에서는 '심층 방어' 또는 '다층 방어'라고 말합니다" },
       "stage": "secure",
       "also_stages": ["design"],
       "level": 4,
@@ -1710,14 +1710,14 @@
       "related": ["threat-modeling", "least-privilege", "validation"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "data-minimization",
       "term_en": "Data Minimization",
       "term_ko": "데이터 최소화",
       "aliases": ["개인정보 최소 수집", "최소 수집 원칙"],
-      "pronunciation": { "ko": "데이터 미니마이제이션", "read_as": "word", "note": "회의에서는 대부분 '데이터 최소화'라고 말합니다" },
+      "pronunciation": { "ko": "데이터 미니마이제이션", "read_as": "word", "ipa": "ˈdeɪtə ˌmɪnəməˈzeɪʃən", "note": "회의에서는 대부분 '데이터 최소화'라고 말합니다" },
       "stage": "secure",
       "also_stages": ["discovery", "design"],
       "level": 3,
@@ -1734,14 +1734,14 @@
       "related": ["de-identification"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "de-identification",
       "term_en": "De-identification",
       "term_ko": "비식별화",
       "aliases": ["가명 처리", "익명화", "마스킹", "비식별 처리"],
-      "pronunciation": { "ko": "디아이덴티피케이션", "read_as": "word", "note": "회의에서는 대부분 '비식별화' 또는 '가명 처리'라고 말합니다" },
+      "pronunciation": { "ko": "디아이덴티피케이션", "read_as": "word", "ipa": "ˌdiaɪˌdɛntəfəˈkeɪʃən", "note": "회의에서는 대부분 '비식별화' 또는 '가명 처리'라고 말합니다" },
       "stage": "secure",
       "also_stages": ["build"],
       "level": 3,
@@ -1758,14 +1758,14 @@
       "related": ["data-minimization"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "multi-tenancy",
       "term_en": "Multi-tenancy",
       "term_ko": "멀티테넌시",
       "aliases": ["멀티 테넌시", "다중 고객 구조", "테넌트"],
-      "pronunciation": { "ko": "멀티테넌시", "read_as": "word", "note": "고객사 하나하나를 '테넌트(세입자)'라고 부릅니다" },
+      "pronunciation": { "ko": "멀티테넌시", "read_as": "word", "ipa": "ˌmʌltiˈtɛnənsi", "note": "고객사 하나하나를 '테넌트(세입자)'라고 부릅니다" },
       "stage": "grow",
       "also_stages": ["design"],
       "level": 4,
@@ -1782,7 +1782,7 @@
       "related": ["scalability", "least-privilege"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "i18n",
@@ -1791,7 +1791,7 @@
       "aliases": ["internationalization", "인터내셔널라이제이션", "다국어 지원 준비"],
       "expansion": "internationalization",
       "expansion_ko": "internationalization의 첫 글자 i와 끝 글자 n 사이에 18글자가 있어서 i18n → 국제화",
-      "pronunciation": { "ko": "아이 에이틴 엔", "read_as": "mixed", "tts": "I eighteen N", "note": "회의에서는 대부분 '국제화' 또는 '아이십팔엔'이라고 말합니다" },
+      "pronunciation": { "ko": "아이 에이틴 엔", "read_as": "mixed", "ipa": "ˌaɪ eɪˈtin ˈɛn", "tts": "I eighteen N", "note": "회의에서는 대부분 '국제화' 또는 '아이십팔엔'이라고 말합니다" },
       "stage": "grow",
       "also_stages": ["build"],
       "level": 3,
@@ -1809,7 +1809,7 @@
       "related": ["l10n"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (외국인 사용자 대비)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "l10n",
@@ -1818,7 +1818,7 @@
       "aliases": ["localization", "로컬라이제이션", "번역 적용"],
       "expansion": "localization",
       "expansion_ko": "localization의 첫 글자 l과 끝 글자 n 사이에 10글자가 있어서 l10n → 현지화",
-      "pronunciation": { "ko": "엘 텐 엔", "read_as": "mixed", "tts": "L ten N", "note": "회의에서는 대부분 '현지화' 또는 '로컬라이제이션'이라고 말합니다" },
+      "pronunciation": { "ko": "엘 텐 엔", "read_as": "mixed", "ipa": "ˌɛl ˈtɛn ˈɛn", "tts": "L ten N", "note": "회의에서는 대부분 '현지화' 또는 '로컬라이제이션'이라고 말합니다" },
       "stage": "grow",
       "level": 3,
       "definition": "국제화로 만들어 둔 자리에 실제로 그 나라의 언어, 날짜·화폐 형식, 문화에 맞는 표현을 채워 넣는 일입니다.",
@@ -1835,14 +1835,14 @@
       "prerequisites": ["i18n"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (외국인 사용자 대비)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "ab-test",
       "term_en": "A/B Test",
       "term_ko": "A/B 테스트",
       "aliases": ["AB 테스트", "에이비 테스트", "분할 테스트", "split test"],
-      "pronunciation": { "ko": "에이비 테스트", "read_as": "mixed", "tts": "A B test" },
+      "pronunciation": { "ko": "에이비 테스트", "read_as": "mixed", "ipa": "ˌeɪˈbi ˌtɛst", "tts": "A B test" },
       "stage": "grow",
       "also_stages": ["discovery"],
       "level": 3,
@@ -1860,14 +1860,14 @@
       "prerequisites": ["baseline"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "scalability",
       "term_en": "Scalability",
       "term_ko": "확장성",
       "aliases": ["스케일러빌리티", "스케일", "규모 확장"],
-      "pronunciation": { "ko": "스케일러빌리티", "read_as": "word", "note": "회의에서는 '확장성' 또는 '스케일'이라고 많이 말합니다" },
+      "pronunciation": { "ko": "스케일러빌리티", "read_as": "word", "ipa": "ˌskeɪləˈbɪləti", "note": "회의에서는 '확장성' 또는 '스케일'이라고 많이 말합니다" },
       "stage": "grow",
       "also_stages": ["design"],
       "level": 3,
@@ -1884,14 +1884,14 @@
       "related": ["availability", "multi-tenancy"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑧단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "technical-debt",
       "term_en": "Technical Debt",
       "term_ko": "기술 부채",
       "aliases": ["테크 데트", "기술부채", "기술 빚"],
-      "pronunciation": { "ko": "테크니컬 데트", "read_as": "word", "note": "회의에서는 대부분 '기술 부채'라고 말합니다" },
+      "pronunciation": { "ko": "테크니컬 데트", "read_as": "word", "ipa": "ˈtɛknɪkəl ˈdɛt", "note": "회의에서는 대부분 '기술 부채'라고 말합니다" },
       "stage": "grow",
       "also_stages": ["build"],
       "level": 3,
@@ -1908,14 +1908,14 @@
       "related": ["refactoring"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑧단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "feature-flag",
       "term_en": "Feature Flag",
       "term_ko": "기능 플래그",
       "aliases": ["피처 플래그", "피처 토글", "feature toggle", "기능 스위치"],
-      "pronunciation": { "ko": "피처 플래그", "read_as": "word" },
+      "pronunciation": { "ko": "피처 플래그", "read_as": "word", "ipa": "ˈfitʃər ˌflæɡ" },
       "stage": "grow",
       "also_stages": ["deploy"],
       "level": 3,
@@ -1932,14 +1932,14 @@
       "related": ["deployment", "ab-test", "rollback"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑧단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "onboarding",
       "term_en": "Onboarding",
       "term_ko": "온보딩",
       "aliases": ["첫 사용 안내", "사용자 온보딩", "신규 입사 적응"],
-      "pronunciation": { "ko": "온보딩", "read_as": "word" },
+      "pronunciation": { "ko": "온보딩", "read_as": "word", "ipa": "ˈɑnˌbɔrdɪŋ" },
       "stage": "grow",
       "also_stages": ["discovery"],
       "level": 2,
@@ -1956,14 +1956,14 @@
       "related": ["churn"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (하루 목표와 온보딩 설계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "churn",
       "term_en": "Churn",
       "term_ko": "이탈",
       "aliases": ["처언", "이탈률", "churn rate", "해지율"],
-      "pronunciation": { "ko": "천", "read_as": "word", "note": "'이탈' 또는 '처언율(churn rate)'이라고 말합니다" },
+      "pronunciation": { "ko": "천", "read_as": "word", "ipa": "tʃɝn", "note": "'이탈' 또는 '처언율(churn rate)'이라고 말합니다" },
       "stage": "grow",
       "level": 3,
       "definition": "일정 기간 동안 서비스 사용을 그만두거나 구독을 해지한 사용자의 비율입니다. 새 사용자를 모으는 것보다 지키는 것이 싸서 중요하게 봅니다.",
@@ -1979,7 +1979,7 @@
       "related": ["onboarding", "baseline"],
       "sources": [{ "type": "claude", "label": "Claude 제안 (프로젝트 지도 ⑧단계)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "llm",
@@ -1988,7 +1988,7 @@
       "aliases": ["엘엘엠", "거대 언어 모델", "언어 모델"],
       "expansion": "Large Language Model",
       "expansion_ko": "Large(대규모) Language(언어) Model(모델) → 대규모 언어 모델",
-      "pronunciation": { "ko": "엘엘엠", "read_as": "letters" },
+      "pronunciation": { "ko": "엘엘엠", "read_as": "letters", "ipa": "ˌɛlɛlˈɛm" },
       "stage": "automate",
       "also_stages": ["build"],
       "level": 2,
@@ -2005,14 +2005,14 @@
       "related": ["prompt", "hallucination", "rag"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (관리자 파이프라인)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "prompt",
       "term_en": "Prompt",
       "term_ko": "프롬프트",
       "aliases": ["프롬프팅", "프롬프트 엔지니어링", "지시문"],
-      "pronunciation": { "ko": "프롬프트", "read_as": "word" },
+      "pronunciation": { "ko": "프롬프트", "read_as": "word", "ipa": "prɑmpt" },
       "stage": "automate",
       "also_stages": ["build"],
       "level": 2,
@@ -2030,7 +2030,7 @@
       "prerequisites": ["llm"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (콘텐츠 작성 가이드)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "rag",
@@ -2039,7 +2039,7 @@
       "aliases": ["래그", "알에이지", "검색 기반 생성"],
       "expansion": "Retrieval-Augmented Generation",
       "expansion_ko": "Retrieval(검색) Augmented(보강된) Generation(생성) → 검색으로 보강한 답변 생성",
-      "pronunciation": { "ko": "래그", "read_as": "word", "tts": "rag", "note": "'래그'라고 읽습니다. '알에이지'라고도 합니다" },
+      "pronunciation": { "ko": "래그", "read_as": "word", "ipa": "ræɡ", "tts": "rag", "note": "'래그'라고 읽습니다. '알에이지'라고도 합니다" },
       "stage": "automate",
       "also_stages": ["build"],
       "level": 3,
@@ -2057,14 +2057,14 @@
       "prerequisites": ["llm"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "hallucination",
       "term_en": "Hallucination",
       "term_ko": "환각",
       "aliases": ["할루시네이션", "AI 환각", "지어내기"],
-      "pronunciation": { "ko": "할루시네이션", "read_as": "word", "note": "회의에서는 '환각' 또는 '할루시네이션'이라고 말합니다" },
+      "pronunciation": { "ko": "할루시네이션", "read_as": "word", "ipa": "həˌlusəˈneɪʃən", "note": "회의에서는 '환각' 또는 '할루시네이션'이라고 말합니다" },
       "stage": "automate",
       "also_stages": ["test"],
       "level": 2,
@@ -2082,14 +2082,14 @@
       "prerequisites": ["llm"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (자동 게시 금지 원칙)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "ai-agent",
       "term_en": "AI Agent",
       "term_ko": "AI 에이전트",
       "aliases": ["에이전트", "agent", "에이아이 에이전트"],
-      "pronunciation": { "ko": "에이아이 에이전트", "read_as": "mixed", "tts": "A I agent" },
+      "pronunciation": { "ko": "에이아이 에이전트", "read_as": "mixed", "ipa": "ˌeɪˈaɪ ˌeɪdʒənt", "tts": "A I agent" },
       "stage": "automate",
       "level": 3,
       "definition": "목표를 받으면 스스로 계획을 세우고, 도구(검색, 파일, API)를 써 가며 여러 단계를 이어서 일을 끝내는 AI 프로그램입니다. 한 번 묻고 답하는 챗봇보다 긴 일을 맡기려고 씁니다.",
@@ -2106,14 +2106,14 @@
       "prerequisites": ["llm"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (주간 자동 작업)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "orchestration",
       "term_en": "Orchestration",
       "term_ko": "오케스트레이션",
       "aliases": ["오케스트레이터", "멀티 에이전트", "작업 조율"],
-      "pronunciation": { "ko": "오케스트레이션", "read_as": "word" },
+      "pronunciation": { "ko": "오케스트레이션", "read_as": "word", "ipa": "ˌɔrkəˈstreɪʃən" },
       "stage": "automate",
       "also_stages": ["design"],
       "level": 4,
@@ -2131,7 +2131,7 @@
       "prerequisites": ["ai-agent"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "llmops",
@@ -2140,7 +2140,7 @@
       "aliases": ["엘엘엠옵스", "LLM 운영 관리", "MLOps"],
       "expansion": "LLM Operations",
       "expansion_ko": "LLM(대규모 언어 모델) Operations(운영) → LLM 기능을 배포 후에도 관리하는 운영 방식",
-      "pronunciation": { "ko": "엘엘엠 옵스", "read_as": "mixed", "tts": "L L M ops" },
+      "pronunciation": { "ko": "엘엘엠 옵스", "read_as": "mixed", "ipa": "ˌɛlɛlˈɛm ˌɑps", "tts": "L L M ops" },
       "stage": "automate",
       "also_stages": ["operate"],
       "level": 4,
@@ -2158,14 +2158,14 @@
       "prerequisites": ["llm"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "feedback-loop",
       "term_en": "Feedback Loop",
       "term_ko": "피드백 루프",
       "aliases": ["피드백 고리", "개선 순환", "데이터 플라이휠"],
-      "pronunciation": { "ko": "피드백 루프", "read_as": "word" },
+      "pronunciation": { "ko": "피드백 루프", "read_as": "word", "ipa": "ˈfidˌbæk ˌlup" },
       "stage": "automate",
       "also_stages": ["grow"],
       "level": 3,
@@ -2182,14 +2182,14 @@
       "related": ["llmops", "dogfooding", "churn"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (주간 자동 작업과 의견 보내기)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "llm-as-a-judge",
       "term_en": "LLM-as-a-Judge",
       "term_ko": "LLM 심사관",
       "aliases": ["LLM 저지", "LLM 평가자", "모델 기반 평가"],
-      "pronunciation": { "ko": "엘엘엠 애즈 어 저지", "read_as": "mixed", "tts": "L L M as a judge" },
+      "pronunciation": { "ko": "엘엘엠 애즈 어 저지", "read_as": "mixed", "ipa": "ˌɛlɛlˈɛm æz ə ˈdʒʌdʒ", "tts": "L L M as a judge" },
       "stage": "automate",
       "also_stages": ["test"],
       "level": 4,
@@ -2207,14 +2207,14 @@
       "prerequisites": ["llm"],
       "sources": [{ "type": "conversation", "label": "기획 대화", "date": "2026-11-09" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "human-in-the-loop",
       "term_en": "Human-in-the-loop",
       "term_ko": "사람 검토 단계",
       "aliases": ["HITL", "휴먼 인 더 루프", "사람 승인", "승인 게이트"],
-      "pronunciation": { "ko": "휴먼 인 더 루프", "read_as": "word", "note": "줄여서 'HITL'이라고도 씁니다" },
+      "pronunciation": { "ko": "휴먼 인 더 루프", "read_as": "word", "ipa": "ˈhjumən ɪn ðə ˈlup", "note": "줄여서 'HITL'이라고도 씁니다" },
       "stage": "automate",
       "also_stages": ["design"],
       "level": 3,
@@ -2231,14 +2231,14 @@
       "related": ["hallucination", "ai-agent", "llm-as-a-judge"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-10 (자동 게시 금지 원칙)", "date": "2026-11-10" }],
       "created_at": "2026-11-10",
-      "updated_at": "2026-11-10"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "contract",
       "term_en": "Contract",
       "term_ko": "계약 (데이터·API 약속)",
       "aliases": ["API 계약", "데이터 계약", "인터페이스 약속", "컨트랙트"],
-      "pronunciation": { "ko": "컨트랙트", "read_as": "word", "note": "회의에서는 '계약' 또는 'API 스펙'이라고도 말합니다" },
+      "pronunciation": { "ko": "컨트랙트", "read_as": "word", "ipa": "ˈkɑnˌtrækt", "note": "회의에서는 '계약' 또는 'API 스펙'이라고도 말합니다" },
       "stage": "design",
       "level": 3,
       "definition": "두 시스템이 주고받는 데이터의 모양을 미리 정해 둔 약속입니다. 약속만 지키면 한쪽이 안을 바꿔도 다른 쪽은 깨지지 않습니다.",
@@ -2255,14 +2255,14 @@
       "related": ["schema", "api", "separation-of-concerns"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-11 (면접 문서: 관리 도구와 사이트를 잇는 파일)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "trade-off",
       "term_en": "Trade-off",
       "term_ko": "트레이드오프 (맞바꾸기)",
       "aliases": ["트레이드 오프", "득실", "맞교환", "대가"],
-      "pronunciation": { "ko": "트레이드오프", "read_as": "word" },
+      "pronunciation": { "ko": "트레이드오프", "read_as": "word", "ipa": "ˈtreɪdˌɔf" },
       "stage": "design",
       "also_stages": ["discovery"],
       "level": 2,
@@ -2280,14 +2280,14 @@
       "related": ["adr", "architecture", "technical-debt"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-11 (면접 문서: 트레이드오프를 같이 말하기)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "leitner-system",
       "term_en": "Leitner System",
       "term_ko": "라이트너 상자 (간격 반복 복습)",
       "aliases": ["라이트너 시스템", "간격 반복", "Spaced Repetition", "SRS"],
-      "pronunciation": { "ko": "라이트너 시스템", "read_as": "word", "note": "독일 사람 이름 Leitner에서 왔습니다" },
+      "pronunciation": { "ko": "라이트너 시스템", "read_as": "word", "ipa": "ˈlaɪtnər ˌsɪstəm", "note": "독일 사람 이름 Leitner에서 왔습니다" },
       "stage": "design",
       "level": 3,
       "definition": "카드를 여러 상자에 나눠, 맞히면 복습 간격이 긴 다음 상자로, 틀리면 앞 상자로 옮기는 복습 방법입니다. 잘 아는 것은 드물게, 약한 것은 자주 보게 됩니다.",
@@ -2303,14 +2303,14 @@
       "related": ["unit-test", "separation-of-concerns"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-11 (필드워드 복습 규칙)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "peak-end-rule",
       "term_en": "Peak-End Rule",
       "term_ko": "피크엔드 법칙",
       "aliases": ["피크 엔드 법칙", "절정과 끝 효과"],
-      "pronunciation": { "ko": "피크엔드 법칙", "read_as": "word" },
+      "pronunciation": { "ko": "피크엔드 법칙", "read_as": "word", "ipa": "ˈpik ˈɛnd ˌrul" },
       "stage": "design",
       "also_stages": ["grow"],
       "level": 3,
@@ -2327,14 +2327,14 @@
       "related": ["onboarding", "churn"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-11 (오늘의 마무리 설계)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "hypercorrection-effect",
       "term_en": "Hypercorrection Effect",
       "term_ko": "과잉 교정 효과",
       "aliases": ["하이퍼코렉션", "확신 오답 교정 효과"],
-      "pronunciation": { "ko": "하이퍼코렉션 이펙트", "read_as": "word", "note": "우리말로 '과잉 교정 효과'라고 더 자주 말합니다" },
+      "pronunciation": { "ko": "하이퍼코렉션 이펙트", "read_as": "word", "ipa": "ˌhaɪpərkəˈrɛkʃən ɪˌfɛkt", "note": "우리말로 '과잉 교정 효과'라고 더 자주 말합니다" },
       "stage": "design",
       "level": 4,
       "definition": "확신했는데 틀린 답을 바로잡으면, 자신 없이 틀린 답보다 오히려 더 잘 기억된다는 학습 현상입니다. 놀람이 기억을 강하게 만들기 때문입니다.",
@@ -2350,14 +2350,14 @@
       "related": ["peak-end-rule", "leitner-system"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-11 (확신도 5단계 설계)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "hash-routing",
       "term_en": "Hash Routing",
       "term_ko": "해시 라우팅",
       "aliases": ["해시 라우터", "# 주소 방식"],
-      "pronunciation": { "ko": "해시 라우팅", "read_as": "word" },
+      "pronunciation": { "ko": "해시 라우팅", "read_as": "word", "ipa": "ˈhæʃ ˌraʊtɪŋ" },
       "stage": "build",
       "level": 3,
       "definition": "주소 끝의 # 뒤 부분(예: #/term/api)을 보고 화면을 바꾸는 방식입니다. # 뒤는 서버로 보내지지 않아서, 서버 설정 없이 정적 사이트에서도 여러 화면을 만들 수 있습니다.",
@@ -2373,14 +2373,14 @@
       "related": ["static-site", "frontend"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-11 (면접 문서: 프레임워크 없이 만든 것)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "dry-run",
       "term_en": "Dry Run",
       "term_ko": "드라이 런 (시험 실행)",
       "aliases": ["드라이런", "시험 실행", "모의 실행"],
-      "pronunciation": { "ko": "드라이 런", "read_as": "word" },
+      "pronunciation": { "ko": "드라이 런", "read_as": "word", "ipa": "ˈdraɪ ˌrʌn" },
       "stage": "test",
       "also_stages": ["deploy", "automate"],
       "level": 2,
@@ -2397,14 +2397,14 @@
       "related": ["validation", "staging", "human-in-the-loop"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-11 (promote.py 설계)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "cache-busting",
       "term_en": "Cache Busting",
       "term_ko": "캐시 버스팅",
       "aliases": ["캐시 무효화", "버전 쿼리", "?v="],
-      "pronunciation": { "ko": "캐시 버스팅", "read_as": "word" },
+      "pronunciation": { "ko": "캐시 버스팅", "read_as": "word", "ipa": "ˈkæʃ ˌbʌstɪŋ" },
       "stage": "deploy",
       "also_stages": ["build"],
       "level": 3,
@@ -2421,7 +2421,7 @@
       "related": ["cache", "deployment"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-11 (면접 문서: 캐시 문제)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "xss",
@@ -2430,7 +2430,7 @@
       "aliases": ["Cross-Site Scripting", "스크립트 삽입 공격"],
       "expansion": "Cross-Site Scripting",
       "expansion_ko": "사이트를 넘나드는 스크립트 → 남의 스크립트가 내 페이지에서 실행되는 공격",
-      "pronunciation": { "ko": "엑스에스에스", "read_as": "letters", "note": "CSS와 헷갈리지 않게 X로 줄여 씁니다" },
+      "pronunciation": { "ko": "엑스에스에스", "read_as": "letters", "ipa": "ˌɛksɛsˈɛs", "note": "CSS와 헷갈리지 않게 X로 줄여 씁니다" },
       "stage": "secure",
       "level": 3,
       "definition": "공격자가 넣은 글에 숨긴 코드가 다른 사용자의 브라우저에서 실행되게 하는 공격입니다. 화면에 글을 넣을 때 코드로 해석되지 않게 막아서 예방합니다.",
@@ -2446,14 +2446,14 @@
       "related": ["validation", "defense-in-depth"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-11 (면접 문서: 보안 질문)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "supply-chain-attack",
       "term_en": "Supply Chain Attack",
       "term_ko": "공급망 공격",
       "aliases": ["서플라이 체인 어택", "소프트웨어 공급망 공격", "의존성 공격"],
-      "pronunciation": { "ko": "서플라이 체인 어택", "read_as": "word", "note": "회의에서는 '공급망 공격'이라고 더 자주 말합니다" },
+      "pronunciation": { "ko": "서플라이 체인 어택", "read_as": "word", "ipa": "səˈplaɪ ˌtʃeɪn əˈtæk", "note": "회의에서는 '공급망 공격'이라고 더 자주 말합니다" },
       "stage": "secure",
       "level": 3,
       "definition": "내 코드가 아니라, 내가 가져다 쓰는 라이브러리나 외부 스크립트에 악성 코드를 넣어 함께 퍼뜨리는 공격입니다.",
@@ -2469,7 +2469,7 @@
       "related": ["library", "least-privilege", "defense-in-depth"],
       "sources": [{ "type": "planning", "label": "기획 2026-11-11 (면접 문서: 외부 라이브러리를 쓰지 않은 이유)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "iaas",
@@ -2477,7 +2477,7 @@
       "term_ko": "서비스형 인프라",
       "expansion": "Infrastructure as a Service",
       "expansion_ko": "인프라를 서비스로 → 컴퓨터와 저장 공간을 빌려 쓰는 것",
-      "pronunciation": { "ko": "아이아스", "read_as": "word", "tts": "eye-as", "note": "'이아스'라고도 합니다" },
+      "pronunciation": { "ko": "아이아스", "read_as": "word", "ipa": "ˈaɪæs", "tts": "eye-as", "note": "'이아스'라고도 합니다" },
       "stage": "deploy",
       "level": 2,
       "definition": "클라우드에서 가상 컴퓨터, 저장 공간, 네트워크 같은 기본 자원만 빌려 쓰는 방식입니다. 그 위의 운영체제 설정과 프로그램 설치는 직접 합니다.",
@@ -2493,7 +2493,7 @@
       "related": ["paas", "saas", "on-premise"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "paas",
@@ -2501,7 +2501,7 @@
       "term_ko": "서비스형 플랫폼",
       "expansion": "Platform as a Service",
       "expansion_ko": "플랫폼을 서비스로 → 앱만 올리면 실행 환경은 클라우드가 관리",
-      "pronunciation": { "ko": "파스", "read_as": "word", "tts": "pass" },
+      "pronunciation": { "ko": "파스", "read_as": "word", "ipa": "pæs", "tts": "pass" },
       "stage": "deploy",
       "level": 2,
       "definition": "서버와 운영체제, 실행 환경 관리는 클라우드가 맡고, 사용자는 앱 코드만 올리면 되는 방식입니다.",
@@ -2517,7 +2517,7 @@
       "related": ["iaas", "saas", "serverless"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "saas",
@@ -2525,7 +2525,7 @@
       "term_ko": "서비스형 소프트웨어",
       "expansion": "Software as a Service",
       "expansion_ko": "소프트웨어를 서비스로 → 완성된 프로그램을 구독해서 씀",
-      "pronunciation": { "ko": "사스", "read_as": "word", "tts": "sass" },
+      "pronunciation": { "ko": "사스", "read_as": "word", "ipa": "sæs", "tts": "sass" },
       "stage": "deploy",
       "also_stages": ["discovery"],
       "level": 1,
@@ -2542,14 +2542,14 @@
       "related": ["iaas", "paas"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "on-premise",
       "term_en": "On-premise",
       "term_ko": "온프레미스 (자체 서버)",
       "aliases": ["온프렘", "On-prem", "구축형"],
-      "pronunciation": { "ko": "온프레미스", "read_as": "word", "note": "줄여서 '온프렘'이라고 많이 말합니다" },
+      "pronunciation": { "ko": "온프레미스", "read_as": "word", "ipa": "ˌɑnˈprɛmɪs", "note": "줄여서 '온프렘'이라고 많이 말합니다" },
       "stage": "deploy",
       "also_stages": ["design"],
       "level": 2,
@@ -2566,14 +2566,14 @@
       "related": ["iaas", "data-minimization"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "container",
       "term_en": "Container",
       "term_ko": "컨테이너",
       "aliases": ["도커", "Docker", "컨테이너 이미지"],
-      "pronunciation": { "ko": "컨테이너", "read_as": "word" },
+      "pronunciation": { "ko": "컨테이너", "read_as": "word", "ipa": "kənˈteɪnər" },
       "stage": "deploy",
       "also_stages": ["build"],
       "level": 2,
@@ -2590,14 +2590,14 @@
       "related": ["environment-variable", "deployment"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "monolith",
       "term_en": "Monolith",
       "term_ko": "모놀리식 (한 덩어리 구조)",
       "aliases": ["모놀리스", "모놀리식 아키텍처"],
-      "pronunciation": { "ko": "모놀리스", "read_as": "word", "note": "형용사로 '모놀리식'이라고도 합니다" },
+      "pronunciation": { "ko": "모놀리스", "read_as": "word", "ipa": "ˈmɑnəlɪθ", "note": "형용사로 '모놀리식'이라고도 합니다" },
       "stage": "design",
       "level": 3,
       "definition": "모든 기능을 하나의 프로그램으로 묶어 함께 만들고 함께 배포하는 구조입니다. 처음 만들기 쉽고 단순합니다.",
@@ -2613,7 +2613,7 @@
       "related": ["msa", "architecture", "scalability"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "msa",
@@ -2622,7 +2622,7 @@
       "aliases": ["마이크로서비스", "Microservices"],
       "expansion": "Microservices Architecture",
       "expansion_ko": "작은 서비스들로 이루어진 구조",
-      "pronunciation": { "ko": "엠에스에이", "read_as": "letters", "note": "'마이크로서비스'라고 풀어서도 많이 말합니다" },
+      "pronunciation": { "ko": "엠에스에이", "read_as": "letters", "ipa": "ˌɛmɛsˈeɪ", "note": "'마이크로서비스'라고 풀어서도 많이 말합니다" },
       "stage": "design",
       "also_stages": ["grow"],
       "level": 3,
@@ -2639,7 +2639,7 @@
       "related": ["monolith", "api", "scalability"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "rdb",
@@ -2648,7 +2648,7 @@
       "aliases": ["RDBMS", "SQL 데이터베이스", "MySQL", "PostgreSQL"],
       "expansion": "Relational Database",
       "expansion_ko": "관계형 데이터베이스 → 표와 표의 관계로 저장",
-      "pronunciation": { "ko": "알디비", "read_as": "letters" },
+      "pronunciation": { "ko": "알디비", "read_as": "letters", "ipa": "ˌɑrdiˈbi" },
       "stage": "design",
       "also_stages": ["build"],
       "level": 2,
@@ -2665,7 +2665,7 @@
       "related": ["nosql", "schema", "data-modeling"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "nosql",
@@ -2674,7 +2674,7 @@
       "aliases": ["노에스큐엘", "문서형 DB", "MongoDB"],
       "expansion": "Not Only SQL",
       "expansion_ko": "SQL만은 아니다 → 표 말고 다른 모양으로도 저장",
-      "pronunciation": { "ko": "노에스큐엘", "read_as": "mixed", "tts": "no S Q L", "note": "'노시퀄'이라고도 합니다" },
+      "pronunciation": { "ko": "노에스큐엘", "read_as": "mixed", "ipa": "ˌnoʊˌɛskjuˈɛl", "tts": "no S Q L", "note": "'노시퀄'이라고도 합니다" },
       "stage": "design",
       "also_stages": ["build"],
       "level": 3,
@@ -2691,14 +2691,14 @@
       "related": ["rdb", "json", "schema"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "embedding",
       "term_en": "Embedding",
       "term_ko": "임베딩",
       "aliases": ["벡터화", "임베딩 벡터"],
-      "pronunciation": { "ko": "임베딩", "read_as": "word" },
+      "pronunciation": { "ko": "임베딩", "read_as": "word", "ipa": "ɛmˈbɛdɪŋ" },
       "stage": "automate",
       "level": 3,
       "definition": "문장이나 단어를 뜻이 담긴 숫자 목록(벡터)으로 바꾸는 것입니다. 뜻이 비슷한 글은 숫자도 가까워져서, 낱말이 달라도 비슷한 글을 찾을 수 있습니다.",
@@ -2714,14 +2714,14 @@
       "related": ["vector-db", "chunking", "rag"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "vector-db",
       "term_en": "Vector Database",
       "term_ko": "벡터 데이터베이스",
       "aliases": ["벡터 DB", "Vector DB", "벡터 스토어"],
-      "pronunciation": { "ko": "벡터 디비", "read_as": "mixed", "tts": "vector D B" },
+      "pronunciation": { "ko": "벡터 디비", "read_as": "mixed", "ipa": "ˈvɛktər ˈdeɪtəˌbeɪs", "tts": "vector D B" },
       "stage": "automate",
       "level": 3,
       "definition": "임베딩으로 만든 숫자 목록(벡터)을 저장하고, 뜻이 가까운 것을 빠르게 찾아 주는 데이터베이스입니다. RAG에서 참고 문서를 찾을 때 씁니다.",
@@ -2737,14 +2737,14 @@
       "related": ["embedding", "rag", "chunking"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "chunking",
       "term_en": "Chunking",
       "term_ko": "청킹 (문서 나누기)",
       "aliases": ["청크", "문서 분할"],
-      "pronunciation": { "ko": "청킹", "read_as": "word" },
+      "pronunciation": { "ko": "청킹", "read_as": "word", "ipa": "ˈtʃʌŋkɪŋ" },
       "stage": "automate",
       "level": 3,
       "definition": "긴 문서를 검색하기 좋은 크기의 조각(청크)으로 나누는 작업입니다. 조각의 크기와 나누는 위치가 RAG 답변 품질을 크게 좌우합니다.",
@@ -2760,14 +2760,14 @@
       "related": ["embedding", "vector-db", "rag"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "context-window",
       "term_en": "Context Window",
       "term_ko": "컨텍스트 윈도우",
       "aliases": ["컨텍스트", "컨텍스트 길이", "문맥 창"],
-      "pronunciation": { "ko": "컨텍스트 윈도우", "read_as": "word" },
+      "pronunciation": { "ko": "컨텍스트 윈도우", "read_as": "word", "ipa": "ˈkɑntɛkst ˌwɪndoʊ" },
       "stage": "automate",
       "level": 2,
       "definition": "AI가 한 번에 읽고 기억할 수 있는 글의 최대 양입니다. 지시문, 대화 기록, 참고 문서, 답변이 모두 이 안에 들어가야 합니다.",
@@ -2783,7 +2783,7 @@
       "related": ["llm", "prompt", "rag"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "mcp",
@@ -2791,7 +2791,7 @@
       "term_ko": "모델 컨텍스트 프로토콜",
       "expansion": "Model Context Protocol",
       "expansion_ko": "모델에게 맥락(도구·데이터)을 주는 약속",
-      "pronunciation": { "ko": "엠씨피", "read_as": "letters" },
+      "pronunciation": { "ko": "엠씨피", "read_as": "letters", "ipa": "ˌɛmsiˈpi" },
       "stage": "automate",
       "also_stages": ["build"],
       "level": 3,
@@ -2808,14 +2808,14 @@
       "related": ["api", "ai-agent", "least-privilege"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "vibe-coding",
       "term_en": "Vibe Coding",
       "term_ko": "바이브 코딩",
       "aliases": ["바이브코딩", "감으로 코딩"],
-      "pronunciation": { "ko": "바이브 코딩", "read_as": "word" },
+      "pronunciation": { "ko": "바이브 코딩", "read_as": "word", "ipa": "ˈvaɪb ˌkoʊdɪŋ" },
       "stage": "build",
       "level": 2,
       "definition": "명세나 검증 기준 없이 'AI야, 이런 느낌으로 만들어 줘' 하며 즉흥적으로 코드를 만들게 하는 방식입니다. 빠르게 시제품을 볼 수 있습니다.",
@@ -2831,14 +2831,14 @@
       "related": ["agentic-coding", "poc", "unit-test"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "agentic-coding",
       "term_en": "Agentic Coding",
       "term_ko": "에이전틱 코딩",
       "aliases": ["에이전트 코딩", "AI 에이전트 개발"],
-      "pronunciation": { "ko": "에이전틱 코딩", "read_as": "word" },
+      "pronunciation": { "ko": "에이전틱 코딩", "read_as": "word", "ipa": "eɪˈdʒɛntɪk ˌkoʊdɪŋ" },
       "stage": "build",
       "also_stages": ["automate"],
       "level": 3,
@@ -2855,14 +2855,14 @@
       "related": ["vibe-coding", "ai-agent", "acceptance-criteria", "human-in-the-loop"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "guardrail",
       "term_en": "Guardrail",
       "term_ko": "가드레일 (AI 안전장치)",
       "aliases": ["가드레일", "안전장치"],
-      "pronunciation": { "ko": "가드레일", "read_as": "word" },
+      "pronunciation": { "ko": "가드레일", "read_as": "word", "ipa": "ˈɡɑrdˌreɪl" },
       "stage": "secure",
       "also_stages": ["automate"],
       "level": 3,
@@ -2879,14 +2879,14 @@
       "related": ["prompt-injection", "human-in-the-loop", "hallucination"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "prompt-injection",
       "term_en": "Prompt Injection",
       "term_ko": "프롬프트 인젝션",
       "aliases": ["프롬프트 주입", "지시 주입 공격"],
-      "pronunciation": { "ko": "프롬프트 인젝션", "read_as": "word" },
+      "pronunciation": { "ko": "프롬프트 인젝션", "read_as": "word", "ipa": "ˈprɑmpt ɪnˌdʒɛkʃən" },
       "stage": "secure",
       "also_stages": ["automate"],
       "level": 3,
@@ -2903,14 +2903,14 @@
       "related": ["guardrail", "least-privilege", "mcp"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "acceptance-criteria",
       "term_en": "Acceptance Criteria",
       "term_ko": "수용 기준",
       "aliases": ["AC", "인수 기준", "완료 조건"],
-      "pronunciation": { "ko": "억셉턴스 크라이테리아", "read_as": "word", "note": "회의에서는 줄여서 'AC' 또는 '수용 기준'이라고 많이 말합니다" },
+      "pronunciation": { "ko": "억셉턴스 크라이테리아", "read_as": "word", "ipa": "əkˈsɛptəns kraɪˈtɪriə", "note": "회의에서는 줄여서 'AC' 또는 '수용 기준'이라고 많이 말합니다" },
       "stage": "discovery",
       "also_stages": ["test"],
       "level": 2,
@@ -2927,14 +2927,14 @@
       "related": ["requirements", "unit-test", "stakeholder"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "smoke-test",
       "term_en": "Smoke Test",
       "term_ko": "스모크 테스트",
       "aliases": ["연기 테스트", "기본 동작 확인"],
-      "pronunciation": { "ko": "스모크 테스트", "read_as": "word" },
+      "pronunciation": { "ko": "스모크 테스트", "read_as": "word", "ipa": "ˈsmoʊk ˌtɛst" },
       "stage": "test",
       "also_stages": ["deploy"],
       "level": 2,
@@ -2951,14 +2951,14 @@
       "related": ["regression", "deployment", "rollback"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     },
     {
       "id": "observability",
       "term_en": "Observability",
       "term_ko": "관측성",
       "aliases": ["옵저버빌리티", "O11y"],
-      "pronunciation": { "ko": "옵저버빌리티", "read_as": "word", "note": "회의에서는 '관측성'이라고도 합니다" },
+      "pronunciation": { "ko": "옵저버빌리티", "read_as": "word", "ipa": "əbˌzɝvəˈbɪləti", "note": "회의에서는 '관측성'이라고도 합니다" },
       "stage": "operate",
       "level": 3,
       "definition": "시스템 밖으로 나오는 기록(로그), 숫자(지표), 요청이 지나간 길(트레이스)만 보고도 안에서 무슨 일이 일어나는지 알아낼 수 있는 정도입니다.",
@@ -2974,7 +2974,7 @@
       "related": ["monitoring", "log", "incident"],
       "sources": [{ "type": "lecture", "label": "강의 용어 해설집 2026-11-06 (용어 목록만 참고, 설명은 새로 씀)", "date": "2026-11-11" }],
       "created_at": "2026-11-11",
-      "updated_at": "2026-11-11"
+      "updated_at": "2026-11-12"
     }
   ],
   "confusable_pairs": [

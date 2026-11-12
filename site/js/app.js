@@ -361,9 +361,10 @@ function renderStudy() {
 
   const card = h("article", { class: "card" },
     h("div", { class: "term-head", "data-sec": "term" },
-      h("h1", {}, term.term_en, h("span", { class: "pron" }, `[${term.pronunciation.ko}]`)),
+      termTitle(term),
       speech.supported && speakButton("term", t("speak.term"), () => termOnlyParts(term), "mini")
-    )
+    ),
+    pronKo(term)
   );
   const panel = h("div", { class: "check" });
   card.append(panel);
@@ -651,7 +652,7 @@ function renderWrap() {
   app.replaceChildren(
     h("div", { class: "study-head" }, h("span", { class: "badge" }, ...withIcon("moon", t("wrap.badge"))), h("span", {}, t("wrap.progress", { i: w.i + 1, n: w.ids.length }))),
     h("article", { class: "card" },
-      h("div", { class: "term-head" }, h("h1", {}, term.term_en, h("span", { class: "pron" }, `[${term.pronunciation.ko}]`))),
+      h("div", { class: "term-head" }, termTitle(term)), pronKo(term),
       panel)
   );
   window.scrollTo(0, 0);
@@ -1000,6 +1001,19 @@ function modeBar(term, controls) {
   );
 }
 
+// 용어 제목: 영어 이름 + 발음 기호(IPA). 발음 기호가 없으면 예전처럼 한글 발음을 괄호로 (2026-11-12)
+function termTitle(term) {
+  const p = term.pronunciation;
+  return h("h1", {}, term.term_en, p.ipa
+    ? h("span", { class: "pron ipa", lang: "en", title: t("card.ipa.title") }, `/${p.ipa}/`)
+    : h("span", { class: "pron" }, `[${p.ko}]`));
+}
+// 한글 현업 발음: 발음 기호로 나타낼 수 없는 한국 현업 읽기(PoC=피오씨)를 함께 보여 준다
+function pronKo(term) {
+  const p = term.pronunciation;
+  return p.ipa ? h("p", { class: "pron-ko" }, h("span", {}, t("card.pron.ko")), p.ko) : "";
+}
+
 // 카드 본문. 읽기 구역마다 data-sec 이름을 붙여, 읽는 중인 곳에 색을 칠할 수 있게 한다.
 function buildCard(term, progressText) {
   const pron = term.pronunciation;
@@ -1007,11 +1021,12 @@ function buildCard(term, progressText) {
     // 카드 머리: 단어(왼쪽) + 진행·단계·등급(오른쪽 위). 화면이 좁아 한 줄에 안 들어가면 진행 표시가 단어 위로 올라간다.
     h("div", { class: "card-head" },
       h("div", { class: "term-head", "data-sec": "term" },
-        h("h1", {}, term.term_en, h("span", { class: "pron" }, `[${pron.ko}]`)),
+        termTitle(term),
         speech.supported && speakButton("term", t("speak.term"), () => termOnlyParts(term), "mini")
       ),
       h("span", { class: "card-progress" }, progressText, progressText && " · ", t(`stage.${term.stage}`), " · ", t(`level.${term.level}`))
     ),
+    pronKo(term),
     term.term_ko !== term.term_en && h("p", { class: "term-ko-big" }, term.term_ko),
     (pron.note || pron.variants?.length > 0) && h("p", { class: "pron-tip" },
       pron.note && h("span", {}, pron.note),

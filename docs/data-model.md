@@ -14,7 +14,7 @@ glossary.json
 ├── terms[]                        ← 용어 카드 목록
 │   ├── id           "webhook"     ← 바꾸지 않는 이름표 (슬러그)
 │   ├── term_en / term_ko / aliases[] / expansion?
-│   ├── pronunciation { ko, read_as, tts?, variants?, note? }   ← 필수
+│   ├── pronunciation { ko, read_as, ipa?, tts?, variants?, note? }   ← 필수 (ipa: 발음 기호, 2026-11-12)
 │   ├── stage (9단계) / also_stages[]? / level (1~4)          ← 필수
 │   ├── definition / analogy? / pitfall? / interview_q? / interview_a?
 │   ├── prerequisites[]?                                     ← 선수 지식
@@ -42,7 +42,7 @@ glossary.json
 | 5 | `sources`는 배열 | 강의에서 같은 용어가 다시 나오면 새 카드 대신 출처만 추가한다 |
 | 6 | 승인 상태(`status`) 칸이 **없다** | 공개 파일에는 승인된 것만 들어간다. 승인 전 후보는 `pipeline/candidates/`에 따로 두고 Git에 올리지 않는다 |
 | 7 | 복습 기록과 소리 프리셋 설정은 이 파일에 **없다** | 사람마다 다르다. 각자 브라우저의 localStorage에 둔다 |
-| 8 | 발음(`pronunciation`)은 **필수** 칸 | 듣기만 해도 배우는 앱이다. 처음부터 넣어야 80개를 나중에 한꺼번에 채우는 고생이 없다. `ko`는 화면 표시용, `tts`는 영어 음성용 힌트 |
+| 8 | 발음(`pronunciation`)은 **필수** 칸 | 듣기만 해도 배우는 앱이다. 처음부터 넣어야 80개를 나중에 한꺼번에 채우는 고생이 없다. `ko`는 한국 현업 발음(화면에 "현업 발음"으로 표시), `ipa`는 미국 영어 발음 기호(단어 아래에 /…/로 표시), `tts`는 영어 음성용 힌트 |
 
 | 9 | `stage`(단계)와 `level`(등급)은 **필수** | 프로젝트 순서대로 배우는 지도, 수준별 시작점, "이미 알아요" 건너뛰기의 바탕이다. 기준은 `docs/콘텐츠_작성_가이드.md` |
 | 10 | `pitfall`, `interview_q`, `expansion`은 선택 | 학습자가 가장 많이 묻는 세 가지에 답한다: "현업에서 뭘 조심해?", "면접에서 뭘 물어?", "약어가 뭐의 줄임말이야?" 많이 아는 사람이 지루하지 않게 하는 재료다 |

@@ -902,3 +902,10 @@ mark.hl {
 .btn.soft:hover { border-color: var(--accent); }
 /* 발음 표기는 한 덩어리로: 줄이 바뀌면 통째로 다음 줄로 */
 .pron { white-space: nowrap; }
+
+/* 발음 기호(IPA)와 한글 현업 발음 (2026-11-12) */
+.pron.ipa { font-family: "Segoe UI", "Noto Sans", "Lucida Sans Unicode", system-ui, sans-serif; font-weight: 500; color: var(--muted); }
+.pron-ko { margin: 4px 0 0; font-size: 15px; color: var(--text); }
+.pron-ko span { display: inline-block; margin-right: 6px; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 600; }
+/* 발음 기호는 단어 아래 줄에: 긴 용어(Hypothesis Validation 등)도 화면 밖으로 넘치지 않게 */
+.card h1 .pron.ipa { display: block; margin-top: 2px; font-size: 18px; white-space: normal; overflow-wrap: anywhere; letter-spacing: 0.01em; }
