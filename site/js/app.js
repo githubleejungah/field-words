@@ -1804,12 +1804,34 @@ function mailtoLink(d) {
   return `mailto:${FEEDBACK.mailto}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
+// 형광펜 모양 고르기 (2026-11-12 사용자 요청: 두 모양을 직접 써 보고 정하고 싶다)
+//   band  = 글자 아래쪽 절반에 겹쳐 칠하기 (지금 방식)
+//   under = 글자 바로 아래에 두꺼운 띠, 글자와 겹치지 않음
+const HL_STYLES = ["band", "under"];
+function applyHighlightStyle() {
+  const style = Review.getSettings().hl ?? "band";
+  HL_STYLES.forEach((s) => document.body.classList.toggle(`hl-${s}`, s === style));
+}
+function highlightChooser() {
+  const wrap = h("div", { class: "hl-choose", role: "radiogroup", "aria-label": t("about.view.hl") });
+  const paint = () => {
+    const now = Review.getSettings().hl ?? "band";
+    wrap.replaceChildren(...HL_STYLES.map((s) => h("button", {
+      class: `hl-option hl-${s}`, type: "button", role: "radio", "aria-checked": String(s === now),
+      onclick: () => { Review.setSettings({ hl: s }); applyHighlightStyle(); paint(); },
+    }, h("b", {}, t(`about.view.hl.${s}`)), h("span", {}, h("mark", { class: "hl" }, t("about.view.hl.sample"))))));
+  };
+  paint();
+  return h("div", {}, h("p", { class: "muted" }, t("about.view.hl")), wrap);
+}
+
 function renderAbout() {
   renderTopbar("card");
   document.body.classList.add("no-footer");   // 이 화면이 곧 "정보"라서 아래 링크는 숨긴다
   app.replaceChildren(
     h("article", { class: "card" },
       h("h1", {}, t("about.title")),
+      section(null, t("about.view.title"), highlightChooser()),
       section(null, t("about.data.title"),
         h("div", { class: "notice" },
           h("p", {}, t("about.data.body1")),
@@ -2147,6 +2169,7 @@ function inAppNotice() {
 loadData()
   .then(() => {
     inAppNotice();
+    applyHighlightStyle();
     window.addEventListener("hashchange", route);
     route();
   })

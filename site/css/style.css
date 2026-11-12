@@ -955,3 +955,27 @@ mark.hl { background: linear-gradient(transparent 58%, var(--hl) 58%, var(--hl) 
 .card > .term-head + .pron-ko { margin-top: 16px; }
 /* 단어 칸 안쪽 여백: 색칠했을 때 발음 기호(ɛ, ʒ처럼 아래로 내려오는 글자)가 가장자리에 붙지 않게 */
 .term-head { padding: 2px 0 6px; }
+
+/* 형광펜 모양 2: 글자 바로 아래 두꺼운 띠 (글자와 겹치지 않음). 정보 화면에서 고른다 (2026-11-12) */
+:root { --hl-line: #c9e0bc; }
+@media (prefers-color-scheme: dark) { :root { --hl-line: rgba(156, 195, 174, 0.45); } }
+body.hl-under mark.hl, .hl-option.hl-under mark.hl {
+  background: none;
+  padding: 0;
+  text-decoration-line: underline;
+  text-decoration-color: var(--hl-line);
+  text-decoration-thickness: 0.32em;
+  text-underline-offset: 0.18em;
+  text-decoration-skip-ink: none;
+}
+/* 고르기 버튼: 두 모양을 나란히 미리 보여 준다 */
+.hl-choose { display: grid; gap: 8px; margin-top: 8px; }
+.hl-option {
+  display: grid; gap: 4px; text-align: left; padding: 12px 14px; cursor: pointer;
+  border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); font: inherit;
+}
+.hl-option b { font-size: 14px; }
+.hl-option span { font-size: 16px; line-height: 1.9; }
+.hl-option[aria-checked="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+/* 버튼 안 미리보기는 body 설정과 상관없이 각자 모양으로 */
+.hl-option.hl-band mark.hl { background: linear-gradient(transparent 58%, var(--hl) 58%, var(--hl) 92%, transparent 92%); text-decoration: none; padding: 0 1px; }

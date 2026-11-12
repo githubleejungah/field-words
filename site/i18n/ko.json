@@ -234,5 +234,10 @@
   "prog.growth.summary": "지금까지 전체 {n}개 중 {s}개({p}%)를 만나 봤고, 장기 기억은 {l}개예요.",
   "prog.growth.seen.help": "한 번이라도 풀어 본 용어 수예요. 줄어들지 않고, 새 용어를 만날 때마다 올라가요. 평평해지면 복습 단계로 넘어간 거예요.",
   "prog.growth.long.help": "30일 간격 복습까지 확실히 맞힌 용어 수예요. 진짜로 오래 기억하는지 보여 주는 성과 지표예요.",
-  "prog.growth.long.first": "처음 두 달은 0이 정상이에요. 빠르면 {d}쯤 첫 장기 기억이 생겨요."
+  "prog.growth.long.first": "처음 두 달은 0이 정상이에요. 빠르면 {d}쯤 첫 장기 기억이 생겨요.",
+  "about.view.title": "보기 설정",
+  "about.view.hl": "뜻에 칠하는 형광펜 모양을 골라 보세요. 바로 바뀌어요.",
+  "about.view.hl.band": "글자에 겹쳐 칠하기",
+  "about.view.hl.under": "글자 밑에 띠",
+  "about.view.hl.sample": "프로젝트 결과에 영향을 주는 사람"
 }
