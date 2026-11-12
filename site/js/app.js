@@ -1630,6 +1630,7 @@ const ICONS = {
   upload: "M12 20V9 M7 14l5-5 5 5 M5 4h14",
   medal: "M8 3l2.5 6 M16 3l-2.5 6 M12 9a6 6 0 1 0 0 12a6 6 0 1 0 0-12z M12 12.5l1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2-1.6-1.5 2.2-.3z",
   chevron: "M9 6l6 6-6 6",
+  info: "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M12 11v6 M12 7.5v.5",
   arrow: "M5 12h14 M13 6l6 6-6 6",
 };
 const MODE_ICON = { look: "eye", walk: "walk", speak: "mic" };
@@ -2076,15 +2077,33 @@ function growthHelp(s) {
   const pct = Math.round((last.seen / state.terms.length) * 100);
   // 가장 빨리 장기 기억이 생기는 날: 처음 공부한 날 + 59일 (1·2·4·7·15·30일 간격을 모두 확실히 맞혔을 때)
   const earliest = s.firstDate ? Review.addDays(s.firstDate, 59) : null;
+  // 범례 줄은 짧게: 색 표시 + 이름 + ⓘ. ⓘ를 누르면 그 선의 설명이 아래에 펼쳐진다 (2026-11-12 의견: 화면을 깔끔하게)
+  const longExtra = last.longTerm === 0 && earliest
+    ? ` ${earliest > Review.today() ? t("prog.growth.long.first", { d: shortDate(earliest) }) : t("prog.growth.long.soon")}`
+    : "";
+  const helps = {
+    seen: t("prog.growth.seen.help"),
+    long: t("prog.growth.long.help") + longExtra,
+  };
+  const panel = h("p", { class: "legend-help", hidden: "" });
+  let open = null;
+  const item = (key, cls, label) => {
+    const btn = h("button", {
+      class: "legend-info", type: "button", "aria-expanded": "false",
+      "aria-label": t("prog.growth.what", { name: label }),
+      onclick: () => {
+        open = open === key ? null : key;
+        legend.querySelectorAll(".legend-info").forEach((b) => b.setAttribute("aria-expanded", String(b === btn && open === key)));
+        panel.hidden = !open;
+        panel.textContent = open ? helps[open] : "";
+      },
+    }, icon("info"));
+    return h("span", { class: "legend-item" }, h("i", { class: `legend-swatch ${cls}` }), h("b", {}, label), btn);
+  };
+  const legend = h("div", { class: "legend-row" }, item("seen", "line-seen", t("prog.seen")), item("long", "line-long", t("prog.longterm")));
   return h("div", { class: "chart-help" },
     h("p", { class: "chart-summary" }, t("prog.growth.summary", { s: last.seen, n: state.terms.length, p: pct, l: last.longTerm })),
-    h("ul", {},
-      h("li", {}, h("i", { class: "legend-swatch line-seen" }), h("b", {}, t("prog.seen")), " ", t("prog.growth.seen.help")),
-      h("li", {}, h("i", { class: "legend-swatch line-long" }), h("b", {}, t("prog.longterm")), " ",
-        t("prog.growth.long.help"),
-        last.longTerm === 0 && earliest
-          ? ` ${earliest > Review.today() ? t("prog.growth.long.first", { d: shortDate(earliest) }) : t("prog.growth.long.soon")}`
-          : "")));
+    legend, panel);
 }
 
 // 단계별 진행: 단계마다 "본 용어 / 전체". 막대 하나 = 한 단계

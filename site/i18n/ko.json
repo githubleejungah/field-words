@@ -242,5 +242,6 @@
   "about.view.hl.sample": "프로젝트 결과에 영향을 주는 사람",
   "prog.cal.prev": "이전 달",
   "prog.cal.next": "다음 달",
-  "prog.growth.long.soon": "복습 날짜마다 확실해요로 맞히면 곧 생겨요. 틀리면 간격이 다시 짧아져서 조금 늦어질 수 있어요."
+  "prog.growth.long.soon": "복습 날짜마다 확실해요로 맞히면 곧 생겨요. 틀리면 간격이 다시 짧아져서 조금 늦어질 수 있어요.",
+  "prog.growth.what": "{name} 설명 보기"
 }

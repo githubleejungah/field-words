@@ -991,3 +991,18 @@ body.hl-under mark.hl, .hl-option.hl-under mark.hl {
 .cal-nav:hover:not([disabled]) { border-color: var(--accent); }
 .cal-nav[disabled] { opacity: 0.3; cursor: default; }
 .cal-head .cal-nav:first-child .icon { transform: rotate(180deg); }   /* 이전 달: 왼쪽 화살표 */
+
+/* 성장 그래프 범례: 짧게, ⓘ를 누르면 설명이 펼쳐진다 (2026-11-12) */
+.legend-row { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.legend-item .legend-swatch { margin: 0; }
+.legend-info {
+  display: grid; place-items: center; width: 32px; height: 32px; margin-left: -4px; padding: 0;
+  border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer;
+}
+.legend-info .icon { width: 17px; height: 17px; }
+.legend-info:hover, .legend-info[aria-expanded="true"] { color: var(--accent); background: var(--accent-soft); }
+.legend-help {
+  margin: 8px 0 0; padding: 10px 12px; border-radius: 10px;
+  background: var(--accent-soft); color: var(--text); font-size: 14px; line-height: 1.6;
+}
