@@ -1807,15 +1807,15 @@ function mailtoLink(d) {
 // 형광펜 모양 고르기 (2026-11-12 사용자 요청: 두 모양을 직접 써 보고 정하고 싶다)
 //   band  = 글자 아래쪽 절반에 겹쳐 칠하기 (지금 방식)
 //   under = 글자 바로 아래에 두꺼운 띠, 글자와 겹치지 않음
-const HL_STYLES = ["band", "under"];
+const HL_STYLES = ["under", "band"];   // 2026-11-12 사용자 결정: 기본은 "글자 밑에 띠"
 function applyHighlightStyle() {
-  const style = Review.getSettings().hl ?? "band";
+  const style = Review.getSettings().hl ?? "under";
   HL_STYLES.forEach((s) => document.body.classList.toggle(`hl-${s}`, s === style));
 }
 function highlightChooser() {
   const wrap = h("div", { class: "hl-choose", role: "radiogroup", "aria-label": t("about.view.hl") });
   const paint = () => {
-    const now = Review.getSettings().hl ?? "band";
+    const now = Review.getSettings().hl ?? "under";
     wrap.replaceChildren(...HL_STYLES.map((s) => h("button", {
       class: `hl-option hl-${s}`, type: "button", role: "radio", "aria-checked": String(s === now),
       onclick: () => { Review.setSettings({ hl: s }); applyHighlightStyle(); paint(); },
