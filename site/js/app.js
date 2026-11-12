@@ -1898,7 +1898,7 @@ function renderProgress() {
       h("h1", { class: "title-icon" }, ...withIcon("chart", t("prog.title"))),
       tiles,
       section(null, t("prog.heat.title"), heatmap(s, openDay)),
-      section(null, t("prog.growth.title"), growthChart(s)),
+      section(null, t("prog.growth.title"), growthHelp(s), growthChart(s)),
       section(null, t("prog.stage.title"), stageBars(s)),
       section(null, t("prog.days.title"), days),
       backupSection()
@@ -1933,40 +1933,47 @@ function renderProgress() {
   });
 }
 
-// 잔디: 최근 12주, 하루 한 칸. 진할수록 많이 본 날. 칸을 누르면 그날 기록으로 내려간다.
+// 공부한 날 달력: 달마다 따로 그린 달력 (2026-11-12 의견: 12주 잔디는 월 구분이 잘 안 된다)
+// 이번 달이 맨 위, 처음 공부한 달까지 최대 3달. 칸 색이 진할수록 그날 많이 본 날. 공부한 날을 누르면 그날 기록으로 내려간다.
 function heatmap(s, openDay) {
-  const WEEKS = 12, CELL = 14, GAP = 3, LEFT = 22, TOP = 16;
   const today = Review.today();
-  const [y, m, d] = today.split("-").map(Number);
-  const dow = (new Date(y, m - 1, d).getDay() + 6) % 7;          // 월=0 … 일=6
-  const start = Review.addDays(today, -(dow + 7 * (WEEKS - 1)));  // 12주 전 월요일
   const level = (n) => (n === 0 ? 0 : n < 5 ? 1 : n < 10 ? 2 : n < 20 ? 3 : 4);
+  const [ty, tm] = today.split("-").map(Number);
+  const first = s.firstDate ?? today;
+  const [fy, fm] = first.split("-").map(Number);
+  const monthsBack = Math.min(2, (ty - fy) * 12 + (tm - fm));
 
-  const width = LEFT + WEEKS * (CELL + GAP), height = TOP + 7 * (CELL + GAP);
-  const svg = sv("svg", { viewBox: `0 0 ${width} ${height}`, class: "heat", role: "img",
-    "aria-label": t("prog.heat.aria", { n: s.studyDays }) });
-  ["월", "수", "금"].forEach((label, k) =>
-    svg.append(sv("text", { x: 0, y: TOP + k * 2 * (CELL + GAP) + CELL - 3, class: "axis-text" }, label)));
-
-  for (let w = 0; w < WEEKS; w++) {
-    for (let r = 0; r < 7; r++) {
-      const date = Review.addDays(start, w * 7 + r);
-      if (date > today) continue;
-      if (r === 0 && (w === 0 || date.slice(8) <= "07")) {
-        svg.append(sv("text", { x: LEFT + w * (CELL + GAP), y: 10, class: "axis-text" }, `${Number(date.slice(5, 7))}월`));
-      }
-      const n = s.log[date]?.seen.length ?? 0;
-      const cell = sv("rect", {
-        x: LEFT + w * (CELL + GAP), y: TOP + r * (CELL + GAP), width: CELL, height: CELL, rx: 3,
-        class: `heat-${level(n)}${date === today ? " heat-today" : ""}`,
-      }, sv("title", {}, t("prog.heat.cell", { d: date, n })));
-      if (n) { cell.style.cursor = "pointer"; cell.addEventListener("click", () => openDay(date)); }
-      svg.append(cell);
-    }
+  const months = [];
+  for (let k = 0; k <= monthsBack; k++) {
+    const d = new Date(ty, tm - 1 - k, 1);
+    months.push([d.getFullYear(), d.getMonth() + 1]);
   }
+  const pad = (n) => String(n).padStart(2, "0");
+  const cal = (yy, mm) => {
+    const days = new Date(yy, mm, 0).getDate();
+    const lead = (new Date(yy, mm - 1, 1).getDay() + 6) % 7;   // 월요일 시작
+    const studied = Array.from({ length: days }, (_, i) => s.log[`${yy}-${pad(mm)}-${pad(i + 1)}`]?.seen.length ?? 0).filter(Boolean).length;
+    const grid = h("div", { class: "cal-grid" },
+      ["월", "화", "수", "목", "금", "토", "일"].map((w) => h("span", { class: "cal-dow" }, w)),
+      Array.from({ length: lead }, () => h("span", { class: "cal-empty" })),
+      Array.from({ length: days }, (_, i) => {
+        const date = `${yy}-${pad(mm)}-${pad(i + 1)}`;
+        const n = s.log[date]?.seen.length ?? 0;
+        const future = date > today;
+        const cls = `cal-day heat-${level(n)}${date === today ? " cal-today" : ""}${future ? " cal-future" : ""}`;
+        const label = t("prog.heat.cell", { d: date, n });
+        return n
+          ? h("button", { class: cls, type: "button", title: label, "aria-label": label, onclick: () => openDay(date) }, i + 1)
+          : h("span", { class: cls, title: label }, i + 1);
+      }));
+    return h("div", { class: "cal" },
+      h("p", { class: "cal-title" }, h("b", {}, t("prog.cal.month", { y: yy, m: mm })), h("small", {}, t("prog.cal.count", { n: studied }))),
+      grid);
+  };
   const legend = h("div", { class: "heat-legend muted" }, t("prog.heat.less"),
     [0, 1, 2, 3, 4].map((k) => h("span", { class: `heat-swatch heat-${k}` })), t("prog.heat.more"));
-  return h("div", {}, h("div", { class: "heat-wrap" }, svg), legend);
+  return h("div", { class: "cals", role: "group", "aria-label": t("prog.heat.aria", { n: s.studyDays }) },
+    months.map(([yy, mm]) => cal(yy, mm)), legend);
 }
 
 // 성장 그래프: 날짜별 누적 "본 용어"와 "🏅 장기 기억". 축은 하나(같은 단위: 용어 수).
@@ -1980,7 +1987,7 @@ function growthChart(s) {
   const x = (date) => L + ((new Date(date) - first) / span) * (W - L - R);
   // 세로축 눈금은 읽기 쉬운 숫자로 4칸 (예: 0·25·50·75·100)
   const max = Math.max(...pts.map((p) => p.seen));
-  const step = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500].find((n) => n * 4 >= max) ?? Math.ceil(max / 4);
+  const step = [1, 2, 5, 10, 20, 25, 30, 40, 50, 75, 100, 150, 200, 250, 500].find((n) => n * 4 >= max) ?? Math.ceil(max / 4);
   const top = step * 4;
   const y = (v) => T + (1 - v / top) * (H - T - B);
 
@@ -2026,7 +2033,24 @@ function growthChart(s) {
 
   const legend = h("div", { class: "chart-legend" },
     series.map((sr) => h("span", {}, h("span", { class: `legend-swatch ${sr.cls}` }), sr.label)));
-  return h("div", {}, legend, wrap);
+  // 범례는 바로 위 "그래프 읽는 법"(색 표시 + 설명)이 맡는다
+  void legend;
+  return h("div", {}, wrap);
+}
+
+// 성장 그래프 읽는 법: 두 선이 무엇인지, 언제 오르는지, 지금 내 숫자가 무슨 뜻인지
+function growthHelp(s) {
+  const last = s.cumulative.at(-1) ?? { seen: s.seenTerms, longTerm: s.longTerm };
+  const pct = Math.round((last.seen / state.terms.length) * 100);
+  // 가장 빨리 장기 기억이 생기는 날: 처음 공부한 날 + 59일 (1·2·4·7·15·30일 간격을 모두 확실히 맞혔을 때)
+  const earliest = s.firstDate ? Review.addDays(s.firstDate, 59) : null;
+  return h("div", { class: "chart-help" },
+    h("p", { class: "chart-summary" }, t("prog.growth.summary", { s: last.seen, n: state.terms.length, p: pct, l: last.longTerm })),
+    h("ul", {},
+      h("li", {}, h("i", { class: "legend-swatch line-seen" }), h("b", {}, t("prog.seen")), " ", t("prog.growth.seen.help")),
+      h("li", {}, h("i", { class: "legend-swatch line-long" }), h("b", {}, t("prog.longterm")), " ",
+        t("prog.growth.long.help"),
+        last.longTerm === 0 && earliest ? ` ${t("prog.growth.long.first", { d: shortDate(earliest) })}` : "")));
 }
 
 // 단계별 진행: 단계마다 "본 용어 / 전체". 막대 하나 = 한 단계
