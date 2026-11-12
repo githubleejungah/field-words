@@ -209,3 +209,27 @@ test("마무리: 본 카드가 적고 틀린 것도 없으면 건너뛴다", () 
   Review.record("api", { confidence: "sure", correct: true });
   assert.deepEqual(Review.planWrap([]), []);
 });
+
+// ----- 새 카드 최소 자리와 섞기 (2026-11-12 추가) -----
+test("복습이 목표만큼 쌓여도 새 카드 3장은 나오고, 복습 2장마다 새 카드 1장씩 섞인다", () => {
+  fresh("2026-11-11");
+  const terms = Array.from({ length: 30 }, (_, i) => ({ id: `t${i}`, stage: "build", level: 2 }));
+  for (let i = 0; i < 12; i++) Review.record(`t${i}`, { confidence: "sure", correct: true });  // 내일 복습 12장
+  setDate("2026-11-12");
+  const p = Review.plan(terms);
+  assert.equal(p.queue.length, 10);
+  assert.equal(p.newCount, 3);
+  assert.equal(p.reviewCount, 7);
+  const kinds = p.queue.map((id) => (Number(id.slice(1)) < 12 ? "R" : "N")).join("");
+  assert.equal(kinds, "RRNRRNRRNR");
+});
+
+test("복습이 목표의 2배 넘게 밀리면 새 카드는 1장만", () => {
+  fresh("2026-11-11");
+  const terms = Array.from({ length: 40 }, (_, i) => ({ id: `t${i}`, stage: "build", level: 2 }));
+  for (let i = 0; i < 25; i++) Review.record(`t${i}`, { confidence: "sure", correct: true });
+  setDate("2026-11-12");
+  const p = Review.plan(terms);
+  assert.equal(p.newCount, 1);
+  assert.equal(p.reviewCount, 9);
+});

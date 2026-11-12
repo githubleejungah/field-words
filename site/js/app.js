@@ -177,7 +177,7 @@ function renderList() {
         h("p", { class: "muted" }, t("search.count", { n: found.length })),
         // 지금 보이는 용어들을 첫 카드부터 🚶 이동 중 모드로 연다
         found.length > 0 && h("button", {
-          class: "btn primary",
+          class: "btn soft",   // 보조 버튼: 주요 버튼(이어 하기)보다 한 단계 약하게
           type: "button",
           onclick: () => { state.mode = "walk"; state.hold = false; location.hash = `#/term/${found[0].id}`; },
         }, icon("walk"), t("walk.entry"))
@@ -235,19 +235,24 @@ function todayPanel() {
       state.session = null;
       location.hash = "#/study";
     },
-  }, p.done === 0 ? t("today.start") : left ? t("today.continue") : more >= 5 ? t("today.more") : t("today.more.n", { n: more }));
+  }, h("span", {}, p.done === 0 ? t("today.start") : left ? t("today.continue") : more >= 5 ? t("today.more") : t("today.more.n", { n: more })), icon("arrow"));
 
-  const progressLink = h("a", { class: "status-chip progress-link", href: "#/progress" }, t("prog.link"));
-  const stats = c.unseen === state.terms.length ? h("div", { class: "status-row" }, progressLink) : h("div", { class: "status-row" },
+  // 내 기록: 버튼 줄의 하나가 아니라, 패널 아래에 따로 놓인 "다른 화면으로 가는 줄"로 보이게 한다
+  const progressLink = h("a", { class: "progress-row", href: "#/progress" },
+    h("span", { class: "progress-row-icon" }, icon("chart")),
+    h("span", { class: "progress-row-text" }, h("b", {}, t("prog.link")), h("small", {}, t("prog.link.sub", { n: c.longTerm }))),
+    icon("chevron"));
+  // 상태별 개수: 눈에 덜 띄는 정보 줄 (색만이 아니라 모양 표시도 함께)
+  const statusRow = c.unseen === state.terms.length ? "" : h("div", { class: "status-row" },
     ["known", "shaky", "confused", "misconception", "unknown"].map((k) =>
-      h("span", { class: `status-chip ${k}` }, `${t(`status.${k}`)} ${c[k]}`)),
-    h("span", { class: "status-chip longterm" }, `${t("status.longTerm")} ${c.longTerm}`),
-    progressLink
+      h("span", { class: `status-item ${k}` }, h("i", { class: "mark", "aria-hidden": "true" }), t(`status.${k}`), h("b", {}, c[k]))),
+    h("span", { class: "status-item longterm" }, icon("medal"), t("status.longTerm"), h("b", {}, c.longTerm))
   );
+  const stats = h("div", {}, statusRow, progressLink);
 
   return h("section", { class: "today" },
     h("div", { class: "today-main" },
-      progressRing(p.done, p.goal, 56),
+      progressRing(p.done, p.goal, 88, true),
       h("div", { class: "today-text" },
         h("p", { class: "today-title" }, t("today.title", { done: p.done, goal: p.goal }),
           p.done >= min_goal && h("span", { class: "today-min" }, t("today.min.ok"))),
@@ -262,9 +267,11 @@ function todayPanel() {
 }
 
 // 진행 링: 오늘 목표 대비 채운 비율을 원으로 보여 준다
-function progressRing(done, goal, size) {
+let ringSeq = 0;
+function progressRing(done, goal, size, labeled = false) {
   const ns = "http://www.w3.org/2000/svg";
-  const r = size / 2 - 5, len = 2 * Math.PI * r;
+  const stroke = size >= 72 ? 10 : 6;
+  const r = size / 2 - stroke / 2 - 2, len = 2 * Math.PI * r;
   const svg = document.createElementNS(ns, "svg");
   svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
   svg.setAttribute("class", "pring");
@@ -278,9 +285,28 @@ function progressRing(done, goal, size) {
     return c;
   };
   const ratio = goal ? Math.min(done / goal, 1) : 0;
-  svg.append(circle("ring-track"), circle("ring-bar", len * (1 - ratio)));
+  // 그라데이션: 밝은 초록 → 진한 초록. 링에 입체감을 준다
+  const gid = `ringgrad${++ringSeq}`;
+  const defs = document.createElementNS(ns, "defs");
+  const grad = document.createElementNS(ns, "linearGradient");
+  grad.setAttribute("id", gid);
+  grad.setAttribute("x1", "0"); grad.setAttribute("y1", "0"); grad.setAttribute("x2", "1"); grad.setAttribute("y2", "1");
+  [["0", "var(--ring-from)"], ["1", "var(--ring-to)"]].forEach(([o, c]) => {
+    const st = document.createElementNS(ns, "stop");
+    st.setAttribute("offset", o); st.style.stopColor = c;
+    grad.append(st);
+  });
+  defs.append(grad);
+  const track = circle("ring-track");
+  const bar = circle("ring-bar", len * (1 - ratio));
+  track.style.strokeWidth = bar.style.strokeWidth = `${stroke}px`;
+  bar.setAttribute("stroke", `url(#${gid})`);
+  svg.append(defs, track, bar);
   svg.style.width = svg.style.height = `${size}px`;
-  return svg;
+  if (!labeled) return svg;
+  // 가운데 숫자: 링만 보고도 진행을 읽을 수 있게
+  return h("div", { class: "pring-wrap", style: `width:${size}px;height:${size}px` }, svg,
+    h("span", { class: "pring-label" }, h("b", {}, done), h("small", {}, `/ ${goal}`)));
 }
 
 /* ---------- 화면: 오늘의 학습 (체크) ---------- */
@@ -446,7 +472,7 @@ function renderStudy() {
   //   [이미 알아요]: 배우기를 건너뛰고 바로 확인 문제로. 틀리면 착각으로 잡히므로 놓치지 않는다.
   function showLearn() {
     panel.replaceChildren(h("div", { class: "learn-box" },
-      h("p", { class: "learn-title" }, t("learn.title")),
+      h("p", { class: "learn-title" }, ...withIcon("book", t("learn.title"))),
       h("p", { class: "learn-body" }, t("learn.body", { n: LEARN_GAP })),
       h("button", { class: "btn small", type: "button", onclick: alreadyKnow }, t("learn.know"))
     ));
@@ -566,21 +592,21 @@ function renderStudyDone() {
 
       // 🌙 마무리 결과: 구체적으로 칭찬한다 (몇 개를 다시 떠올렸는지, 어떤 것을 바로잡았는지)
       state.wrapResult && h("section", { class: "done-box wrapbox" },
-        h("p", { class: "done-box-title" }, t("wrap.result", { r: state.wrapResult.right, n: state.wrapResult.total })),
+        h("p", { class: "done-box-title" }, ...withIcon("moon", t("wrap.result", { r: state.wrapResult.right, n: state.wrapResult.total }))),
         state.wrapResult.fixed.length > 0 && h("p", { class: "done-box-body" },
           t("wrap.fixed", { names: state.wrapResult.fixed.map((id) => state.allById.get(id)?.term_en).join(", ") }))
       ),
 
       // ✨ 바로잡은 용어: 틀렸다가 다시 맞힌 것. 실력이 느는 순간이라 가장 크게 칭찬한다
       corrected.length > 0 && h("section", { class: "done-box gold" },
-        h("p", { class: "done-box-title" }, t("done.corrected.title", { k: corrected.length })),
+        h("p", { class: "done-box-title" }, ...withIcon("spark", t("done.corrected.title", { k: corrected.length }))),
         chips(corrected, "gold"),
         h("p", { class: "done-box-body" }, t("done.corrected.body"))
       ),
 
       // 🔍 찾아낸 착각: 확실했는데 달랐던 것. 찾아낸 것 자체가 수확이라고 말해 준다
       found.length > 0 && h("section", { class: "done-box warm" },
-        h("p", { class: "done-box-title" }, t("done.found.title", { k: found.length })),
+        h("p", { class: "done-box-title" }, ...withIcon("search", t("done.found.title", { k: found.length }))),
         chips(found, "warm"),
         h("p", { class: "done-box-body" }, t("done.found.body"))
       ),
@@ -608,7 +634,7 @@ function renderWrap() {
 
   if (w.step === "intro") {
     app.replaceChildren(h("article", { class: "card wrap" },
-      h("h1", {}, t("wrap.title")),
+      h("h1", { class: "title-icon" }, ...withIcon("moon", t("wrap.title"))),
       h("p", {}, t("wrap.intro", { n: total, m: Math.max(1, Math.round((total * 20) / 60)) })),
       h("p", { class: "muted" }, t("wrap.note")),
       h("div", { class: "done-actions" },
@@ -623,7 +649,7 @@ function renderWrap() {
   const quiz = Review.makeQuiz(term, state.terms, state.pairs, Math.random, "def");
   const panel = h("div", { class: "check" });
   app.replaceChildren(
-    h("div", { class: "study-head" }, h("span", { class: "badge" }, t("wrap.badge")), h("span", {}, t("wrap.progress", { i: w.i + 1, n: w.ids.length }))),
+    h("div", { class: "study-head" }, h("span", { class: "badge" }, ...withIcon("moon", t("wrap.badge"))), h("span", {}, t("wrap.progress", { i: w.i + 1, n: w.ids.length }))),
     h("article", { class: "card" },
       h("div", { class: "term-head" }, h("h1", {}, term.term_en, h("span", { class: "pron" }, `[${term.pronunciation.ko}]`))),
       panel)
@@ -939,7 +965,7 @@ function modeBar(term, controls) {
       b.setAttribute("aria-pressed", String(active));
       // 이동 중 버튼에는 지금 상태를 작은 아이콘으로 붙인다: 듣는 중이면 ⏸(누르면 멈춤), 멈춰 있으면 ▶(누르면 다시 듣기)
       const extra = active && mode === "walk" && speech.supported ? icon(controls.isPlaying() ? "pause" : "play") : null;
-      b.replaceChildren(t(`mode.${mode}`), extra ?? "");
+      b.replaceChildren(icon(MODE_ICON[mode]), h("span", {}, t(`mode.${mode}`)), extra ?? "");
     });
     desc.textContent = t(`mode.${state.mode}.desc`);
   }
@@ -999,7 +1025,7 @@ function buildCard(term, progressText) {
       term.tags.map((tag) => h("span", { class: "badge" }, `#${tag}`))
     ),
 
-    section("def", t("card.definition"), h("p", {}, term.definition)),
+    section("def", t("card.definition"), h("p", {}, h("mark", { class: "hl" }, term.definition))),
     term.analogy && section("analogy", t("card.analogy"), h("p", {}, term.analogy)),
     section(null, t("card.examples"), h("ul", { class: "examples" },
       term.examples.map((ex, i) => h("li", { "data-sec": `ex-${i}` }, h("span", { class: "ctx" }, t(`context.${ex.context}`)), ex.sentence))
@@ -1558,7 +1584,26 @@ const ICONS = {
   prev: "M6 5v14 M18 5l-9 7 9 7z",
   next: "M18 5v14 M6 5l9 7-9 7z",
   walk: "M13 4a1.5 1.5 0 1 0 0 .01 M10 21l2-6 3 3v3 M12 15l-1-5 4 2 3 1 M11 10l-3 2-1 3",
+  // 2026-11-12 흔한 이모지 대신 쓰는 선 아이콘 (직접 그림)
+  eye: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6z",
+  mic: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z M5 11a7 7 0 0 0 14 0 M12 18v3",
+  book: "M3 5.5C5.5 4 8.5 4 12 6c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5z M12 6v13.5",
+  chart: "M4 20V4 M4 20h16 M8 16l4-5 3 3 5-6",
+  moon: "M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z",
+  spark: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z",
+  search: "M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14z M20 20l-4-4",
+  clock: "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M12 7v5l3 2",
+  download: "M12 4v11 M7 10l5 5 5-5 M5 20h14",
+  upload: "M12 20V9 M7 14l5-5 5 5 M5 4h14",
+  medal: "M8 3l2.5 6 M16 3l-2.5 6 M12 9a6 6 0 1 0 0 12a6 6 0 1 0 0-12z M12 12.5l1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2-1.6-1.5 2.2-.3z",
+  chevron: "M9 6l6 6-6 6",
+  arrow: "M5 12h14 M13 6l6 6-6 6",
 };
+const MODE_ICON = { look: "eye", walk: "walk", speak: "mic" };
+// 아이콘 + 글자 (아이콘은 꾸밈이라 화면 읽기 프로그램에는 글자만 읽힌다)
+function withIcon(name, text) {
+  return [icon(name), h("span", {}, text)];
+}
 function icon(name) {
   const ns = "http://www.w3.org/2000/svg";
   const svg = document.createElementNS(ns, "svg");
@@ -1667,10 +1712,17 @@ function renderFeedback(termId) {
       email: email.value.trim(),
     };
 
+    // 보낸 뒤 원래 보던 화면으로 돌아가는 버튼 (2026-11-11 의견: "보내고 나서 돌아가는 기능이 없어요")
+    function backButtons() {
+      return h("div", { class: "btn-row" },
+        termId && state.allById.get(termId) && h("a", { class: "btn primary", href: `#/term/${encodeURIComponent(termId)}` }, t("fb.back.term")),
+        h("a", { class: termId ? "btn" : "btn primary", href: "#/" }, t("fb.back.list")));
+    }
+
     // 키가 아직 없으면: 메일 앱을 열어 내용을 채워 준다
     if (!FEEDBACK.accessKey) {
       location.href = mailtoLink(data);
-      status.replaceChildren(h("p", { class: "notice" }, t("fb.mailto.opened")));
+      status.replaceChildren(h("div", { class: "notice" }, h("p", {}, t("fb.mailto.opened")), backButtons()));
       return;
     }
 
@@ -1693,7 +1745,7 @@ function renderFeedback(termId) {
       });
       const json = await res.json();
       if (!json.success) throw new Error(json.message);
-      form.replaceWith(h("div", { class: "notice" }, h("p", {}, t("fb.done"))));
+      form.replaceWith(h("div", { class: "notice" }, h("p", {}, t("fb.done")), backButtons()));
     } catch {
       send.disabled = false;
       send.textContent = t("fb.send");
@@ -1789,12 +1841,12 @@ function renderProgress() {
     tile(s.studyDays, t("prog.days"), s.firstDate ? t("prog.since", { d: shortDate(s.firstDate) }) : ""),
     tile(s.streak, t("prog.streak")),
     tile(`${s.seenTerms}`, t("prog.seen"), t("prog.of", { n: state.terms.length })),
-    tile(`🏅 ${s.longTerm}`, t("prog.longterm"), t("prog.longterm.sub")),
+    tile(s.longTerm, t("prog.longterm"), t("prog.longterm.sub")),
     tile(s.totalCorrected, t("prog.corrected"), t("prog.misconceptions", { n: s.totalMisconceptions }))
   );
 
   if (!s.studyDays) {
-    app.replaceChildren(h("article", { class: "card" }, h("h1", {}, t("prog.title")), tiles,
+    app.replaceChildren(h("article", { class: "card" }, h("h1", { class: "title-icon" }, ...withIcon("chart", t("prog.title"))), tiles,
       h("p", { class: "muted" }, t("prog.empty")), backupSection()));
     return;
   }
@@ -1810,7 +1862,7 @@ function renderProgress() {
 
   app.replaceChildren(
     h("article", { class: "card progress" },
-      h("h1", {}, t("prog.title")),
+      h("h1", { class: "title-icon" }, ...withIcon("chart", t("prog.title"))),
       tiles,
       section(null, t("prog.heat.title"), heatmap(s, openDay)),
       section(null, t("prog.growth.title"), growthChart(s)),
@@ -1836,7 +1888,7 @@ function renderProgress() {
       d.new.includes(id) && t("prog.mark.new"),
       d.misconceptions.includes(id) ? t("prog.mark.misconception") : d.wrong.includes(id) && t("prog.mark.wrong"),
       d.corrected.includes(id) && t("prog.mark.corrected"),
-      d.long_term.includes(id) && "🏅",
+      d.long_term.includes(id) && t("prog.mark.longterm"),
     ].filter(Boolean).join(" ");
     days.append(h("details", { class: "day", "data-date": date, open: k === 0 ? "" : undefined, hidden: k >= SHOW ? "" : undefined },
       h("summary", {}, h("strong", {}, date), " ",
@@ -1983,8 +2035,8 @@ function backupSection() {
   return section(null, t("prog.backup.title"),
     h("p", { class: "muted" }, t("prog.backup.why")),
     h("div", { class: "btn-row" },
-      h("button", { class: "btn", type: "button", onclick: save }, t("prog.backup.save")),
-      h("button", { class: "btn", type: "button", onclick: () => input.click() }, t("prog.backup.load"))),
+      h("button", { class: "btn", type: "button", onclick: save }, ...withIcon("download", t("prog.backup.save"))),
+      h("button", { class: "btn", type: "button", onclick: () => input.click() }, ...withIcon("upload", t("prog.backup.load")))),
     input, msg);
 }
 

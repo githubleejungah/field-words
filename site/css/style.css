@@ -789,3 +789,116 @@ body.no-footer .footer { display: none; }
 
 /* 오늘의 마무리 */
 .done-box.wrapbox { background: var(--accent-soft); border: 1px solid var(--accent); }
+
+/* =========================================================
+   2026-11-12 디자인 개편 (사용자 의견)
+   - 배경: 크림색 → 눈이 편한 아주 연한 초록
+   - 흔한 이모지 → 직접 그린 선 아이콘
+   - 위계: 주요 버튼은 진하고 그림자, 정보 줄은 조용하게, 내 기록은 "다른 화면으로 가는 줄"
+   - 진행 링: 크고 굵게, 그라데이션 + 그림자로 입체감, 가운데 숫자
+   - 뜻: 형광펜
+   ========================================================= */
+:root {
+  --bg: #f1f6f2;                 /* 아주 연한 초록 (흰 카드와 대비가 부드럽다) */
+  --ring-from: #79c49c;
+  --ring-to: #2f6a50;
+  --hl: rgba(204, 232, 140, 0.75);   /* 형광펜: 연두 */
+  --shadow-1: 0 1px 2px rgba(31, 58, 46, 0.06), 0 4px 14px rgba(31, 58, 46, 0.07);
+  --shadow-btn: 0 3px 10px rgba(47, 106, 80, 0.32);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141815;
+    --ring-from: #b5dcc6;
+    --ring-to: #5fae88;
+    --hl: rgba(156, 195, 174, 0.28);
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 14px rgba(0, 0, 0, 0.3);
+    --shadow-btn: 0 3px 10px rgba(0, 0, 0, 0.45);
+  }
+}
+
+/* 카드는 테두리 대신 그림자로 바탕에서 살짝 떠 보이게 */
+.card { border-color: transparent; box-shadow: var(--shadow-1); border-radius: 16px; }
+
+/* 버튼 위계: 주요 버튼(primary)만 진한 색 + 그림자 + 굵은 글자 */
+.btn.primary { font-weight: 700; box-shadow: var(--shadow-btn); }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn .icon { width: 18px; height: 18px; }
+
+/* 오늘의 학습: 화면의 출발점이라 가장 크게, 연한 초록 그라데이션 패널 */
+.today {
+  padding: 18px 18px 14px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--accent-soft) 100%);
+  box-shadow: var(--shadow-1);
+}
+.today-main { gap: 14px 16px; }
+.today-title { font-size: 19px; }
+.today-main > .btn.primary { min-height: 50px; padding: 0 22px; font-size: 16px; }
+
+.pring-wrap { position: relative; flex: none; }
+.pring-wrap .pring { position: absolute; inset: 0; filter: drop-shadow(0 3px 4px rgba(47, 106, 80, 0.28)); }
+.pring-label {
+  position: absolute; inset: 0;
+  display: flex; align-items: baseline; justify-content: center; padding-top: 30%;
+  gap: 2px; color: var(--text); font-variant-numeric: tabular-nums;
+}
+.pring-label b { font-size: 26px; line-height: 1; }
+.pring-label small { font-size: 13px; color: var(--muted); }
+.ring-track { stroke: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+
+/* 상태별 개수: 버튼처럼 보이지 않는 조용한 정보 줄. 모양 표시로 색만으로 구분하지 않게 */
+.status-row { gap: 6px 14px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed color-mix(in srgb, var(--accent) 25%, transparent); }
+.status-item { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--muted); }
+.status-item b { color: var(--text); font-variant-numeric: tabular-nums; }
+.status-item .icon { width: 15px; height: 15px; color: var(--gold); }
+.mark { display: inline-block; width: 10px; height: 10px; flex: none; }
+.known .mark { border-radius: 50%; background: #3f8a63; }                                   /* 꽉 찬 원 */
+.shaky .mark { border-radius: 50%; background: linear-gradient(90deg, #c99a2e 50%, transparent 50%); border: 1.5px solid #c99a2e; } /* 반원 */
+.confused .mark { border-radius: 50%; border: 2px solid #c8742e; }                         /* 고리 */
+.misconception .mark { width: 9px; height: 9px; background: var(--danger); transform: rotate(45deg); }   /* 마름모 */
+.unknown .mark { border-radius: 50%; border: 1.5px dashed var(--muted); }                   /* 점선 원 */
+
+/* 내 기록: 패널 아래 "다른 화면으로 가는 줄" */
+.progress-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 12px; padding: 10px 12px;
+  border-radius: 12px; background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--text); text-decoration: none;
+}
+.progress-row:hover { border-color: var(--accent); }
+.progress-row-icon {
+  display: grid; place-items: center; width: 36px; height: 36px; flex: none;
+  border-radius: 10px; background: var(--accent-soft); color: var(--accent);
+}
+.progress-row-text { display: flex; flex-direction: column; min-width: 0; }
+.progress-row-text b { font-size: 15px; }
+.progress-row-text small { font-size: 12px; color: var(--muted); }
+.progress-row > .icon:last-child { margin-left: auto; color: var(--muted); }
+
+/* 모드 버튼: 아이콘 + 글자 */
+.mode-btn .icon { width: 17px; height: 17px; }
+
+/* 아이콘 붙은 제목들 */
+.title-icon, .learn-title, .done-box-title { display: flex; align-items: center; gap: 8px; }
+.title-icon .icon { width: 26px; height: 26px; color: var(--accent); }
+.learn-title .icon, .done-box-title .icon { width: 20px; height: 20px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; }
+.badge .icon { width: 14px; height: 14px; }
+
+/* 뜻: 형광펜. 글자 아래쪽 절반만 칠해 진짜 형광펜처럼, 줄이 바뀌어도 줄마다 칠한다 */
+mark.hl {
+  background: linear-gradient(transparent 52%, var(--hl) 52%);
+  color: inherit;
+  padding: 0 2px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* 보조 버튼: 연한 초록 바탕 + 진한 초록 글자. 주요 버튼보다 한 단계 약하게 */
+.btn.soft { background: var(--accent-soft); border-color: transparent; color: var(--accent); font-weight: 600; }
+.btn.soft:hover { border-color: var(--accent); }
+/* 발음 표기는 한 덩어리로: 줄이 바뀌면 통째로 다음 줄로 */
+.pron { white-space: nowrap; }

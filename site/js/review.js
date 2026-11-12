@@ -22,6 +22,7 @@ const Review = (() => {
 
   const DEFAULT_SETTINGS = { daily_goal: 10, min_goal: 3 };
   const SECONDS_PER_CARD = 30;      // 남은 시간 계산용 (한 장에 약 30초)
+  const MIN_NEW_RATIO = 0.3;        // 하루 목표 중 새 카드에 남겨 둘 비율
 
   // ----- 저장소 -----
   // 브라우저 localStorage를 쓰되, 못 쓰는 환경(사생활 보호 창, 시험)에서는 메모리에 둔다.
@@ -290,17 +291,37 @@ const Review = (() => {
       URGENCY[a.rec.status] - URGENCY[b.rec.status] || a.rec.next_review_at.localeCompare(b.rec.next_review_at));
     const left = Math.max(daily_goal - t.seen.length, 0);
     const dueIds = due.map((d) => d.term.id);
-    const reviewPart = dueIds.slice(0, left);
+
+    // 새 카드 최소 자리 (2026-11-12 사용자 의견: "어제 본 만큼 복습을 끝내야 새 단어가 나와서 지루하다")
+    //   하루 목표의 30%(10장이면 3장)는 새 카드에 남겨 둔다. 새로움이 동기를 지켜 준다.
+    //   복습이 밀리면(목표의 2배 넘게 쌓이면) 복습 빚을 막으려고 새 카드는 1장만.
+    //   밀려난 복습은 가장 안정된 카드(✅ 앎, 상자가 높은 것)라서 하루 늦어져도 손해가 작다.
+    const newToday = t.seen.filter((id) => (get(id)?.first_at ?? today()) === now).length;
+    const minNew = dueIds.length > daily_goal * 2 ? 1 : Math.max(1, Math.round(daily_goal * MIN_NEW_RATIO));
+    const reserve = Math.min(Math.max(minNew - newToday, 0), fresh.length, left);
+    const reviewPart = dueIds.slice(0, left - reserve);
     const newPart = fresh.slice(0, Math.max(left - reviewPart.length, 0)).map((x) => x.id);
     return {
       goal: daily_goal,
       done: t.seen.length,
-      queue: [...reviewPart, ...newPart],
+      queue: interleave(reviewPart, newPart),
       reviewCount: reviewPart.length,
       newCount: newPart.length,
       dueTotal: dueIds.length,
       minutesLeft: Math.ceil(((reviewPart.length + newPart.length) * SECONDS_PER_CARD) / 60),
     };
+  }
+
+  // 복습과 새 카드를 섞는다: 복습 2장마다 새 카드 1장 (예: 복 복 새 복 복 새 …)
+  // 한쪽을 몰아서 내지 않으면 지루함이 덜하고, 섞어 풀기(교차 학습)가 구별하는 힘을 키운다.
+  function interleave(reviews, fresh) {
+    const out = [];
+    let r = 0, f = 0;
+    while (r < reviews.length || f < fresh.length) {
+      for (let k = 0; k < 2 && r < reviews.length; k++) out.push(reviews[r++]);
+      if (f < fresh.length) out.push(fresh[f++]);
+    }
+    return out;
   }
 
   // ----- 현황: 상태별 개수 -----
