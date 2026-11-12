@@ -138,6 +138,11 @@
           "description": "letters=한 글자씩(API), word=단어처럼(SaaS), mixed=섞어서(OAuth2: 오어스 투)",
           "enum": ["letters", "word", "mixed"]
         },
+        "ipa": {
+          "description": "국제 음성 기호(IPA, 미국 영어). 화면에 /…/로 표시. 한글 현업 발음(ko)과 함께 보여 준다. 2026-11-12 추가",
+          "type": "string",
+          "minLength": 1
+        },
         "tts": { "description": "영어 음성이 정확히 읽도록 고친 철자. 없으면 term_en을 읽는다", "type": "string", "minLength": 1 },
         "variants": {
           "description": "현업에서 함께 쓰는 다른 발음. 예: SQL의 시퀄",

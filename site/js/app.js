@@ -1247,10 +1247,9 @@ function buildControls(term, index, total, goTo) {
 // 영어 음성이 없을 때: 문장 속 영어 용어 이름을 한글 발음으로 바꾼다.
 // 긴 이름부터 바꿔야 "OAuth2"가 "OAuth"보다 먼저 처리된다.
 function toKoreanSounds(text) {
-  const names = state.terms
-    .map((term) => [term.term_en, term.pronunciation.ko])
-    .sort((a, b) => b[0].length - a[0].length);
-  return names.reduce((s, [en, ko]) => s.replaceAll(en, ko), text);
+  // 예전에는 글자를 그대로 바꿔서 "GitHub" 안의 "Git"까지 바뀌어 "깃Hub"이 됐다 (2026-11-12).
+  // 앞뒤가 영어 글자인지 보는 같은 규칙(낱말 → 용어 순서)을 쓴다.
+  return sayTermsInKorean(sayWordsInKorean(text));
 }
 
 const speech = {
@@ -1469,7 +1468,26 @@ const SPEECH_FIXES = [
 ];
 function fixKoreanSpeech(text) {
   const fixed = SPEECH_FIXES.reduce((s, [from, to]) => s.replace(from, to), text);
-  return sayTermsInKorean(fixed);
+  return sayTermsInKorean(sayWordsInKorean(fixed));
+}
+
+// 용어집에는 없지만 문장에 자주 나오는 영어 낱말의 현업 발음 (2026-11-12 "GitHub"을 "깃써브"로 읽음)
+// 문장 속 영어 낱말을 모아 보고(전체 데이터 기준) 한국 현업에서 읽는 대로 적었다. 새로 잘못 읽는 낱말이 나오면 여기에 한 줄 추가한다.
+const WORD_SAY = {
+  "OpenID Connect": "오픈아이디 커넥트", "GitHub": "깃허브", "gitignore": "깃이그노어", "JavaScript": "자바스크립트",
+  "innerHTML": "이너 에이치티엠엘", "textContent": "텍스트 콘텐트", "Chart.js": "차트 제이에스", "app.js": "앱 제이에스",
+  "USB-C": "유에스비 씨", "Pages": "페이지스", "Actions": "액션스", "React": "리액트", "Claude": "클로드",
+  "Must": "머스트", "Should": "슈드", "Could": "쿠드", "Wont": "원트", "HTML": "에이치티엠엘", "SAML": "새믈", "CSS": "씨에스에스", "SQL": "에스큐엘",
+  "CRM": "씨알엠", "TWA": "티더블유에이", "CDN": "씨디엔", "GPT": "지피티", "env": "엔브", "PR": "피알",
+  "AI": "에이아이", "DB": "디비", "ID": "아이디", "IT": "아이티", "JS": "제이에스", "CI": "씨아이", "CD": "씨디",
+};
+let wordSayList = null;
+function sayWordsInKorean(text) {
+  if (!/[A-Za-z]/.test(text)) return text;
+  wordSayList ??= Object.entries(WORD_SAY)
+    .sort((a, b) => b[0].length - a[0].length)
+    .map(([en, ko]) => [new RegExp(`(^|[^A-Za-z])${en.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![A-Za-z])`, "g"), ko]);
+  return wordSayList.reduce((s, [re, ko]) => s.replace(re, (_, before) => before + ko), text);
 }
 
 // 한국어 문장 속 영어 용어는 한국어 음성이 제멋대로 읽는다 (2026-11-11 "MoSCoW"를 "모스크바"로 읽음).
