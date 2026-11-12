@@ -979,3 +979,15 @@ body.hl-under mark.hl, .hl-option.hl-under mark.hl {
 .hl-option[aria-checked="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 /* 버튼 안 미리보기는 body 설정과 상관없이 각자 모양으로 */
 .hl-option.hl-band mark.hl { background: linear-gradient(transparent 58%, var(--hl) 58%, var(--hl) 92%, transparent 92%); text-decoration: none; padding: 0 1px; }
+
+/* 달력 달 넘기기: ‹ 2026년 11월 › (2026-11-12 A안) */
+.cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.cal-head .cal-title { margin: 0; flex-direction: column; align-items: center; gap: 0; text-align: center; }
+.cal-nav {
+  display: grid; place-items: center; width: 40px; height: 40px; flex: none; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--accent);
+}
+.cal-nav .icon { width: 16px; height: 16px; }
+.cal-nav:hover:not([disabled]) { border-color: var(--accent); }
+.cal-nav[disabled] { opacity: 0.3; cursor: default; }
+.cal-head .cal-nav:first-child .icon { transform: rotate(180deg); }   /* 이전 달: 왼쪽 화살표 */

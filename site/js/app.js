@@ -1884,6 +1884,7 @@ function sv(tag, attrs = {}, ...children) {
 const shortDate = (d) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
 
 function renderProgress() {
+  calOffset = 0;
   renderTopbar("card");
   const s = Review.stats(state.terms);
   const nameOf = (id) => state.allById.get(id)?.term_en ?? id;
@@ -1956,20 +1957,17 @@ function renderProgress() {
 }
 
 // 공부한 날 달력: 달마다 따로 그린 달력 (2026-11-12 의견: 12주 잔디는 월 구분이 잘 안 된다)
-// 이번 달이 맨 위, 처음 공부한 달까지 최대 3달. 칸 색이 진할수록 그날 많이 본 날. 공부한 날을 누르면 그날 기록으로 내려간다.
+// 달력 하나 + ‹ › 달 넘기기 (2026-11-12 사용자 결정 A안). 처음 공부한 달부터 이번 달까지 몇 달이든 넘겨 볼 수 있다.
+// 칸 색이 진할수록 그날 많이 본 날. 공부한 날을 누르면 그날 기록으로 내려간다.
+let calOffset = 0;   // 이번 달에서 몇 달 전을 보고 있는지 (0 = 이번 달). 내 기록 화면에 다시 들어오면 이번 달로
 function heatmap(s, openDay) {
   const today = Review.today();
   const level = (n) => (n === 0 ? 0 : n < 5 ? 1 : n < 10 ? 2 : n < 20 ? 3 : 4);
   const [ty, tm] = today.split("-").map(Number);
   const first = s.firstDate ?? today;
   const [fy, fm] = first.split("-").map(Number);
-  const monthsBack = Math.min(2, (ty - fy) * 12 + (tm - fm));
-
-  const months = [];
-  for (let k = 0; k <= monthsBack; k++) {
-    const d = new Date(ty, tm - 1 - k, 1);
-    months.push([d.getFullYear(), d.getMonth() + 1]);
-  }
+  const maxBack = Math.max(0, (ty - fy) * 12 + (tm - fm));   // 처음 공부한 달까지
+  calOffset = Math.min(Math.max(calOffset, 0), maxBack);
   const pad = (n) => String(n).padStart(2, "0");
   const cal = (yy, mm) => {
     const days = new Date(yy, mm, 0).getDate();
@@ -1988,14 +1986,26 @@ function heatmap(s, openDay) {
           ? h("button", { class: cls, type: "button", title: label, "aria-label": label, onclick: () => openDay(date) }, i + 1)
           : h("span", { class: cls, title: label }, i + 1);
       }));
+    const nav = (dir, label, disabled) => h("button", {
+      class: "cal-nav", type: "button", "aria-label": label, disabled: disabled ? "" : undefined,
+      onclick: () => { calOffset += dir; box.replaceChildren(draw()); },
+    }, icon("chevron"));
     return h("div", { class: "cal" },
-      h("p", { class: "cal-title" }, h("b", {}, t("prog.cal.month", { y: yy, m: mm })), h("small", {}, t("prog.cal.count", { n: studied }))),
+      h("div", { class: "cal-head" },
+        nav(1, t("prog.cal.prev"), calOffset >= maxBack),
+        h("p", { class: "cal-title", "aria-live": "polite" }, h("b", {}, t("prog.cal.month", { y: yy, m: mm })), h("small", {}, t("prog.cal.count", { n: studied }))),
+        nav(-1, t("prog.cal.next"), calOffset <= 0)),
       grid);
   };
+  const draw = () => {
+    const d = new Date(ty, tm - 1 - calOffset, 1);
+    return cal(d.getFullYear(), d.getMonth() + 1);
+  };
+  const box = h("div", {}, draw());
   const legend = h("div", { class: "heat-legend muted" }, t("prog.heat.less"),
     [0, 1, 2, 3, 4].map((k) => h("span", { class: `heat-swatch heat-${k}` })), t("prog.heat.more"));
   return h("div", { class: "cals", role: "group", "aria-label": t("prog.heat.aria", { n: s.studyDays }) },
-    months.map(([yy, mm]) => cal(yy, mm)), legend);
+    box, legend);
 }
 
 // 성장 그래프: 날짜별 누적 "본 용어"와 "🏅 장기 기억". 축은 하나(같은 단위: 용어 수).
@@ -2072,7 +2082,9 @@ function growthHelp(s) {
       h("li", {}, h("i", { class: "legend-swatch line-seen" }), h("b", {}, t("prog.seen")), " ", t("prog.growth.seen.help")),
       h("li", {}, h("i", { class: "legend-swatch line-long" }), h("b", {}, t("prog.longterm")), " ",
         t("prog.growth.long.help"),
-        last.longTerm === 0 && earliest ? ` ${t("prog.growth.long.first", { d: shortDate(earliest) })}` : "")));
+        last.longTerm === 0 && earliest
+          ? ` ${earliest > Review.today() ? t("prog.growth.long.first", { d: shortDate(earliest) }) : t("prog.growth.long.soon")}`
+          : "")));
 }
 
 // 단계별 진행: 단계마다 "본 용어 / 전체". 막대 하나 = 한 단계
