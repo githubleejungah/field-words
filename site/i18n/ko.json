@@ -243,5 +243,10 @@
   "prog.cal.prev": "이전 달",
   "prog.cal.next": "다음 달",
   "prog.growth.long.soon": "복습 날짜마다 확실해요로 맞히면 곧 생겨요. 틀리면 간격이 다시 짧아져서 조금 늦어질 수 있어요.",
-  "prog.growth.what": "{name} 설명 보기"
+  "prog.growth.what": "{name} 설명 보기",
+  "flow.label": "공부 방법",
+  "flow.mode.check": "확인 문제",
+  "flow.mode.desc": "남은 오늘 카드를 이동 중 듣기나 말하기로 이어 볼 수 있어요. 다 듣고 나면 '오늘의 학습으로 돌아가기'로 확인 문제를 풀어요.",
+  "flow.back": "오늘의 학습으로 돌아가기 (확인 문제)",
+  "flow.check": "방금 들은 {n}장 바로 확인하기"
 }

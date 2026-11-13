@@ -42,6 +42,10 @@ const state = {
   nextTimer: null,    // 이동 중 모드: 다음 카드로 넘어가기 전 2초 기다리는 타이머
   hold: false,        // true면 다음 카드를 열 때 자동으로 읽지 않는다 (사용자가 멈춘 채로 넘겼을 때)
   session: null,      // 오늘의 학습 진행 중: { queue: [용어 id], i: 지금 몇 번째, retries: {id: 다시 나온 횟수} }
+  // 오늘의 학습 카드를 이동 중·말하기로 이어 볼 때의 순서 (2026-11-13 사용자 요청: 학습 중에도 모드를 바꾸고 싶다)
+  flow: null,         // 카드 id 목록. 있으면 카드 화면의 이전·다음이 이 순서를 따른다
+  heard: new Set(),   // 끝까지 들은 카드 (기록 아님. "방금 들은 카드 바로 확인하기"에 쓴다)
+  graded: new Set(),  // 학습 흐름 안에서 말하기로 이미 채점한 카드 (확인 문제로 돌아왔을 때 같은 날 두 번 채점하지 않게)
   extraGoal: 0,       // 오늘 목표를 채운 뒤 "더 하기"로 늘린 장 수 (오늘만)
   celebratedTier: 0,  // 오늘 이미 축하한 칭찬 단계 (같은 단계는 한 번만 축하)
 };
@@ -138,6 +142,7 @@ function initialOf(term) {
 // 카드에서 이전·다음으로 넘길 순서. 목록에서 고른 단계·검색 결과를 그대로 따른다.
 // 그 안에 없는 용어(예: "함께 보면 좋은 용어" 링크로 들어옴)면 전체 용어 순서를 쓴다.
 function sequenceFor(id) {
+  if (state.flow?.includes(id)) return state.flow.map((x) => state.allById.get(x)).filter(Boolean);
   const filtered = searchTerms();
   if (filtered.some((term) => term.id === id)) return filtered;
   const savedQuery = state.query, savedStage = state.stage;
@@ -325,6 +330,13 @@ function renderStudy() {
   }
   const s = state.session;
   s.kinds ??= {};
+  state.flow = null;   // 학습 화면으로 돌아왔으면 이어 보기 순서는 끝
+  // 이동 중·말하기로 이어 보다가 말하기에서 이미 채점한 카드는 같은 날 다시 채점하지 않고 넘긴다
+  while (s.i < s.queue.length && state.graded.has(s.queue[s.i]) && !s.answers[s.i]) {
+    state.graded.delete(s.queue[s.i]);
+    s.answers[s.i] = { status: "known", skipped: true };
+    s.i += 1;
+  }
   if (s.i >= s.queue.length) {
     // 오늘 할 카드를 다 했으면: 마무리할 것이 있으면 오늘의 마무리 안내, 없으면 마침 화면
     if (!s.wrapOffered) {
@@ -378,7 +390,7 @@ function renderStudy() {
     document.body.classList.toggle("has-bottom-bar", !bar.hidden);
   };
   if (s.i > 0) inner.append(h("button", { class: "ctrl", type: "button", "aria-label": t("check.prev"), onclick: () => { s.i -= 1; route(); } }, icon("prev")));
-  app.replaceChildren(head, card, bar);
+  app.replaceChildren(studyModeRow(s), head, card, bar);
   syncBar();
   window.scrollTo(0, 0);
 
@@ -394,6 +406,9 @@ function renderStudy() {
   //   처음 보는 용어(기록 없음)이고 이 학습에서 아직 배우지 않았으면 → 배우기 카드
   //   그 밖에는 → 체크 카드 (복습은 문제부터: 먼저 떠올려 보는 것이 가장 오래 남는다)
   s.learned ??= [];
+  // 이동 중으로 끝까지 들은 새 용어는 이미 한 번 익혔으니 배우기 카드 없이 바로 확인 문제로
+  if (state.heard.has(term.id) && !s.learned.includes(term.id)) s.learned.push(term.id);
+  if (state.heard.has(term.id) && s.kinds[s.i] === "learn") s.kinds[s.i] = "check";   // 처음 볼 때 배우기로 정했어도 그 뒤에 들었으면 확인으로
   if (!s.kinds[s.i]) s.kinds[s.i] = !Review.get(term.id) && !s.learned.includes(term.id) ? "learn" : "check";
   if (s.kinds[s.i] === "learn") { showLearn(); return; }
 
@@ -906,6 +921,7 @@ function speakPractice(card, term, hasNext, goNext) {
       type: "button",
       onclick: () => {
         Review.record(term.id, { ...GRADES[g], quiz: "speak" });
+        if (state.flow) state.graded.add(term.id);
         stopCountdown();
         if (hasNext) goNext();
         else { gradeRow.remove(); graded.textContent = t("grade.saved"); }
@@ -959,6 +975,7 @@ function modeBar(term, controls) {
     onclick: () => (mode === state.mode ? pressAgain(mode) : switchMode(mode)),
   }));
 
+  const flowBox = h("div", { class: "flow-actions" });
   function paint() {
     buttons.forEach((b, i) => {
       const mode = MODES[i];
@@ -969,6 +986,7 @@ function modeBar(term, controls) {
       b.replaceChildren(icon(MODE_ICON[mode]), h("span", {}, t(`mode.${mode}`)), extra ?? "");
     });
     desc.textContent = t(`mode.${state.mode}.desc`);
+    flowBox.replaceChildren(flowActions());
   }
 
   function pressAgain(mode) {
@@ -997,8 +1015,65 @@ function modeBar(term, controls) {
   paint();
   return h("div", { class: "modebar" },
     h("div", { class: "mode-group", role: "group", "aria-label": t("mode.label") }, buttons),
-    desc
+    desc, flowBox
   );
+}
+
+// 들은 카드 중 지금 확인 문제로 낼 수 있는 것: 오늘 아직 체크하지 않았고, 처음 보거나 복습 날짜가 된 카드
+// (복습 날짜가 아직인 카드는 빼 둔다. 미리 맞히면 간격이 무너지기 때문. 그 카드는 정해진 날 나온다)
+function checkableHeard() {
+  const today = Review.today();
+  const seen = new Set(Review.getToday().seen);
+  return [...state.heard].filter((id) => {
+    if (seen.has(id) || !state.allById.has(id)) return false;
+    const rec = Review.get(id);
+    return !rec || rec.next_review_at <= today;
+  });
+}
+
+// 모드 막대 아래 버튼
+//   오늘의 학습에서 왔으면: "오늘의 학습으로 돌아가기" (남은 카드는 확인 문제로)
+//   그 밖에 보기 모드에서 들은 카드가 있으면: "방금 들은 N장 바로 확인하기"
+function flowActions() {
+  if (state.flow) {
+    return h("button", { class: "btn primary flow-btn", type: "button", onclick: () => { speech.stop(); location.hash = "#/study"; } },
+      ...withIcon("check", t("flow.back")));
+  }
+  const ids = checkableHeard();
+  if (state.mode !== "look" || ids.length === 0) return "";
+  return h("button", { class: "btn primary flow-btn", type: "button", onclick: () => startHeardCheck(ids) },
+    ...withIcon("check", t("flow.check", { n: ids.length })));
+}
+function startHeardCheck(ids) {
+  ids.forEach((id) => state.heard.delete(id));
+  // 이미 들었으니 "처음 보는 용어" 배우기 카드는 건너뛰고 바로 확인 문제로
+  state.session = { queue: ids, i: 0, retries: {}, answers: {}, kinds: {}, learned: ids.slice() };
+  state.flow = null;
+  state.mode = "look";
+  location.hash = "#/study";
+}
+
+// 오늘의 학습 화면 위: 공부 방법 바꾸기 (확인 문제 / 이동 중 듣기 / 말하기)
+//   이동 중·말하기를 고르면 남은 오늘 카드를 그 모드로 이어 보고, "오늘의 학습으로 돌아가기"로 다시 확인 문제로 온다.
+function studyModeRow(s) {
+  const rest = [...new Set(s.queue.slice(s.i))];
+  const go = (mode) => {
+    if (!rest.length) return;
+    state.flow = rest;
+    state.mode = mode;
+    state.hold = false;
+    location.hash = `#/term/${encodeURIComponent(rest[0])}`;
+  };
+  const btn = (mode, iconName, label, active) => h("button", {
+    class: "mode-btn", type: "button", "aria-pressed": String(active),
+    onclick: active ? null : () => go(mode),
+  }, icon(iconName), h("span", {}, label));
+  return h("div", { class: "modebar study-modes" },
+    h("div", { class: "mode-group", role: "group", "aria-label": t("flow.label") },
+      btn("check", "check", t("flow.mode.check"), true),
+      btn("walk", "walk", t("mode.walk"), false),
+      btn("speak", "mic", t("mode.speak"), false)),
+    h("p", { class: "mode-desc" }, t("flow.mode.desc")));
 }
 
 // 용어 제목: 영어 이름 + 발음 기호(IPA). 발음 기호가 없으면 예전처럼 한글 발음을 괄호로 (2026-11-12)
@@ -1198,7 +1273,8 @@ function buildControls(term, index, total, goTo) {
     clearTimeout(state.nextTimer);
     state.nextTimer = null;
     speech.start("all", fullParts(term), () => {
-      if (state.mode !== "walk" || !hasNext) { syncWakeLock(); return; }
+      state.heard.add(term.id);   // 끝까지 들었다 (학습 기록은 아님)
+      if (state.mode !== "walk" || !hasNext) { syncWakeLock(); speech.listeners.forEach((fn) => fn()); return; }
       state.nextTimer = setTimeout(() => { state.nextTimer = null; goTo(index + 1); }, NEXT_CARD_DELAY_MS);
       speech.listeners.forEach((fn) => fn());   // 아래 큰 버튼과 위 모드 버튼 모두 "듣는 중"으로 다시 그린다
     });
@@ -1630,6 +1706,7 @@ const ICONS = {
   upload: "M12 20V9 M7 14l5-5 5 5 M5 4h14",
   medal: "M8 3l2.5 6 M16 3l-2.5 6 M12 9a6 6 0 1 0 0 12a6 6 0 1 0 0-12z M12 12.5l1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2-1.6-1.5 2.2-.3z",
   chevron: "M9 6l6 6-6 6",
+  check: "M4 12.5l5 5L20 6.5",
   info: "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M12 11v6 M12 7.5v.5",
   arrow: "M5 12h14 M13 6l6 6-6 6",
 };
@@ -2175,7 +2252,7 @@ function route() {
     else if (hash === "#/study") renderStudy();
     else if (hash === "#/progress") renderProgress();
     else if (hash.startsWith("#/feedback")) renderFeedback(decodeURIComponent(hash.slice("#/feedback/".length)));
-    else renderList();
+    else { state.flow = null; renderList(); }
   }
 }
 

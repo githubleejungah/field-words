@@ -1006,3 +1006,9 @@ body.hl-under mark.hl, .hl-option.hl-under mark.hl {
   margin: 8px 0 0; padding: 10px 12px; border-radius: 10px;
   background: var(--accent-soft); color: var(--text); font-size: 14px; line-height: 1.6;
 }
+
+/* 오늘의 학습 안에서 공부 방법 바꾸기 · 들은 카드 바로 확인 (2026-11-13) */
+.study-modes { margin-bottom: 12px; }
+.flow-actions:empty { display: none; }
+.flow-actions { margin-top: 10px; }
+.flow-btn { width: 100%; justify-content: center; min-height: 46px; }
