@@ -159,8 +159,8 @@
       "additionalProperties": false,
       "properties": {
         "context": {
-          "description": "meeting=업무 회의, interview=면접 답변, review=문서·코드 리뷰. 화면 표시 이름은 사이트가 정한다",
-          "enum": ["meeting", "interview", "review"]
+          "description": "meeting=업무 회의, interview=면접 답변, review=문서·코드 리뷰, field=현장에선(실제 겪은 상황 한 줄, 1.1에 추가). 화면 표시 이름은 사이트가 정한다",
+          "enum": ["meeting", "interview", "review", "field"]
         },
         "sentence": { "type": "string", "minLength": 10, "maxLength": 200 }
       }

@@ -14,7 +14,7 @@ from promote import load_batch  # noqa: E402
 STAGE = {"discovery": "① 발견·기획", "design": "② 설계", "build": "③ 개발", "test": "④ 테스트·품질", "deploy": "⑤ 배포",
          "operate": "⑥ 운영", "secure": "⑦ 보안·개인정보", "grow": "⑧ 개선·확장", "automate": "⑨ 자동화·지속 개선"}
 LEVEL = {1: "입문", 2: "기본", 3: "실무", 4: "심화"}
-CONTEXT = {"meeting": "업무 회의", "interview": "면접 답변", "review": "문서·코드 리뷰"}
+CONTEXT = {"meeting": "업무 회의", "interview": "면접 답변", "review": "문서·코드 리뷰", "field": "현장에선"}
 
 
 def render(terms, pairs, name):

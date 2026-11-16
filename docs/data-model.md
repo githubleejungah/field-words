@@ -1,6 +1,7 @@
 # glossary.json 데이터 모델
 
 - 작성일: 2026-11-10
+- 고친 날: 2026-11-16 — 예문 상황에 `field`(현장에선) 추가, 스키마 1.1 ([ADR-0005](adr/0005-예문-상황에-현장에선-추가.md))
 - 규칙 파일: `schema/glossary.schema.json` (JSON Schema: JSON의 모양을 검사하는 규칙 문서)
 - 실제 데이터: `site/data/glossary.json`
 - 검사 도구: `python pipeline/validate.py`
@@ -9,7 +10,7 @@
 
 ```
 glossary.json
-├── schema_version   "1.0"         ← 구조 버전
+├── schema_version   "1.1"         ← 구조 버전
 ├── updated_at       "2026-11-10"
 ├── terms[]                        ← 용어 카드 목록
 │   ├── id           "webhook"     ← 바꾸지 않는 이름표 (슬러그)
@@ -19,7 +20,7 @@ glossary.json
 │   ├── definition / analogy? / pitfall? / interview_q? / interview_a?
 │   ├── prerequisites[]?                                     ← 선수 지식
 │   ├── replaced_by?                                         ← 합치거나 이름 바꿀 때
-│   ├── examples[]   { context: meeting|interview|review, sentence }
+│   ├── examples[]   { context: meeting|interview|review|field, sentence }
 │   ├── tags[] / related[]
 │   ├── sources[]    { type, label, url?, date }
 │   ├── visual?      { kind, format, file, alt }      ← 있을 때만
@@ -57,7 +58,8 @@ glossary.json
 | # | 결정 | 이유 |
 |---|---|---|
 | 1 | `id`는 영어 소문자 **슬러그(Slug: 주소에 쓰기 좋은 짧은 이름)** | 복습 기록이 localStorage에 `id`로 저장된다. 바뀌면 수강생 기록이 끊긴다 |
-| 2 | 예문 상황은 `meeting / interview / review` 세 값만 허용 | **열거형(Enum: 정해진 값 중 하나만 고르게 하는 규칙)**. "회의", "업무회의"처럼 표기가 흩어지는 것을 막는다. 화면에 보이는 한국어 이름은 사이트가 정한다 |
+| 2 | 예문 상황은 `meeting / interview / review / field` 네 값만 허용 | **열거형(Enum: 정해진 값 중 하나만 고르게 하는 규칙)**. "회의", "업무회의"처럼 표기가 흩어지는 것을 막는다. 화면에 보이는 한국어 이름은 사이트가 정한다(`i18n/ko.json`의 `context.*`) |
+| 2-1 | `field`(화면 이름 "현장에선")는 **실제 겪은 상황 한 줄**만 쓴다 | 회의·면접·리뷰 예문은 "이렇게 말한다"는 연습용이라 꾸며 쓴다. 현장 예시는 실습·작업에서 그 용어를 실제로 만난 장면이라 꾸며 쓰지 않는다. 2026-11-16 추가 ([ADR-0005](adr/0005-예문-상황에-현장에선-추가.md)) |
 | 3 | 혼동 쌍은 `confusable_pairs`에 **한 번만** 적는다 | 웹훅 카드와 폴링 카드에 각각 적으면 한쪽만 고치는 실수가 생긴다. 한곳에만 두는 원칙을 **단일 진실 공급원(Single Source of Truth)**이라고 한다. 용어별 `confusable_with`는 사이트가 여기서 계산한다 |
 | 4 | 혼동 쌍은 `a`(베이지)와 `b`(세이지)로 나눈다 | 데이터는 "어느 쪽인지"만 정한다. 실제 색은 CSS 디자인 토큰이 정한다 (관심사 분리) |
 | 5 | `sources`는 배열 | 강의에서 같은 용어가 다시 나오면 새 카드 대신 출처만 추가한다 |
@@ -114,5 +116,6 @@ fw:v1:onboarding           첫 실행 설문 결과
 ## 버전 규칙
 
 - 칸을 **추가**하면 `1.0 → 1.1`. 옛 사이트도 새 파일을 읽을 수 있다.
+- 열거형에 **값을 추가**하는 것도 같은 급(1.x 올림)으로 본다. 2026-11-16 예문 상황 `field` 추가로 `1.1`이 됐다.
 - 칸의 뜻을 바꾸거나 **삭제**하면 `1.x → 2.0`. 사이트도 함께 고친다.
 - 예정된 추가: 후원 예문 표시(`examples[].sponsor`), 광고 탑재 시점에 1.1로 추가한다.
