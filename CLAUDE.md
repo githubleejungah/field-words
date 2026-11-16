@@ -7,7 +7,8 @@
 ## 먼저 읽을 문서
 1. `docs/Must_기능_목록.md` — **지금 만들 기능 한 장 요약. 가장 먼저 본다.**
 2. `fde-glossary/MVP_범위.md` — 범위, 데이터 모델, 일정의 배경. **맨 위 "범위 변경 v3" → "v2" → 본문 순서로 우선한다.**
-3. `docs/data-model.md` + `schema/glossary.schema.json` — glossary.json 구조
+3. `docs/data-model.md` + `schema/glossary.schema.json` — 정본 표(데이터·정본·주인·사본)와 glossary.json 구조
+3-1. `docs/architecture.md` — 구성도·구성요소 역할·호출 흐름. `docs/flows.md` — 기능별 순서도
 4. `docs/콘텐츠_작성_가이드.md` — 용어·예문·발음·단계·등급을 쓰는 기준 (LLM 프롬프트의 기준)
 5. `docs/adr/` — 구조 결정 (0001 정적 사이트, 0002 용어 그림과 색, 0003 음성은 브라우저 내장 음성, 0004 운영 자동화는 점검과 제안까지)
 5-1. `docs/운영_자동화.md` — 매주 자동 점검·후보 작성 흐름. 사용자가 "주간 보고 보여 줘"라고 하면 `pipeline/reports/`의 최신 주간보고를 읽고 요약한다.
@@ -30,6 +31,20 @@
 - 날짜별 학습 일지(`fw:v1:log`)는 지우지 않는다. 성장 대시보드(내 기록)의 근거다. 기록은 브라우저에만 있으니 백업(파일 저장·가져오기)을 안내한다.
 - 학습 기록 규칙은 `site/js/review.js`(화면 없음)에, 화면은 `site/js/app.js`에 둔다. 규칙을 바꾸면 `node --test tests/review.test.js`로 시험한다.
 - 유튜브 영상은 Phase 3(강의 후). 구글 플레이는 PWA 이후 검토.
+- 설계 문서 6종(README · CLAUDE.md · architecture · data-model · flows · ADR)을 유지한다. 목록은 README "문서 목록". 구조·데이터·흐름을 바꾸면 **같은 커밋에서** 해당 문서도 고친다. ADR은 고치지 않고 새 ADR로 대체한다.
+
+## 자주 쓰는 명령
+```bash
+python -m http.server 8000 --directory site            # 사이트 띄우기 → http://localhost:8000
+python pipeline/check_all.py                            # 종합 점검 9가지 (보고서는 pipeline/reports/, Git 밖)
+python pipeline/validate.py                             # 데이터 검사만 (스키마 + 참조)
+node --test tests/review.test.js                        # 학습 기록 규칙 시험
+python pipeline/preview.py pipeline/candidates/<파일>.py           # 후보 미리보기 .md
+python pipeline/promote.py pipeline/candidates/<파일>.py --dry-run # 넣어 보기만 (원본 그대로)
+python pipeline/promote.py pipeline/candidates/<파일>.py           # 승인 후 실제 추가 (커밋은 사람이)
+```
+- 검사 도구 설치: `python -m venv .venv` → `.venv/Scripts/pip install -r pipeline/requirements.txt`
+- `main`에 push하면 GitHub Actions가 검사 후 `site/`만 GitHub Pages에 배포한다(`.github/workflows/pages.yml`).
 
 ## 일정
 - **v0.1 공개: 2026-11-11(화)** — 카드·검색·시드 데이터·발음 듣기. 강의 1회차 전에 수강생에게 공유.

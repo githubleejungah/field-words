@@ -31,7 +31,28 @@ glossary.json
 
 `?`가 붙은 칸은 **선택 칸(Optional Field)**입니다. 없으면 칸 자체를 생략합니다.
 
-## 설계 결정 7가지
+## 데이터 소유와 정본
+
+**정본(正本, Source of Truth)**은 "값이 둘로 갈라지면 이쪽이 맞다"고 정한 원본입니다. **주인(Owner)**은 정본을 바꿀 수 있는 사람·프로그램입니다. **사본(Copy)**은 정본에서 만들어진 것이라, 고칠 때는 사본이 아니라 정본을 고칩니다.
+
+| 데이터 | 정본 (어디에) | 주인 (누가 바꾸나) | 사본 · 파생 |
+|---|---|---|---|
+| 공개 용어 · 혼동 쌍 | `site/data/glossary.json` (Git) | 관리자. 사람이 승인한 뒤 `seedlib.py`·`promote.py`·`seeds/update_*.py`로 쓴다 | 배포된 GitHub Pages의 같은 파일, 브라우저 HTTP 캐시(`no-cache`로 매번 확인), `app.js`의 `state.terms`·`state.allById`(메모리) |
+| 용어별 `confusable_with` | 없음 (파생값) | — | `confusable_pairs`에서 사이트가 계산한다. 데이터에 적지 않는다 |
+| glossary.json 모양 규칙 | `schema/glossary.schema.json` | 관리자 | 이 문서의 "한눈에 보기"(설명용). 참조 검사는 `validate.py` 코드에 있다 |
+| 넣은 용어 묶음의 기록 | `pipeline/seeds/*.py` (Git) | 관리자 (`promote.py`가 후보를 이리로 옮김) | — . 넣은 뒤 내용은 glossary.json이 정본이다. 이 파일을 다시 실행해 되돌리지 않는다 |
+| 승인 전 후보 | `pipeline/candidates/*.py` (**Git 밖**, 관리자 PC) | 주간 예약 작업·Claude가 쓰고 사람이 승인 | `*_미리보기.md`(`preview.py`), `--dry-run` 때의 임시 복사본 |
+| 점검 · 제안 보고서 | `pipeline/reports/` (**Git 밖**) | `check_all.py`, 주간 예약 작업 | — |
+| 화면 문구 | `site/i18n/ko.json` | 개발자 | `state.text`(메모리) |
+| 혼동 쌍 색 · 디자인 토큰 | `site/css/style.css` | 개발자 | — . 데이터에는 넣지 않는다 (ADR-0002) |
+| 수강생 학습 기록 | 각 브라우저의 `localStorage` (`fw:v1:*`) | 수강생 본인. 코드에서는 `review.js`만 쓴다 (예외: `notice_seen`은 `app.js`) | 백업 파일 `fieldwords-backup-날짜.json`(수강생이 저장). `localStorage`를 못 쓰면 메모리에만 둔다. 기기 사이 동기화는 없다 |
+| 수강생 의견 | 받는 메일함 (주소는 `app.js`의 `FEEDBACK.mailto`) | 프로젝트 오너 | 보낸 사람 메일 앱의 보낸 편지함 |
+| API 키 · 비밀 값 | `.env` (**Git 밖**) | 관리자 | 없음. 공개 사이트에 넣지 않는다. 지금 파이프라인 코드는 `.env`를 읽지 않는다 |
+| 쫑긋과 서로 반영할 목록 | 공유 저장소 `learning-apps-shared/서로_반영할_것.md` (이 저장소 밖) | 사람과 함께하는 작업 | 주간 작업은 읽기만 한다 (`docs/운영_자동화.md`) |
+
+- 서버가 없으므로 수강생 데이터의 정본은 **수강생 기기에만** 있다. 그래서 관리자는 누가 무엇을 틀리는지 모른다. 이 한계를 공개 전에 안내한다(`docs/공개_체크리스트.md`).
+
+## 설계 결정
 
 | # | 결정 | 이유 |
 |---|---|---|
@@ -43,11 +64,10 @@ glossary.json
 | 6 | 승인 상태(`status`) 칸이 **없다** | 공개 파일에는 승인된 것만 들어간다. 승인 전 후보는 `pipeline/candidates/`에 따로 두고 Git에 올리지 않는다 |
 | 7 | 복습 기록과 소리 프리셋 설정은 이 파일에 **없다** | 사람마다 다르다. 각자 브라우저의 localStorage에 둔다 |
 | 8 | 발음(`pronunciation`)은 **필수** 칸 | 듣기만 해도 배우는 앱이다. 처음부터 넣어야 80개를 나중에 한꺼번에 채우는 고생이 없다. `ko`는 한국 현업 발음(화면에 "현업 발음"으로 표시), `ipa`는 미국 영어 발음 기호(단어 아래에 /…/로 표시), `tts`는 영어 음성용 힌트 |
-
 | 9 | `stage`(단계)와 `level`(등급)은 **필수** | 프로젝트 순서대로 배우는 지도, 수준별 시작점, "이미 알아요" 건너뛰기의 바탕이다. 기준은 `docs/콘텐츠_작성_가이드.md` |
 | 10 | `pitfall`, `interview_q`, `expansion`은 선택 | 학습자가 가장 많이 묻는 세 가지에 답한다: "현업에서 뭘 조심해?", "면접에서 뭘 물어?", "약어가 뭐의 줄임말이야?" 많이 아는 사람이 지루하지 않게 하는 재료다 |
 | 10-1 | `interview_a`(30초 모범 답변)는 선택 | 성공 지표 "무작위 용어 10개 중 8개를 30초 안에 말로 설명"을 그대로 연습하는 면접 연습 모드의 정답지다 |
-| 11 | 용어는 **지우지 않는다.** `replaced_by`로 옮긴다 | 지우면 수강생 브라우저의 복습 기록이 갈 곳을 잃는다. 사이트는 대체된 용어를 목록에서 숨기고 기록을 새 용어로 옮긴다 |
+| 11 | 용어는 **지우지 않는다.** `replaced_by`로 옮긴다 | 지우면 수강생 브라우저의 복습 기록이 갈 곳을 잃는다. 사이트는 대체된 용어를 목록에서 숨기고 옛 주소를 새 용어로 보낸다. **확인 필요**: 복습 기록을 새 용어로 옮기는 코드는 아직 없다(2026-11-16 main 기준. 지금 `replaced_by`를 쓴 용어도 없다) |
 
 ## 스키마가 못 잡는 것 → 검사 스크립트가 잡는다
 
@@ -76,15 +96,20 @@ fw:v1:review:<용어 id>     복습 기록   { box, status, first_at, last_at, n
 fw:v1:today                오늘 기록   { date, seen[], wrong[], misconceptions[], corrected[], wrapped[] } ← 오늘의 마무리용
 fw:v1:log                  날짜별 학습 일지 { "YYYY-MM-DD": { seen[], new[], wrong[], misconceptions[], corrected[], long_term[] } } ← 내 기록 화면. 지우지 않는다
 fw:v1:log_built            일지 되살리기를 마쳤는지 (true)
+fw:v1:settings             설정 { daily_goal(하루 목표, 기본 10), min_goal(기본 3), hl(강조 표시 모양) }
+fw:v1:notice_seen          첫 안내를 봤는지 ("1"). 이것만 app.js가 직접 쓴다
+
+예정 (코드에 아직 없음, 2026-11-16 main 기준)
 fw:v1:pair:<혼동 쌍 id>     혼동 쌍 퀴즈 기록
-fw:v1:settings             프리셋, 하루 목표, 언어
 fw:v1:onboarding           첫 실행 설문 결과
-fw:v1:streak               연속 학습일
+(프리셋, 언어)              settings에 넣을 예정
 ```
+
+- 연속 학습일은 저장하지 않는다. `fw:v1:log`에서 매번 계산한다(`Review.stats`).
 
 - `fw` = Field Words. 같은 주소(GitHub Pages)에 다른 앱이 있어도 이름이 겹치지 않게 한다.
 - `v1` = 저장 구조 버전. 구조가 바뀌면 `v2`로 옮기는 코드를 한 번 실행한다.
-- 나중에 만들 **기록 내보내기·가져오기**(Should)는 `fw:` 로 시작하는 값을 모두 파일 하나로 묶는다. 휴대폰을 바꾸거나 브라우저 데이터를 지울 때 기록을 지킬 수 있다.
+- **기록 내보내기·가져오기**(`Review.exportAll`·`importAll`, 내 기록 화면)는 `fw:` 로 시작하는 값을 모두 파일 하나로 묶는다. 휴대폰을 바꾸거나 브라우저 데이터를 지울 때 기록을 지킬 수 있다. 파일 모양: `{ app: "field-words", format: 1, exported_at, data: { "fw:v1:…": "문자열 값" } }`
 
 ## 버전 규칙
 
