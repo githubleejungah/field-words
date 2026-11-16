@@ -40,6 +40,7 @@ FDE(Forward Deployed Engineer: 고객 현장에서 문제를 정의하고 바로
 - 프레임워크와 외부 라이브러리를 쓰지 않습니다. 음성은 브라우저에 들어 있는 음성(Web Speech API)만 씁니다.
 - 새 용어는 AI가 후보를 만들고, **사람이 승인한 것만** 공개합니다.
 
+자세한 구성도는 [아키텍처](docs/architecture.md)에, 기능별 순서는 [흐름 설계](docs/flows.md)에 있습니다.
 왜 이렇게 정했는지는 결정 기록(ADR: Architecture Decision Record)에 있습니다.
 
 | ADR | 결정 |
@@ -60,7 +61,7 @@ site/            공개 사이트 (이 폴더만 배포)
 pipeline/        관리자 도구 (검사, 종합 점검, 새 용어 승인)
 schema/          glossary.json 규칙 (JSON Schema)
 tests/           복습 규칙 단위 테스트
-docs/            기능 목록, 데이터 모델, 작성 가이드, ADR
+docs/            설계 문서(아키텍처·데이터·흐름·ADR), 기능 목록, 작성 가이드
 ```
 
 ## 내 컴퓨터에서 실행하기
@@ -89,12 +90,29 @@ python -m venv .venv
 node --test tests/review.test.js
 ```
 
-## 문서
+## 문서 목록
+
+**설계 문서 6종** — 구조·데이터·흐름이 바뀌면 같은 커밋에서 함께 고칩니다.
+
+| # | 문서 | 위치 | 담는 것 |
+|---|---|---|---|
+| 1 | README | [README.md](README.md) | 무엇 · 실행법 · 문서 목록 · 연락처 |
+| 2 | 작업 규칙 | [CLAUDE.md](CLAUDE.md) | 스택 · 규칙 · 자주 쓰는 명령 |
+| 3 | 아키텍처 | [docs/architecture.md](docs/architecture.md) | 구성도 · 구성요소 역할 · 호출 흐름 · 보안 경계 |
+| 4 | 데이터 설계 | [docs/data-model.md](docs/data-model.md) | 정본 표(데이터 · 정본 · 주인 · 사본) · glossary.json 구조 · 브라우저 저장 이름 |
+| 5 | 흐름 설계 | [docs/flows.md](docs/flows.md) | 용어 공개 · 오늘의 학습 · 복습 상자 · 마무리 · 카드 모드 · 주간 점검 순서도 |
+| 6 | 설계 결정 기록(ADR) | [docs/adr/](docs/adr/) | 결정 · 이유 · 대안 · 결과. 고치지 않고 새 ADR로 대체 |
+
+**그 밖의 문서**
 
 - [Must 기능 목록](docs/Must_기능_목록.md) — 지금 만드는 기능 한 장 요약
-- [데이터 모델](docs/data-model.md) — glossary.json 구조
+- [체크 화면 설계](docs/설계_체크화면.md) — 판단 1번 + 확인 1번 화면
 - [콘텐츠 작성 가이드](docs/콘텐츠_작성_가이드.md) — 용어·예문·발음·단계·등급 기준
 - [운영 자동화](docs/운영_자동화.md) — 매주 점검과 새 용어 후보 흐름
+- [공개 체크리스트](docs/공개_체크리스트.md) — 수강생 공개 직전에 확인
+- [재사용 가이드](docs/재사용_가이드.md) — 다른 학습 앱에 옮겨 쓸 기능·규칙·교훈
+- [개념 지도](docs/learning/00_개념_지도.md) — 이 프로젝트로 배우는 개념과 순서
+- [MVP 범위](fde-glossary/MVP_범위.md) — 범위·일정의 배경
 
 ## 콘텐츠 출처 원칙
 
