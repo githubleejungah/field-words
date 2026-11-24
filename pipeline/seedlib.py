@@ -15,6 +15,7 @@ from pathlib import Path
 
 PATH = Path(__file__).resolve().parent.parent / "site" / "data" / "glossary.json"
 TODAY = date.today().isoformat()
+AI_ANCHOR = ',\n  "ai_checks": ['   # aicheck.ANCHOR와 같다
 
 ORDER = ["id", "term_en", "term_ko", "aliases", "expansion", "expansion_ko", "pronunciation", "stage", "also_stages",
          "level", "definition", "analogy", "pitfall", "interview_q", "interview_a", "examples", "tags", "related",
@@ -75,6 +76,12 @@ def add(terms, pairs=()):
     if dup:
         sys.exit(f"이미 있는 id라서 멈춥니다: {dup}")
 
+    # ai_checks 목록(2026-11-24)이 맨 뒤에 있으면 잠시 떼어 두고, 다 붙인 뒤 다시 붙인다
+    tail = ""
+    if AI_ANCHOR in raw:
+        i = raw.index(AI_ANCHOR)
+        tail, raw = raw[i:], raw[:i] + "\n}\n"
+
     anchor = '    }\n  ],\n  "confusable_pairs": ['
     if raw.count(anchor) != 1:
         sys.exit("용어 목록의 끝을 찾지 못했습니다. 파일 모양이 바뀌었는지 확인하세요.")
@@ -88,6 +95,8 @@ def add(terms, pairs=()):
             sys.exit("혼동 쌍 목록의 끝을 찾지 못했습니다.")
         raw = body[: -len(end)] + "    },\n" + ",\n".join(pair_text(p) for p in pairs) + "\n  ]\n}\n"
 
+    if tail:
+        raw = raw.rstrip()[:-2] + tail      # 끝의 "\n}"를 떼고 ai_checks 꼬리를 붙인다
     json.loads(raw)  # 올바른 JSON인지 확인
     PATH.write_text(raw, encoding="utf-8", newline="\n")
     print(f"추가: 용어 {len(terms)}개, 혼동 쌍 {len(pairs)}개")

@@ -13,6 +13,9 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import aicheck  # noqa: E402  AI 답 검수 문제 참조 검사 (2026-11-24)
+
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = ROOT / "schema" / "glossary.schema.json"
 DATA_PATH = ROOT / "site" / "data" / "glossary.json"
@@ -88,6 +91,8 @@ def check_references(data):
         if "visual" in p and not (SITE_DIR / p["visual"]["file"]).exists():
             warnings.append(f"[그림] '{p['visual']['file']}' 파일이 아직 없습니다.")
 
+    # AI 답 검수 문제: 관련 용어 · 공식 출처 · 계산식 · 다시 확인할 날 규칙 (AC-10 · 11 · 15 · 16)
+    errors += aicheck.check_refs(data)
     return errors, warnings
 
 
@@ -112,7 +117,8 @@ def main():
     if errors:
         print(f"\n실패: 오류 {len(errors)}개, 경고 {len(warnings)}개")
         sys.exit(1)
-    print(f"\n통과: 용어 {n_terms}개, 혼동 쌍 {n_pairs}개 (경고 {len(warnings)}개)")
+    n_checks = len(data.get("ai_checks", []))
+    print(f"\n통과: 용어 {n_terms}개, 혼동 쌍 {n_pairs}개, AI 답 검수 {n_checks}개 (경고 {len(warnings)}개)")
 
 
 if __name__ == "__main__":

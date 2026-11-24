@@ -27,6 +27,8 @@ jobs:
       - run: pip install -r pipeline/requirements.txt
       - name: 데이터 검사 (스키마 + 참조)
         run: python pipeline/validate.py
+      - name: 파이프라인 시험 (AI 답 검수 검사 · 다시 확인할 날)
+        run: python -m unittest discover -s tests -p "test_*.py"
       - uses: actions/setup-node@v4
         with:
           node-version: "20"

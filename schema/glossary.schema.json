@@ -21,9 +21,48 @@
       "description": "혼동 쌍의 단일 진실 공급원. 용어별 confusable_with는 사이트가 여기서 계산한다",
       "type": "array",
       "items": { "$ref": "#/$defs/pair" }
+    },
+    "ai_checks": {
+      "description": "AI 답 검수 문제 (2026-11-24, 1.2). 사람이 승인한 문제만 들어간다. 참조·출처·계산식 검사는 pipeline/aicheck.py",
+      "type": "array",
+      "items": { "$ref": "#/$defs/ai_check" }
     }
   },
   "$defs": {
+    "ai_check": {
+      "type": "object",
+      "required": ["id", "type", "prompt", "statements", "wrong", "correction", "how_to_check", "sources", "checked_at", "recheck_at", "terms", "created_at", "updated_at"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "type": { "description": "number 숫자 · recency 최신 정보 · fact 출처/사실 · code 코드", "enum": ["number", "recency", "fact", "code"] },
+        "prompt": { "description": "사용자가 AI에게 한 질문", "type": "string", "minLength": 5 },
+        "statements": { "description": "AI 답 문장 정확히 3개", "type": "array", "items": { "type": "string", "minLength": 5 }, "minItems": 3, "maxItems": 3 },
+        "wrong": { "description": "틀린 문장 번호 = 정답", "enum": [0, 1, 2] },
+        "correction": { "description": "바른 내용 1줄", "type": "string", "minLength": 5 },
+        "how_to_check": { "description": "확인 방법 1줄", "type": "string", "minLength": 5 },
+        "calc": { "description": "계산식. 숫자 유형이면 필수", "type": "string", "minLength": 3 },
+        "sources": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "required": ["label", "url", "checked_at"], "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string", "minLength": 2 },
+              "url": { "type": "string", "pattern": "^https://" },
+              "checked_at": { "$ref": "#/$defs/date" }
+            }
+          }
+        },
+        "checked_at": { "$ref": "#/$defs/date" },
+        "recheck_at": { "description": "다시 확인할 날. 파이프라인이 계산한다", "$ref": "#/$defs/date" },
+        "terms": { "type": "array", "items": { "$ref": "#/$defs/slug" }, "minItems": 1, "uniqueItems": true },
+        "retired_at": { "description": "내린 날. 있으면 사이트가 보여 주지 않는다", "$ref": "#/$defs/date" },
+        "created_at": { "$ref": "#/$defs/date" },
+        "updated_at": { "$ref": "#/$defs/date" }
+      },
+      "if": { "properties": { "type": { "const": "number" } } },
+      "then": { "required": ["calc"] }
+    },
     "date": {
       "type": "string",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"

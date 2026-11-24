@@ -9,7 +9,9 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from promote import load_batch  # noqa: E402
+from promote import load_batch, load_checks  # noqa: E402
+import aicheck  # noqa: E402
+import json  # noqa: E402
 
 STAGE = {"discovery": "① 발견·기획", "design": "② 설계", "build": "③ 개발", "test": "④ 테스트·품질", "deploy": "⑤ 배포",
          "operate": "⑥ 운영", "secure": "⑦ 보안·개인정보", "grow": "⑧ 개선·확장", "automate": "⑨ 자동화·지속 개선"}
@@ -57,8 +59,40 @@ def main():
     batch = Path(sys.argv[1]).resolve()
     terms, pairs = load_batch(batch)
     target = batch.with_name(batch.stem + "_미리보기.md")
-    target.write_text(render(terms, pairs, batch.stem), encoding="utf-8", newline="\n")
+    checks = load_checks(batch)
+    text = render(terms, pairs, batch.stem) if (terms or pairs) else f"# 미리보기: {batch.stem}\n"
+    if checks:
+        data = json.loads((Path(__file__).resolve().parent.parent / "site" / "data" / "glossary.json").read_text(encoding="utf-8"))
+        term_ids = {t["id"] for t in data["terms"]} | {t["id"] for t in terms}
+        text += "\n" + render_checks(checks, term_ids)
+    target.write_text(text, encoding="utf-8", newline="\n")
     print(f"미리보기: {target}")
+
+
+def render_checks(checks, term_ids):
+    """AI 답 검수 후보. 빠진 것(출처 · 확인일 · 계산식 등)이 있는 후보는 승인 대기열에 올리지 않는다 (AC-10 · AC-11)."""
+    ok, blocked = [], []
+    for c in checks:
+        errs = aicheck.candidate_errors(c, term_ids)
+        (blocked if errs else ok).append((c, errs))
+    out = ["## AI 답 검수 후보", "", f"- 승인 대기 {len(ok)}개 · 올리지 않음 {len(blocked)}개", ""]
+    if blocked:
+        out += ["### 올리지 않음 (고친 뒤 다시 미리보기)", ""]
+        for c, errs in blocked:
+            out += [f"- **{c.get('id', '(id 없음)')}**"] + [f"  - {e}" for e in errs]
+        out.append("")
+    for n, (c, _) in enumerate(ok, 1):
+        out += [f"### {n}. {c['id']} · {aicheck.TYPE_KO[c['type']]}", "", f"**AI에게 한 질문** {c['prompt']}", ""]
+        for i, s in enumerate(c["statements"]):
+            mark = " ← **틀린 문장(정답)**" if i == c["wrong"] else ""
+            out.append(f"{'①②③'[i]} {s}{mark}")
+        out += ["", f"- **바른 내용** {c['correction']}", f"- **이렇게 확인해요** {c['how_to_check']}"]
+        if c.get("calc"):
+            out.append(f"- **계산식** {c['calc']}")
+        out += [f"- **출처** " + " · ".join(f"[{s['label']}]({s['url']}) ({s['checked_at']} 확인)" for s in c["sources"]),
+                f"- **사람이 확인한 날** {c['checked_at']} → 다시 확인할 날 {aicheck.recheck_date(c['type'], c['checked_at'])}",
+                f"- **관련 용어** {', '.join(c['terms'])}", ""]
+    return "\n".join(out)
 
 
 if __name__ == "__main__":

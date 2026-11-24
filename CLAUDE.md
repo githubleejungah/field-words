@@ -37,12 +37,14 @@
 ## 자주 쓰는 명령
 ```bash
 python -m http.server 8000 --directory site            # 사이트 띄우기 → http://localhost:8000
-python pipeline/check_all.py                            # 종합 점검 9가지 (보고서는 pipeline/reports/, Git 밖)
+python pipeline/check_all.py                            # 종합 점검 10가지 (보고서는 pipeline/reports/, Git 밖)
 python pipeline/validate.py                             # 데이터 검사만 (스키마 + 참조)
 node --test tests/review.test.js                        # 학습 기록 규칙 시험
 python pipeline/preview.py pipeline/candidates/<파일>.py           # 후보 미리보기 .md
 python pipeline/promote.py pipeline/candidates/<파일>.py --dry-run # 넣어 보기만 (원본 그대로)
-python pipeline/promote.py pipeline/candidates/<파일>.py           # 승인 후 실제 추가 (커밋은 사람이)
+python pipeline/promote.py pipeline/candidates/<파일>.py           # 승인 후 실제 추가 (커밋은 사람이). TERMS · PAIRS · AI_CHECKS
+python pipeline/recheck.py <문제 id> --ok | --retire               # AI 답 검수: 다시 확인함 / 내리기
+python -m unittest discover -s tests -p "test_*.py"               # 파이프라인 시험 (AI 답 검수)
 ```
 - 검사 도구 설치: `python -m venv .venv` → `.venv/Scripts/pip install -r pipeline/requirements.txt`
 - `main`에 push하면 GitHub Actions가 검사 후 `site/`만 GitHub Pages에 배포한다(`.github/workflows/pages.yml`).

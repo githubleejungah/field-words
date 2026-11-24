@@ -14,6 +14,7 @@
   7. 외부 파일    공개 사이트가 외부 서버의 스크립트를 불러오는지 (공급망 위험)
   8. 의존성       파이썬 라이브러리에 새 버전이 있는지 (인터넷이 없으면 건너뜀)
   9. 내용 보강    모범 답변·함정이 빠졌거나 오래된 용어, 단계별 용어 수
+ 10. 다시 확인    AI 답 검수 문제 중 다시 확인할 날이 지난 것 (요구 AC-14)
 """
 import json
 import re
@@ -28,6 +29,7 @@ SITE = ROOT / "site"
 REPORTS = ROOT / "pipeline" / "reports"
 sys.path.insert(0, str(ROOT / "pipeline"))
 import validate  # noqa: E402
+import aicheck  # noqa: E402
 
 results = []   # (구분, 등급, 내용)  등급: 오류 / 경고 / 통과 / 정보
 
@@ -213,6 +215,22 @@ def check_content(data):
         add("내용 보강", "정보", f"90일 넘게 고치지 않은 용어 {len(old)}개 (최신 내용인지 확인): {', '.join(old[:15])}")
 
 
+def check_rechecks(data):
+    """10. AI 답 검수 문제 중 다시 확인할 날이 지난 것 → 보고서 (AC-14).
+    사람이 'python pipeline/recheck.py <id> --ok' 또는 '--retire'로 고른다 (AC-17). 그전까지 사이트는 새 문제로 내지 않는다 (AC-13)."""
+    checks = [c for c in data.get("ai_checks", []) if not c.get("retired_at")]
+    due = aicheck.due_for_recheck(data, date.today().isoformat())
+    if not checks:
+        add("다시 확인", "정보", "공개한 AI 답 검수 문제가 아직 없습니다")
+        return
+    if not due:
+        add("다시 확인", "통과", f"AI 답 검수 {len(checks)}개 모두 다시 확인할 날 전입니다")
+        return
+    for c in due:
+        add("다시 확인", "정보", f"'{c['id']}' ({aicheck.TYPE_KO[c['type']]}) 다시 확인할 날 {c['recheck_at']} 지남 → "
+            f"공식 출처로 확인 후 recheck.py {c['id']} --ok 또는 --retire")
+
+
 def write_report():
     REPORTS.mkdir(parents=True, exist_ok=True)
     path = REPORTS / f"점검_{date.today().isoformat()}.md"
@@ -239,6 +257,7 @@ def main():
     check_external()
     check_dependencies()
     check_content(data)
+    check_rechecks(data)
 
     path, errors, warns = write_report()
     icon = {"오류": "❌", "경고": "⚠️ ", "통과": "✅", "정보": "ℹ️ "}

@@ -79,7 +79,7 @@ GitHub에서 이 그림이 바로 보인다. Mermaid(글로 그림을 그리는 
 | 단계 | 하는 일 |
 |---|---|
 | 언제 | `main`에 push할 때, 또는 GitHub 화면에서 손으로 실행할 때 |
-| check | `validate.py` → `node --test tests/review.test.js` → `node --check`로 `app.js`·`review.js` 문법 검사 → 통과하면 `site/` 폴더를 배포용 묶음(artifact)으로 올려 둔다 |
+| check | `validate.py` → 파이프라인 시험(`python -m unittest`, AI 답 검수) → `node --test tests/review.test.js` → `node --check`로 `app.js`·`review.js` 문법 검사 → 통과하면 `site/` 폴더를 배포용 묶음(artifact)으로 올려 둔다 |
 | deploy | check가 통과해야만 실행. check가 올려 둔 `site/` 묶음을 GitHub Pages에 배포만 한다 |
 
 - 올리기(check)와 배포(deploy)를 다른 작업으로 나눈 이유: 같은 작업에서 연달아 하면 배포가 방금 올린 묶음을 못 찾는 일이 생겼다(2026-11-24).

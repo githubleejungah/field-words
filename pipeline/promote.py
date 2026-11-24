@@ -20,6 +20,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 PIPELINE = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE))
 import seedlib   # noqa: E402
+import aicheck   # noqa: E402
 import validate  # noqa: E402
 
 
@@ -27,7 +28,25 @@ def load_batch(path):
     spec = importlib.util.spec_from_file_location("candidate_batch", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)   # 후보 파일은 `if __name__ == "__main__"`일 때만 추가하므로 불러오기만 해도 안전
-    return module.TERMS, getattr(module, "PAIRS", [])
+    return getattr(module, "TERMS", []), getattr(module, "PAIRS", [])
+
+
+def load_checks(path):
+    """후보 파일의 AI 답 검수 목록 (AI_CHECKS). 없으면 빈 목록."""
+    spec = importlib.util.spec_from_file_location("candidate_batch_checks", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return getattr(module, "AI_CHECKS", [])
+
+
+def add_all(terms, pairs, checks):
+    """용어 · 혼동 쌍을 넣고, AI 답 검수 문제를 넣는다 (seedlib.PATH 기준)."""
+    if terms or pairs:
+        seedlib.add(terms, pairs)
+    if checks:
+        raw = seedlib.PATH.read_text(encoding="utf-8")
+        seedlib.PATH.write_text(aicheck.add_checks(raw, checks, seedlib.TODAY), encoding="utf-8", newline="\n")
+        print(f"추가: AI 답 검수 {len(checks)}개")
 
 
 def check(data_path):
@@ -48,14 +67,15 @@ def main():
         sys.exit(__doc__)
     batch = Path(args[0]).resolve()
     terms, pairs = load_batch(batch)
-    print(f"후보: 용어 {len(terms)}개, 혼동 쌍 {len(pairs)}개 ({batch.name})")
+    checks = load_checks(batch)
+    print(f"후보: 용어 {len(terms)}개, 혼동 쌍 {len(pairs)}개, AI 답 검수 {len(checks)}개 ({batch.name})")
 
     if dry:
         with tempfile.TemporaryDirectory() as tmp:
             copy = Path(tmp) / "glossary.json"
             shutil.copy(seedlib.PATH, copy)
             seedlib.PATH = copy
-            seedlib.add(terms, pairs)
+            add_all(terms, pairs, checks)
             errors, warnings, data = check(copy)
         for w in warnings:
             print(f"⚠️  {w}")
@@ -65,7 +85,7 @@ def main():
         sys.exit(1 if errors else 0)
 
     original = seedlib.PATH.read_text(encoding="utf-8")
-    seedlib.add(terms, pairs)
+    add_all(terms, pairs, checks)
     errors, warnings, data = check(seedlib.PATH)
     if errors:
         seedlib.PATH.write_text(original, encoding="utf-8", newline="\n")
