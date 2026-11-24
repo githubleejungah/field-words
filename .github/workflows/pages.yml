@@ -34,6 +34,12 @@ jobs:
         run: node --test tests/review.test.js
       - name: 화면 코드 문법 검사 (글자 하나 잘못돼도 앱 전체가 안 뜨는 것을 막는다)
         run: node --check site/js/app.js && node --check site/js/review.js
+      # 검사를 통과한 site/ 폴더를 여기서 올려 둔다. 올리기와 배포를 같은 작업에서 연달아 하면
+      # 배포 단계가 방금 올린 파일을 못 찾는 일이 생긴다(2026-11-24 "No artifacts named github-pages").
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
 
   deploy:
     needs: check
@@ -42,10 +48,5 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
       - id: deployment
         uses: actions/deploy-pages@v4
