@@ -97,6 +97,8 @@ async function loadData() {
   state.pairs = glossary.confusable_pairs;
   for (const term of glossary.terms) state.allById.set(term.id, term);
   state.terms = glossary.terms.filter((term) => !term.replaced_by);
+  // AI 답 검수 문제 (2026-11-24). 내린 문제(retired_at)는 화면에 내지 않는다 (D-6)
+  state.checks = (glossary.ai_checks ?? []).filter((c) => !c.retired_at);
   // 날짜별 일지가 생기기 전에 공부한 기록을 한 번만 되살린다 (2026-11-11 추가)
   Review.ensureLog([...state.allById.keys()]);
 }
@@ -327,6 +329,9 @@ function renderStudy() {
     // answers: 몇 번째 카드를 어떤 상태로 체크했는지. 이전 카드로 돌아갔을 때 다시 채점하지 않으려고 기억한다.
     // kinds:   몇 번째 카드가 "learn"(배우기 카드)인지 "check"(체크 카드)인지
     state.session = { queue: p.queue, i: 0, retries: {}, answers: {}, kinds: {} };
+    // 오늘의 AI 답 검수 1개: 용어 카드 3장째 다음에 끼운다. 목표 장 수에는 세지 않는다 (AC-01 · D-2)
+    const pc = Review.planCheck(state.checks);
+    if (pc && !pc.done) state.session.check = { id: pc.id, kind: pc.kind, at: Math.min(CHECK_AFTER, p.queue.length), done: false };
   }
   const s = state.session;
   s.kinds ??= {};
@@ -336,6 +341,11 @@ function renderStudy() {
     state.graded.delete(s.queue[s.i]);
     s.answers[s.i] = { status: "known", skipped: true };
     s.i += 1;
+  }
+  if (s.check && !s.check.done && s.i >= s.check.at) {
+    const c = state.checks.find((x) => x.id === s.check.id);
+    if (c) { renderCheckInStudy(c, s); return; }
+    s.check.done = true;
   }
   if (s.i >= s.queue.length) {
     // 오늘 할 카드를 다 했으면: 마무리할 것이 있으면 오늘의 마무리 안내, 없으면 마침 화면
@@ -637,6 +647,123 @@ function renderStudyDone() {
   );
   state.session = null;
   state.wrapResult = null;
+}
+
+/* ---------- 화면: AI 답 검수 (2026-11-24, 요구 docs/requirements.md · 흐름 docs/flows.md 8절) ---------- */
+// AI가 쓴 답 문장 3개 중 틀린 1개를 고른다. ① 확신도 → ② 고르기 → 결과. 분류 · 상자 이동은 용어 카드와 같다.
+const CHECK_AFTER = 3;   // 오늘의 학습에서 용어 카드 몇 장 뒤에 끼울지 (D-2)
+const CHECK_MARKS = ["①", "②", "③"];
+
+// 한 문제 화면을 그린다. record=false면 연습(기록 없음, D-5). onNext: 결과 뒤 [다음]을 눌렀을 때
+function checkPanel(c, { record, onNext, nextLabel }) {
+  const box = h("article", { class: "card ai-check" });
+  const head = h("div", { class: "aic-head" },
+    h("span", { class: "badge" }, ...withIcon("search", t("aic.badge"))),
+    h("span", { class: "aic-type" }, t(`aic.type.${c.type}`)));
+  const q = h("p", { class: "aic-prompt" }, h("span", { class: "aic-q" }, t("aic.prompt")), c.prompt);
+  const list = h("ol", { class: "aic-statements" });
+  const items = c.statements.map((s, i) => {
+    const li = h("li", { class: "aic-st" }, h("span", { class: "aic-num" }, CHECK_MARKS[i]), h("span", {}, s));
+    list.append(li);
+    return li;
+  });
+  const panel = h("div", { class: "check" });
+  box.append(head, q, list, panel);
+  if (!record) box.append(h("p", { class: "muted aic-practice" }, t("aic.practice")));
+
+  // ① 확신도 (AC-03: 문장을 고르기 전에 먼저)
+  panel.replaceChildren(
+    h("p", { class: "check-prompt" }, t("aic.recall")),
+    h("div", { class: "conf-row" }, ["sure", "unsure", "dontknow"].map((cf) =>
+      h("button", { class: `btn conf ${cf}`, type: "button", onclick: () => onConfidence(cf) }, t(`check.${cf}`)))));
+
+  function onConfidence(confidence) {
+    if (confidence === "dontknow") return finish(confidence, null);   // AC-04: 고르기 없이 바로 결과
+    // ② 틀린 문장 고르기
+    panel.replaceChildren(h("p", { class: "check-prompt" }, t("aic.pick")));
+    items.forEach((li, i) => {
+      li.classList.add("pickable");
+      li.setAttribute("role", "button");
+      li.tabIndex = 0;
+      const pick = () => finish(confidence, i);
+      li.onclick = pick;
+      li.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } };
+    });
+  }
+
+  function finish(confidence, chosen) {
+    items.forEach((li) => { li.classList.remove("pickable"); li.onclick = null; li.onkeydown = null; li.removeAttribute("role"); li.tabIndex = -1; });
+    const correct = chosen === c.wrong;
+    const status = record
+      ? Review.recordCheck(c.id, { confidence, correct, chosen }).status   // AC-04 · 06 · 07
+      : Review.classify(confidence, correct);
+    items[c.wrong].classList.add("is-wrong");
+    items[c.wrong].append(h("span", { class: "aic-tag" }, t("aic.tag.wrong")));
+    if (chosen !== null && chosen !== c.wrong) {
+      items[chosen].classList.add("is-chosen");
+      items[chosen].append(h("span", { class: "aic-tag muted" }, t("aic.tag.chosen")));
+    }
+    // AC-05: 틀린 문장 · 바른 내용 · 확인 방법 · 공식 출처 (+ 숫자면 계산식). 빨간 ✗는 쓰지 않는다 (Must #16)
+    panel.replaceChildren(
+      h("p", { class: `result-title ${status}` }, t(`aic.result.${status}`, { n: CHECK_MARKS[c.wrong] })),
+      h("div", { class: "aic-answer" },
+        h("p", {}, h("b", {}, t("aic.correction")), " ", c.correction),
+        c.calc && h("p", {}, h("b", {}, t("aic.calc")), " ", h("code", {}, c.calc)),
+        h("p", {}, h("b", {}, t("aic.how")), " ", c.how_to_check),
+        h("p", { class: "aic-sources" }, h("b", {}, t("aic.sources")), " ",
+          ...c.sources.flatMap((s, i) => [i ? " · " : "", h("a", { href: s.url, target: "_blank", rel: "noopener noreferrer" }, s.label)]))),
+      h("div", { class: "aic-terms" }, h("span", { class: "muted" }, t("aic.terms")),
+        c.terms.map((id) => state.allById.get(id)).filter(Boolean).map((x) => h("a", { class: "done-chip", href: `#/term/${x.id}` }, x.term_en))),
+      h("p", { class: "card-feedback" }, h("a", { href: `#/feedback/aic:${encodeURIComponent(c.id)}` }, t("aic.report"))),
+      h("div", { class: "done-actions" }, h("button", { class: "btn primary", type: "button", onclick: onNext }, h("span", {}, nextLabel), icon("arrow"))));
+  }
+  return box;
+}
+
+// 오늘의 학습 안에서 (AC-01)
+function renderCheckInStudy(c, s) {
+  const goal = Review.getSettings().daily_goal + state.extraGoal;
+  const done = Review.getToday().seen.length;
+  app.replaceChildren(
+    h("div", { class: "study-head" }, progressRing(done, goal, 36), h("span", {}, t("today.title", { done, goal })),
+      h("span", { class: "badge" }, t("aic.inline"))),
+    checkPanel(c, { record: true, nextLabel: t("check.next"), onNext: () => { s.check.done = true; route(); } }));
+  window.scrollTo(0, 0);
+}
+
+// 용어 카드 링크로 여는 한 문제 화면 #/check/<id> (AC-08 · D-5)
+function renderCheck(id) {
+  renderTopbar("card");
+  const c = state.checks.find((x) => x.id === id);
+  if (!c) { app.replaceChildren(h("p", {}, t("aic.not_found"))); return; }
+  const back = c.terms.find((x) => state.allById.has(x));
+  app.replaceChildren(checkPanel(c, {
+    record: Review.shouldRecordCheck(c.id),
+    nextLabel: back ? t("aic.back") : t("nav.back"),
+    onNext: () => { location.hash = back ? `#/term/${back}` : "#/"; },
+  }));
+  window.scrollTo(0, 0);
+}
+
+// 용어 카드 아래 "AI가 자주 틀리는 것" 링크 1개 (AC-08)
+//   이어진 문제가 여럿이면: 안 푼 것 → 복습 날짜가 된 것 → 가장 오래 전에 푼 것
+function checkLinkSection(term) {
+  const list = state.checks.filter((c) => c.terms.includes(term.id));
+  if (!list.length) return "";
+  const today = Review.today();
+  const rank = (c) => {
+    const rec = Review.getCheck(c.id);
+    if (!rec) return [0, ""];
+    if (rec.next_review_at <= today) return [1, rec.next_review_at];
+    return [2, rec.last_at];
+  };
+  const pick = list.slice().sort((a, b) => {
+    const [ra, ka] = rank(a), [rb, kb] = rank(b);
+    return ra - rb || ka.localeCompare(kb);
+  })[0];
+  return section(null, t("aic.card.title"),
+    h("p", { class: "muted" }, t("aic.card.body")),
+    h("a", { class: "btn soft", href: `#/check/${encodeURIComponent(pick.id)}` }, ...withIcon("search", t("aic.card.open", { type: t(`aic.type.${pick.type}`) }))));
 }
 
 /* ---------- 화면: 오늘의 마무리 (Must #15) ---------- */
@@ -1126,6 +1253,7 @@ function buildCard(term, progressText) {
       h("p", { "data-sec": "interview" }, term.interview_q),
       term.interview_a && interviewPractice(term)
     ),
+    checkLinkSection(term),
     linkSection(null, t("card.prerequisites"), term.prerequisites),
     linkSection("related", t("card.related"), term.related),
     term.also_stages?.length > 0 && section(null, t("card.also_stages"),
@@ -1779,16 +1907,19 @@ function clearMediaSession() {
 
 /* ---------- 화면 4: 의견 보내기 ---------- */
 // 이름·전화번호 같은 개인정보는 받지 않는다. 답장을 원할 때만 이메일을 선택으로 적는다.
-const FEEDBACK_KINDS = ["wrong", "confusing", "add", "app", "etc"];
+const FEEDBACK_KINDS = ["wrong", "aicheck", "confusing", "add", "app", "etc"];   // aicheck: AI 답 검수 정답 오류 (AC-19)
 
 function renderFeedback(termId) {
   renderTopbar("card");
   document.body.classList.add("no-footer");
-  const term = termId ? state.allById.get(termId) : null;
+  // #/feedback/aic:<문제 id> 로 오면 AI 답 검수 정답 오류 신고 (AC-19)
+  const checkId = termId?.startsWith("aic:") ? termId.slice(4) : null;
+  const term = termId && !checkId ? state.allById.get(termId) : null;
 
   const kind = h("select", { id: "fb-kind", name: "kind" },
     FEEDBACK_KINDS.map((k) => h("option", { value: k }, t(`fb.kind.${k}`))));
-  const about = h("input", { id: "fb-term", name: "term", type: "text", placeholder: t("fb.term.ph"), value: term ? term.term_en : "" });
+  const about = h("input", { id: "fb-term", name: "term", type: "text", placeholder: t("fb.term.ph"), value: term ? term.term_en : checkId ? `AI 답 검수: ${checkId}` : "" });
+  if (checkId) kind.value = "aicheck";
   const message = h("textarea", { id: "fb-message", name: "message", rows: "6", placeholder: t("fb.message.ph") });
   const email = h("input", { id: "fb-email", name: "email", type: "email", placeholder: "name@example.com", autocomplete: "email" });
   // 사람에게는 보이지 않는 칸. 자동으로 글을 올리는 프로그램(스팸 봇)만 채운다 → 채워져 있으면 버린다 (허니팟)
@@ -2251,6 +2382,7 @@ function route() {
     if (hash === "#/about") renderAbout();
     else if (hash === "#/study") renderStudy();
     else if (hash === "#/progress") renderProgress();
+    else if (hash.startsWith("#/check/")) renderCheck(decodeURIComponent(hash.slice("#/check/".length)));
     else if (hash.startsWith("#/feedback")) renderFeedback(decodeURIComponent(hash.slice("#/feedback/".length)));
     else { state.flow = null; renderList(); }
   }
