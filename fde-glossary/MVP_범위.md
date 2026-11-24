@@ -146,6 +146,11 @@
 ### 오픈소스 고지 (Must, 출시 전)
 - MIT·ISC 아이콘을 쓰면 저작권 고지문을 함께 넣는다. `THIRD_PARTY_LICENSES.md` + 앱 설정의 "오픈소스 라이선스" 화면.
 
+### AI 답 검수 (2026-11-24 사용자 제안 · 승인)
+- AI가 쓴 짧은 답에서 틀린 곳(숫자 · 최신 정보 · 출처 · 사실 · 코드)을 고르는 새 문제 형식. 개발 현장 상황으로 만든다.
+- 확신도 → 고르기 → 정답 + 확인 방법. 착각 기록은 기존 규칙을 쓴다. 문제는 사람 승인 뒤 공개.
+- 요구 정리: `docs/requirements.md`(인터뷰 진행 중). 우선순위는 인터뷰에서 정한다.
+
 ### 기획 과정에서 나온 시드 용어 후보 (2026-11-10)
 - **광고**: 광고 네트워크(Ad Network), 배너(Banner), 네이티브 광고(Native Ad), 인게임 광고(In-game Advertising), 노출(Impression), 가시성(Viewability), CPM, CPC, CTR, 맥락 타기팅(Contextual Targeting), 비개인화 광고(Non-personalized Ads), 리타기팅(Retargeting), 서드파티 쿠키(Third-party Cookie), 보상형 광고(Rewarded Ad), 빈도 상한(Frequency Cap), 백필(Backfill), 하우스 광고(House Ad), 제휴 링크(Affiliate Link), 동의 관리 플랫폼(CMP)
 - **화면·디자인**: 디자인 토큰(Design Token), 접근성(Accessibility), 명암 대비(Contrast Ratio), 대체 텍스트(alt), 다크 모드(Dark Mode), 채도(Saturation), 자기 설명적 UI, 반응형 디자인(Responsive Design)

@@ -93,7 +93,7 @@ node --test tests/review.test.js
 
 ## 문서 목록
 
-**설계 문서 6종** — 구조·데이터·흐름이 바뀌면 같은 커밋에서 함께 고칩니다.
+**설계 문서 7종** — 구조·데이터·흐름이 바뀌면 같은 커밋에서 함께 고칩니다.
 
 | # | 문서 | 위치 | 담는 것 |
 |---|---|---|---|
@@ -103,6 +103,7 @@ node --test tests/review.test.js
 | 4 | 데이터 설계 | [docs/data-model.md](docs/data-model.md) | 정본 표(데이터 · 정본 · 주인 · 사본) · glossary.json 구조 · 브라우저 저장 이름 |
 | 5 | 흐름 설계 | [docs/flows.md](docs/flows.md) | 용어 공개 · 오늘의 학습 · 복습 상자 · 마무리 · 카드 모드 · 주간 점검 순서도 |
 | 6 | 설계 결정 기록(ADR) | [docs/adr/](docs/adr/) | 결정 · 이유 · 대안 · 결과. 고치지 않고 새 ADR로 대체 |
+| 7 | 요구 | [docs/requirements.md](docs/requirements.md) | 새 기능(AI 답 검수)의 원문 · 인터뷰 · 가정 · EARS 수용 기준 · **이어서 하기**(현재 단계와 다음 할 일) |
 
 **그 밖의 문서**
 
