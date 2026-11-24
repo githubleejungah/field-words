@@ -121,7 +121,7 @@ glossary.json 밖에 있는, 사람마다 다른 데이터입니다. 이름을 �
 fw:v1:review:<용어 id>     복습 기록   { box, status, first_at, last_at, next_review_at, history[최근 20개], lapses, long_term_at? }
                                         box: 1~7 = 라이트너 상자(1·2·4·7·15·30·60일), 8 = 🏅 장기 기억 유지(120일마다)
                                         lapses: 높은 상자에서 잊은 횟수 / long_term_at: 처음 장기 기억이 된 날
-fw:v1:today                오늘 기록   { date, seen[], wrong[], misconceptions[], corrected[], wrapped[], aic? } ← aic: 오늘 낸 AI 답 검수 문제 id (하루 1개)
+fw:v1:today                오늘 기록   { date, seen[], wrong[], misconceptions[], corrected[], wrapped[], aic?, aic_kind? } ← aic: 오늘 낸 AI 답 검수 문제 id (하루 1개), aic_kind: new | review
 fw:v1:log                  날짜별 학습 일지 { "YYYY-MM-DD": { seen[], new[], wrong[], misconceptions[], corrected[], long_term[] } } ← 내 기록 화면. 지우지 않는다
 fw:v1:log_built            일지 되살리기를 마쳤는지 (true)
 fw:v1:aic:<문제 id>        AI 답 검수 기록 { box, status, first_at, last_at, next_review_at, history[최근 20개] } ← 용어 기록과 같은 모양

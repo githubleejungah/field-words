@@ -98,6 +98,74 @@ const Review = (() => {
     return { status, record: rec, firstToday };
   }
 
+  // ----- AI 답 검수 (2026-11-24, 요구 docs/requirements.md · 설계 docs/flows.md 8절) -----
+  // 기록 이름은 용어와 다르게 fw:v1:aic:<문제 id> (D-4). 상태 분류 · 상자 이동은 용어와 같은 classify · nextBox (D-3).
+  // 오늘 기록(today.seen)에 넣지 않는다 → "오늘 n / 10장" 목표에 세지 않는다 (D-2, AS-2).
+  function getCheck(id) { return read(`aic:${id}`, null); }
+
+  // 오늘 낼 AI 답 검수 1개 (AC-01: 새 · 복습 합쳐 하루 1개, 사용자 승인 2026-11-24)
+  //   복습 날짜가 된 문제가 있으면 가장 급한 것, 없으면 새 문제.
+  //   다시 확인할 날(recheck_at)이 지난 문제는 새 문제로 내지 않고, 복습은 그대로 낸다 (AC-13). 내린 문제는 뺀다 (D-6).
+  //   돌려주는 값: { id, kind: "review" | "new", done } 또는 null. 같은 날 여러 번 불러도 같은 문제.
+  function planCheck(checks) {
+    const now = today();
+    const t = getToday();
+    const done = (id) => getCheck(id)?.last_at === now;
+    if (t.aic) {
+      const fixed = checks.find((c) => c.id === t.aic);
+      if (fixed) return { id: fixed.id, kind: t.aic_kind ?? "new", done: done(fixed.id) };
+    }
+    const active = checks.filter((c) => !c.retired_at);
+    const due = active
+      .map((c) => ({ c, rec: getCheck(c.id) }))
+      .filter((x) => x.rec && x.rec.next_review_at <= now)
+      .sort((a, b) => URGENCY[a.rec.status] - URGENCY[b.rec.status] || a.rec.next_review_at.localeCompare(b.rec.next_review_at));
+    let pick = null;
+    if (due.length) pick = { id: due[0].c.id, kind: "review" };
+    else {
+      const fresh = active.find((c) => !getCheck(c.id) && c.recheck_at > now);
+      if (fresh) pick = { id: fresh.id, kind: "new" };
+    }
+    if (!pick) return null;
+    t.aic = pick.id;
+    t.aic_kind = pick.kind;
+    write("today", t);
+    return { ...pick, done: false };
+  }
+
+  // 용어 카드 링크로 열었을 때 기록할지 (D-5): 처음 푸는 문제이거나 복습 날짜가 된 문제만. 오늘 이미 푼 문제는 연습.
+  function shouldRecordCheck(id) {
+    const rec = getCheck(id);
+    if (!rec) return true;
+    return rec.last_at !== today() && rec.next_review_at <= today();
+  }
+
+  // AI 답 검수 한 문제 기록 (AC-04 · 06 · 07). chosen: 고른 문장 번호 (몰라요면 null)
+  function recordCheck(id, { confidence, correct, chosen = null }) {
+    const now = today();
+    const prev = getCheck(id) ?? { box: 0, history: [] };
+    const status = classify(confidence, correct);
+    const box = nextBox(prev.box, status);
+    const rec = {
+      ...prev,
+      box,
+      status,
+      first_at: prev.first_at ?? now,
+      last_at: now,
+      next_review_at: addDays(now, intervalFor(box)),
+      history: [...prev.history, { at: now, confidence, correct, chosen }].slice(-HISTORY_KEEP),
+    };
+    write(`aic:${id}`, rec);
+    // 일지: 날짜마다 aic[] · aic_misconceptions[] (내 기록 화면의 용어 숫자와 섞이지 않게 따로)
+    const log = getLog();
+    const day = { ...emptyDay(), ...log[now] };
+    day.aic = [...new Set([...(day.aic ?? []), id])];
+    if (status === "misconception") day.aic_misconceptions = [...new Set([...(day.aic_misconceptions ?? []), id])];
+    log[now] = day;
+    write("log", log);
+    return { status, record: rec };
+  }
+
   // ----- 오늘의 마무리 (Must #15) -----
   // 하루 학습 끝에 2~3분, 오늘 본 카드를 "다시 읽기"가 아니라 "다시 떠올리기"로 한 번 더 푼다.
   // 순서: 🚨 착각 → 🟠 틀림·헷갈림 → 혼동 쌍이 있는 오늘 용어 → 맞힌 것 2개 (섞어서) → 마지막은 맞힌 카드로 끝내기
@@ -370,6 +438,7 @@ const Review = (() => {
     classify, nextBox, intervalFor, record, get, getToday, getSettings, setSettings,
     plan, counts, makeQuiz, today, addDays, useStore, useClock,
     getLog, ensureLog, stats, exportAll, importAll, planWrap, practice, markWrapped,
+    getCheck, planCheck, shouldRecordCheck, recordCheck,
     INTERVALS, MAINTAIN_BOX,
   };
 })();

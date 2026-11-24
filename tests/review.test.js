@@ -233,3 +233,68 @@ test("복습이 목표의 2배 넘게 밀리면 새 카드는 1장만", () => {
   assert.equal(p.newCount, 1);
   assert.equal(p.reviewCount, 9);
 });
+
+// ----- AI 답 검수 (2026-11-24, 요구 AC-01 · 04 · 06 · 07 · 13, 설계 D-2 · D-4 · D-5 · D-6) -----
+const CHK = (id, extra = {}) => ({ id, type: "fact", recheck_at: "2027-11-24", ...extra });
+
+test("AC-01: 하루 1개만, 같은 날 다시 불러도 같은 문제", () => {
+  fresh("2026-11-24");
+  const checks = [CHK("a"), CHK("b"), CHK("c")];
+  const p1 = Review.planCheck(checks);
+  const p2 = Review.planCheck(checks);
+  assert.equal(p1.id, "a");
+  assert.equal(p1.kind, "new");
+  assert.equal(p2.id, "a");
+  Review.recordCheck("a", { confidence: "sure", correct: true, chosen: 1 });
+  assert.equal(Review.planCheck(checks).done, true);   // 오늘 것은 이미 품 → 새로 더 내지 않음
+  assert.equal(Review.planCheck(checks).id, "a");
+});
+
+test("AC-04: 몰라요는 모름으로 기록하고, 목표 장 수(today.seen)에 세지 않는다 (D-2)", () => {
+  fresh("2026-11-24");
+  const r = Review.recordCheck("a", { confidence: "dontknow", correct: false });
+  assert.equal(r.status, "unknown");
+  assert.equal(Review.getCheck("a").history[0].chosen, null);
+  assert.deepEqual(Review.getToday().seen, []);
+  assert.equal(Review.get("a"), null);                 // 용어 기록과 섞이지 않음 (D-4)
+  assert.deepEqual(Review.getLog()["2026-11-24"].aic, ["a"]);
+});
+
+test("AC-06: 확실해요 + 못 맞힘 = 착각으로 기록", () => {
+  fresh("2026-11-24");
+  assert.equal(Review.recordCheck("a", { confidence: "sure", correct: false, chosen: 2 }).status, "misconception");
+  assert.deepEqual(Review.getLog()["2026-11-24"].aic_misconceptions, ["a"]);
+});
+
+test("AC-07: 용어와 같은 상자 간격으로 다시 나온다 (복습이 새 문제보다 먼저)", () => {
+  fresh("2026-11-24");
+  const checks = [CHK("a"), CHK("b")];
+  Review.planCheck(checks);
+  Review.recordCheck("a", { confidence: "sure", correct: true, chosen: 0 });   // 상자 1 → 1일 뒤
+  setDate("2026-11-25");
+  const p = Review.planCheck(checks);
+  assert.equal(p.id, "a");
+  assert.equal(p.kind, "review");
+});
+
+test("AC-13: 다시 확인할 날이 지난 문제는 새로 내지 않지만 복습은 낸다 · 내린 문제는 뺀다", () => {
+  fresh("2026-11-24");
+  const checks = [CHK("old", { recheck_at: "2026-11-24" }), CHK("gone", { retired_at: "2026-11-20" }), CHK("ok")];
+  assert.equal(Review.planCheck(checks).id, "ok");     // old(지남) · gone(내림)은 새 문제로 안 나옴
+  fresh("2026-11-20");
+  Review.recordCheck("old", { confidence: "sure", correct: true, chosen: 0 });
+  setDate("2026-11-24");
+  assert.equal(Review.planCheck(checks).id, "old");    // 이미 푼 사람에게는 복습으로 나옴
+});
+
+test("D-5: 링크로 열었을 때 처음이거나 복습 날짜면 기록, 아니면 연습", () => {
+  fresh("2026-11-24");
+  assert.equal(Review.shouldRecordCheck("a"), true);
+  Review.recordCheck("a", { confidence: "sure", correct: true, chosen: 0 });
+  assert.equal(Review.shouldRecordCheck("a"), false);  // 오늘 이미 품
+  setDate("2026-11-25");
+  assert.equal(Review.shouldRecordCheck("a"), true);   // 복습 날짜
+  Review.recordCheck("a", { confidence: "sure", correct: true, chosen: 0 });   // 상자 2 → 2일 뒤
+  setDate("2026-11-26");
+  assert.equal(Review.shouldRecordCheck("a"), false);  // 아직 복습 날짜 전
+});
