@@ -13,6 +13,7 @@
 | 5 | 카드 모드 (보기 · 이동 중 · 말하기) | `app.js` `renderTerm`, `speakPractice`, `speech` |
 | 6 | 의견 보내기 · 기록 백업 | `app.js` `renderFeedback`, `backupSection` |
 | 7 | 주간 자동 점검 (관리자) | 저장소 밖 예약 작업 + `check_all.py` |
+| 8 | AI 답 검수 (2026-11-24) | `review.js` `planCheck`·`recordCheck`, `app.js` `renderCheck`, `pipeline/promote.py`·`recheck.py` |
 
 ---
 
@@ -196,3 +197,58 @@ flowchart TD
 - 하지 않는 일: `site/` 고치기, 커밋·푸시·배포, 파일 지우기, 메일·메시지 보내기, 라이브러리 버전 올리기.
 - 결과물(`pipeline/reports/`, `pipeline/candidates/`)은 Git에 올리지 않는다.
 - 예약 작업의 실제 프롬프트는 저장소 밖에 있어 이 문서와 같은지 **확인 필요**.
+
+## 8. AI 답 검수 (2026-11-24 · 요구 [requirements.md](requirements.md) · 설계 결정 D-1~D-6 사용자 승인)
+
+AI가 쓴 짧은 답 문장 3개 중 틀린 1개를 고른다. 판단 1번(확신도) + 확인 1번(고르기)은 용어 카드와 같다.
+
+### 8-1. 오늘의 학습에 섞기 (`Review.planCheck`, AC-01 · AC-13)
+
+```mermaid
+flowchart TD
+  S["#/study 진입 · Review.plan (용어 카드, 그대로)"] --> A{"오늘 이미 AI 답 검수를 냈나<br/>(today.aic)"}
+  A -- "예" --> N["오늘은 없음"]
+  A -- "아니오" --> B{"복습 날짜가 된 문제가 있나"}
+  B -- "있음" --> C["가장 급한 복습 1개<br/>(다시 확인할 날이 지나도 복습은 냄)"]
+  B -- "없음" --> D{"새로 낼 문제가 있나<br/>retired_at 없음 · recheck_at 안 지남"}
+  D -- "있음" --> E["새 문제 1개"]
+  D -- "없음" --> N
+  C --> Q["용어 카드 3장째 다음에 끼우기<br/>목표 10장 숫자에는 세지 않음"]
+  E --> Q
+```
+
+- **하루 1개**: 새 문제와 복습 문제를 합쳐 하루 1개 (사용자 승인 2026-11-24).
+- 복습 순서는 용어와 같다: 🚨 착각 → 🟠 헷갈림 → ⚪ 모름 → 🟡 불안한 앎 → ✅ 앎, 같으면 복습 날짜가 빠른 것.
+
+### 8-2. 한 문제 풀기 (`#/check/<id>` 또는 오늘의 학습 안, AC-03~07)
+
+```mermaid
+flowchart TD
+  O["AI에게 한 질문 + AI 답 문장 3개"] --> C["① 확신도: 확실해요 · 헷갈려요 · 몰라요"]
+  C -- "몰라요" --> R0["Review.recordCheck: 모름"]
+  C -- "확실 · 헷갈림" --> P["② 틀린 문장 고르기 (3개 중 1개)"]
+  P --> R["Review.recordCheck<br/>classify · nextBox 그대로 (확실 + 못 맞힘 = 착각)"]
+  R0 --> V["결과: 틀린 문장 표시 · 바른 내용 · 이렇게 확인해요 ·<br/>공식 출처 링크 · (숫자면) 계산식 · 관련 용어 카드"]
+  R --> V
+```
+
+- 빨간 ✗를 쓰지 않는다(Must #16). 고른 번호는 기록에 남긴다.
+- **용어 카드 링크로 열었을 때**(D-5): 처음 푸는 문제이거나 복습 날짜가 된 문제만 기록한다. 그 밖에는 연습(기록 없음).
+- 용어 카드에는 이어진 문제 1개만 링크한다: 안 푼 것 → 복습 날짜가 된 것 → 가장 오래 전에 푼 것.
+
+### 8-3. 문제 공개 · 다시 확인 (관리자, AC-10~17)
+
+```mermaid
+flowchart TD
+  A["후보 pipeline/candidates/날짜_aicheck.py<br/>(AI_CHECKS 목록)"] --> V{"검사: 공식 출처 url · checked_at<br/>숫자 유형 calc · 문장 3개 · wrong 0~2 · terms"}
+  V -- "하나라도 없음" --> X["미리보기 · 승인 대기열에 올리지 않음"] --> A
+  V -- "통과" --> B["preview.py → 사람이 공식 문서로 정답 확인"]
+  B -- "승인" --> C["promote.py: recheck_at 계산<br/>최신 정보 +6개월 · 나머지 +1년"]
+  C --> D["glossary.json ai_checks[] → 커밋 · push → 배포"]
+  W["주간 점검 check_all.py"] --> L{"recheck_at이 지난 문제?"}
+  L -- "있음" --> RP["주간 보고서에 목록"]
+  RP --> H{"사람이 고름"}
+  H -- "다시 확인함" --> K["recheck.py id --ok"]
+  H -- "내리기" --> T["recheck.py id --retire<br/>retired_at = 오늘"]
+```
+

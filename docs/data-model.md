@@ -2,6 +2,7 @@
 
 - 작성일: 2026-11-10
 - 고친 날: 2026-11-16 — 예문 상황에 `field`(현장에선) 추가, 스키마 1.1 ([ADR-0005](adr/0005-예문-상황에-현장에선-추가.md))
+- 고친 날: 2026-11-24 — AI 답 검수 문제 `ai_checks[]` 추가, 스키마 1.2 (요구: [requirements.md](requirements.md), 설계 결정 D-1~D-6 사용자 승인)
 - 규칙 파일: `schema/glossary.schema.json` (JSON Schema: JSON의 모양을 검사하는 규칙 문서)
 - 실제 데이터: `site/data/glossary.json`
 - 검사 도구: `python pipeline/validate.py`
@@ -10,7 +11,7 @@
 
 ```
 glossary.json
-├── schema_version   "1.1"         ← 구조 버전
+├── schema_version   "1.2"         ← 구조 버전
 ├── updated_at       "2026-11-10"
 ├── terms[]                        ← 용어 카드 목록
 │   ├── id           "webhook"     ← 바꾸지 않는 이름표 (슬러그)
@@ -26,8 +27,23 @@ glossary.json
 │   ├── visual?      { kind, format, file, alt }      ← 있을 때만
 │   ├── learn_more?  [{ title, url, kind }]           ← 있을 때만
 │   └── created_at / updated_at
-└── confusable_pairs[]             ← 혼동 쌍 목록
-    └── { id, a, b, difference, visual?, check }
+├── confusable_pairs[]             ← 혼동 쌍 목록
+│   └── { id, a, b, difference, visual?, check }
+└── ai_checks[]                    ← AI 답 검수 문제 (2026-11-24, 스키마 1.2)
+    ├── id            "rate-limit-per-second"   ← 슬러그, 바꾸지 않는다
+    ├── type          number | recency | fact | code   ← 숫자 · 최신 정보 · 출처/사실 · 코드
+    ├── prompt        사용자가 AI에게 한 질문
+    ├── statements[]  AI 답 문장 정확히 3개
+    ├── wrong         0 | 1 | 2   ← 틀린 문장 번호 = 정답
+    ├── correction    바른 내용 1줄
+    ├── how_to_check  확인 방법 1줄
+    ├── calc?         계산식 (type = number 이면 필수)
+    ├── sources[]     { label, url, checked_at } 1개 이상 (공식 문서 · 명세 · MDN 등)
+    ├── checked_at    사람이 공식 출처로 확인한 날
+    ├── recheck_at    다시 확인할 날 ← 파이프라인이 계산 (최신 정보 +6개월, 나머지 +1년)
+    ├── terms[]       관련 용어 id 1개 이상
+    ├── retired_at?   내린 날 (있으면 사이트가 목록 · 링크에서 뺀다)
+    └── created_at / updated_at
 ```
 
 `?`가 붙은 칸은 **선택 칸(Optional Field)**입니다. 없으면 칸 자체를 생략합니다.
@@ -49,6 +65,9 @@ glossary.json
 | 수강생 학습 기록 | 각 브라우저의 `localStorage` (`fw:v1:*`) | 수강생 본인. 코드에서는 `review.js`만 쓴다 (예외: `notice_seen`은 `app.js`) | 백업 파일 `fieldwords-backup-날짜.json`(수강생이 저장). `localStorage`를 못 쓰면 메모리에만 둔다. 기기 사이 동기화는 없다 |
 | 수강생 의견 | 받는 메일함 (주소는 `app.js`의 `FEEDBACK.mailto`) | 프로젝트 오너 | 보낸 사람 메일 앱의 보낸 편지함 |
 | API 키 · 비밀 값 | `.env` (**Git 밖**) | 관리자 | 없음. 공개 사이트에 넣지 않는다. 지금 파이프라인 코드는 `.env`를 읽지 않는다 |
+| AI 답 검수 문제 | `site/data/glossary.json`의 `ai_checks[]` | 관리자. 사람 승인 뒤 `promote.py`가 넣고, `recheck.py`가 확인일 · 내린 날을 고친다 | 배포된 파일, `app.js`의 `state.checks`(메모리) |
+| 다시 확인할 날 `recheck_at` | 같은 곳 (계산값이지만 저장) | 파이프라인만 쓴다(`promote.py` · `recheck.py`). 사람이 손으로 쓰지 않는다 | 주간 점검 보고서의 "다시 확인할 문제" 목록 |
+| AI 답 검수 학습 기록 | 각 브라우저 `fw:v1:aic:<문제 id>` | 수강생 본인. 코드에서는 `review.js`만 쓴다 | 기록 백업 파일(`fw:` 묶음에 자동 포함) |
 | 쫑긋과 서로 반영할 목록 | 공유 저장소 `learning-apps-shared/서로_반영할_것.md` (이 저장소 밖) | 사람과 함께하는 작업 | 주간 작업은 읽기만 한다 (`docs/운영_자동화.md`) |
 
 - 서버가 없으므로 수강생 데이터의 정본은 **수강생 기기에만** 있다. 그래서 관리자는 누가 무엇을 틀리는지 모른다. 이 한계를 공개 전에 안내한다(`docs/공개_체크리스트.md`).
@@ -69,6 +88,10 @@ glossary.json
 | 9 | `stage`(단계)와 `level`(등급)은 **필수** | 프로젝트 순서대로 배우는 지도, 수준별 시작점, "이미 알아요" 건너뛰기의 바탕이다. 기준은 `docs/콘텐츠_작성_가이드.md` |
 | 10 | `pitfall`, `interview_q`, `expansion`은 선택 | 학습자가 가장 많이 묻는 세 가지에 답한다: "현업에서 뭘 조심해?", "면접에서 뭘 물어?", "약어가 뭐의 줄임말이야?" 많이 아는 사람이 지루하지 않게 하는 재료다 |
 | 10-1 | `interview_a`(30초 모범 답변)는 선택 | 성공 지표 "무작위 용어 10개 중 8개를 30초 안에 말로 설명"을 그대로 연습하는 면접 연습 모드의 정답지다 |
+| 12 | AI 답 검수 문제는 **glossary.json 안** `ai_checks[]`에 둔다 (D-1) | "파이프라인과 사이트를 잇는 것은 glossary.json 하나뿐"(CLAUDE.md 확정 결정)을 지킨다. 새 파일을 만들면 이 결정을 바꾸는 ADR이 필요하다 |
+| 13 | AI 답 검수 기록은 용어 기록과 **다른 이름** `fw:v1:aic:` (D-4) | 섞이면 "오늘 n / 10장"과 내 기록의 "본 용어" 숫자가 틀어진다. 상태 분류 · 상자 간격은 용어와 같은 규칙을 쓴다(D-3) |
+| 14 | 문제는 **지우지 않고** `retired_at`으로 내린다 (D-6) | 용어의 `replaced_by`와 같은 원칙. 지우면 수강생 기록이 갈 곳을 잃는다 |
+| 15 | 승인 상태 칸이 **없다** (문제도 같음) | 파일에는 승인된 문제만 들어간다. 후보는 `pipeline/candidates/`(Git 밖) |
 | 11 | 용어는 **지우지 않는다.** `replaced_by`로 옮긴다 | 지우면 수강생 브라우저의 복습 기록이 갈 곳을 잃는다. 사이트는 대체된 용어를 목록에서 숨기고 옛 주소를 새 용어로 보낸다. **확인 필요**: 복습 기록을 새 용어로 옮기는 코드는 아직 없다(2026-11-16 main 기준. 지금 `replaced_by`를 쓴 용어도 없다) |
 
 ## 스키마가 못 잡는 것 → 검사 스크립트가 잡는다
@@ -86,6 +109,9 @@ JSON Schema는 **모양**만 검사합니다. "webhook이라는 id가 실제로 
 | `also_stages`에 주 단계가 또 있음 | 오류 |
 | 혼동 쌍이 대체된 용어를 씀 | 경고 |
 | `visual.file` 그림 파일이 아직 없음 | 경고 (Mermaid → SVG 변환 전일 수 있음) |
+| AI 답 검수: `id` 중복 · `terms`가 없는 용어 · 공식 출처 url이나 `checked_at` 없음 · 숫자 유형에 `calc` 없음 | 오류 (후보는 미리보기 · 승인 대기열에 올리지 않는다: AC-10 · AC-11) |
+| AI 답 검수: `recheck_at`이 유형 규칙(최신 정보 +6개월, 나머지 +1년)과 다름 | 오류 |
+| AI 답 검수: `recheck_at`이 지남 | 정보 (주간 점검 보고서에 목록: AC-14) |
 
 ## 브라우저 저장소(localStorage) 이름 규칙
 
@@ -95,9 +121,11 @@ glossary.json 밖에 있는, 사람마다 다른 데이터입니다. 이름을 �
 fw:v1:review:<용어 id>     복습 기록   { box, status, first_at, last_at, next_review_at, history[최근 20개], lapses, long_term_at? }
                                         box: 1~7 = 라이트너 상자(1·2·4·7·15·30·60일), 8 = 🏅 장기 기억 유지(120일마다)
                                         lapses: 높은 상자에서 잊은 횟수 / long_term_at: 처음 장기 기억이 된 날
-fw:v1:today                오늘 기록   { date, seen[], wrong[], misconceptions[], corrected[], wrapped[] } ← 오늘의 마무리용
+fw:v1:today                오늘 기록   { date, seen[], wrong[], misconceptions[], corrected[], wrapped[], aic? } ← aic: 오늘 낸 AI 답 검수 문제 id (하루 1개)
 fw:v1:log                  날짜별 학습 일지 { "YYYY-MM-DD": { seen[], new[], wrong[], misconceptions[], corrected[], long_term[] } } ← 내 기록 화면. 지우지 않는다
 fw:v1:log_built            일지 되살리기를 마쳤는지 (true)
+fw:v1:aic:<문제 id>        AI 답 검수 기록 { box, status, first_at, last_at, next_review_at, history[최근 20개] } ← 용어 기록과 같은 모양
+                           일지(fw:v1:log)에는 날짜마다 aic[] · aic_misconceptions[] 칸이 더해진다
 fw:v1:settings             설정 { daily_goal(하루 목표, 기본 10), min_goal(기본 3), hl(강조 표시 모양) }
 fw:v1:notice_seen          첫 안내를 봤는지 ("1"). 이것만 app.js가 직접 쓴다
 
@@ -117,5 +145,6 @@ fw:v1:onboarding           첫 실행 설문 결과
 
 - 칸을 **추가**하면 `1.0 → 1.1`. 옛 사이트도 새 파일을 읽을 수 있다.
 - 열거형에 **값을 추가**하는 것도 같은 급(1.x 올림)으로 본다. 2026-11-16 예문 상황 `field` 추가로 `1.1`이 됐다.
+- 2026-11-24 `ai_checks[]` 목록 추가로 `1.2`가 됐다.
 - 칸의 뜻을 바꾸거나 **삭제**하면 `1.x → 2.0`. 사이트도 함께 고친다.
 - 예정된 추가: 후원 예문 표시(`examples[].sponsor`), 광고 탑재 시점에 1.1로 추가한다.

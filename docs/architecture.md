@@ -65,9 +65,10 @@ GitHub에서 이 그림이 바로 보인다. Mermaid(글로 그림을 그리는 
 | `pipeline/validate.py` | 스키마 검사 + 참조 무결성(가리키는 대상이 실제로 있는지) 검사 | glossary.json → 오류·경고 |
 | `pipeline/seedlib.py` | 용어 묶음을 glossary.json에 기존 모양 그대로 덧붙인다. 이미 있는 id는 덮어쓰지 않고 멈춘다 | 묶음(TERMS, PAIRS) → glossary.json |
 | `pipeline/seeds/*.py` | 이미 넣은 용어 묶음의 기록. `batch_*`는 추가, `update_*`는 수정 | — |
-| `pipeline/promote.py` | 승인한 후보 묶음을 넣고 검사한다. 오류면 원래대로 되돌린다. 성공하면 후보 파일을 `seeds/`로 옮긴다. 커밋은 하지 않는다 | candidates/*.py → glossary.json |
+| `pipeline/promote.py` | 승인한 후보 묶음(용어 `TERMS` · 혼동 쌍 `PAIRS` · AI 답 검수 `AI_CHECKS`)을 넣고 검사한다. AI 답 검수는 넣을 때 `recheck_at`을 계산한다. 오류면 원래대로 되돌린다. 성공하면 후보 파일을 `seeds/`로 옮긴다. 커밋은 하지 않는다 | candidates/*.py → glossary.json |
 | `pipeline/preview.py` | 후보 묶음을 사람이 읽기 쉬운 `.md`로 만든다 | candidates/*.py → `*_미리보기.md` |
-| `pipeline/check_all.py` | 종합 점검 9가지(데이터, 규칙 시험, 비밀 값, 개인정보, 금지 파일, 캐시 버전, 외부 파일, 의존성, 내용 보강) | 저장소 → `reports/점검_날짜.md` |
+| `pipeline/check_all.py` | 종합 점검 10가지(데이터, 규칙 시험, 비밀 값, 개인정보, 금지 파일, 캐시 버전, 외부 파일, 의존성, 내용 보강, **다시 확인할 AI 답 검수 문제**) | 저장소 → `reports/점검_날짜.md` |
+| `pipeline/recheck.py` | AI 답 검수 문제 "다시 확인함"(`--ok`: 확인일 = 오늘, 다시 확인할 날 다시 계산) · "내리기"(`--retire`: `retired_at` = 오늘). 커밋하지 않는다 | 문제 id → glossary.json |
 | 주간 예약 작업 `field-words-weekly` | Claude 앱의 예약 작업. 점검·수정 제안·새 용어 후보를 만든다. `site/`를 고치지 않고 커밋·배포하지 않는다 | → candidates/, reports/ |
 
 - 주간 예약 작업의 설정은 저장소 안에 없다. 지침은 [운영_자동화.md](운영_자동화.md)에 있다. 실제 예약 설정과 지침이 같은지는 **확인 필요**.
@@ -91,7 +92,7 @@ GitHub에서 이 그림이 바로 보인다. Mermaid(글로 그림을 그리는 
 | 파일 | 역할 |
 |---|---|
 | `index.html` | 뼈대. 맨 위 막대·본문·바닥글 자리만 있다. `review.js`를 먼저, `app.js`를 나중에 부른다. `?v=` 값으로 캐시 버스팅(Cache Busting: 브라우저가 옛 파일을 쓰지 않게 하는 장치) |
-| `js/review.js` | 학습 기록과 복습 규칙. 화면이 없다. 전역 `Review`로 공개된다. Node.js 시험에서도 `require()`로 쓴다 |
+| `js/review.js` | 학습 기록과 복습 규칙. 화면이 없다. 전역 `Review`로 공개된다. Node.js 시험에서도 `require()`로 쓴다. AI 답 검수도 여기서 고른다(`planCheck`) · 기록한다(`recordCheck`). 분류 · 상자 규칙은 용어와 같은 함수를 쓴다 |
 | `js/app.js` | 화면 전부. 해시 라우팅(Hash Routing: 주소의 `#` 뒤 값으로 화면을 고르는 방식), 검색, 카드, 오늘의 학습, 듣기, 의견, 내 기록 |
 | `css/style.css` | 디자인. 혼동 쌍 색 토큰(A 베이지, B 세이지)이 여기 있다 (ADR-0002) |
 | `data/glossary.json` | 용어·혼동 쌍 데이터. 관리자 파이프라인과 사이트를 잇는 **유일한 연결 고리** |
@@ -103,7 +104,8 @@ GitHub에서 이 그림이 바로 보인다. Mermaid(글로 그림을 그리는 
 |---|---|---|
 | `#/` | `renderList` | 목록 · 검색 · 단계 고르기 · 오늘의 학습 진입 |
 | `#/term/<id>` | `renderTerm` | 용어 카드. 👀 보기 / 🚶 이동 중 / 🗣 말하기 모드 |
-| `#/study` | `renderStudy` → `renderWrap` → `renderStudyDone` | 오늘의 학습 → 오늘의 마무리 → 마침 |
+| `#/study` | `renderStudy` → `renderWrap` → `renderStudyDone` | 오늘의 학습 → 오늘의 마무리 → 마침. 하루 1개 AI 답 검수 문제가 3장째 다음에 끼어든다 |
+| `#/check/<id>` | `renderCheck` | AI 답 검수 한 문제 (용어 카드의 "AI가 자주 틀리는 것" 링크로 연다) |
 | `#/progress` | `renderProgress` | 📈 내 기록 (잔디, 성장 그래프, 백업) |
 | `#/feedback/<id?>` | `renderFeedback` | 의견 보내기 |
 | `#/about` | `renderAbout` | 정보 · 강조 표시 고르기 · 음성 정보 |
