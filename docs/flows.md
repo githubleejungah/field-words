@@ -14,6 +14,7 @@
 | 6 | 의견 보내기 · 기록 백업 | `app.js` `renderFeedback`, `backupSection` |
 | 7 | 주간 자동 점검 (관리자) | 저장소 밖 예약 작업 + `check_all.py` |
 | 8 | AI 답 검수 (2026-11-24) | `review.js` `planCheck`·`recordCheck`, `app.js` `renderCheck`, `pipeline/promote.py`·`recheck.py` |
+| 9 | 게임 합쳐 배포하기 (2026-11-26) | `.github/workflows/pages.yml`, 게임 저장소 `tools/check_public.mjs`·`check_problems.mjs` |
 
 ---
 
@@ -253,3 +254,27 @@ flowchart TD
   H -- "내리기" --> T["recheck.py id --retire<br/>retired_at = 오늘"]
 ```
 
+
+## 9. 게임 합쳐 배포하기 (2026-11-26 · 요구 [requirements-game.md](requirements-game.md) · [ADR-0006](adr/0006-게임은-별도-저장소-배포-때-합침.md))
+
+```mermaid
+flowchart TD
+  T{"언제?"} -- "필드워드 main push" --> S
+  T -- "매일 06:00 (UTC 21:00)" --> S
+  T -- "손으로 실행" --> S
+  S["check 시작"] --> F["① 필드워드 검사<br/>validate · 파이프라인 시험 · 규칙 시험 · 문법"]
+  F -- "실패" --> X["배포 안 함<br/>지난 사이트(게임 포함) 그대로<br/>실패 알림 메일"]
+  F -- "통과" --> G["② 게임 받기<br/>field-words-3d-lab main 최신 → game-src/"]
+  G -- "받기 실패" --> X
+  G --> Q["③ 게임 검사 4가지<br/>공개 점검 · 문제 검사(필드워드 사전 사용)<br/>단위 시험 · 문법"]
+  Q -- "실패" --> X
+  Q -- "통과" --> M["④ 합치기<br/>_site/ = site/ + game-src/site/ → _site/game/"]
+  M --> U["배포 묶음 올리기"] --> D["deploy<br/>GitHub Pages"]
+  D --> R["/field-words/ · /field-words/game/"]
+```
+
+- 게임을 고치는 곳은 게임 저장소다. 필드워드는 받아서 검사하고 넣기만 한다(AC-102 · AC-105).
+- 게임 검사는 게임 저장소의 `pages.yml`과 같은 4가지다(AC-103). 문제 검사는 같은 작업 안의 필드워드 사전(`site/data/glossary.json`)으로 용어 · 등급까지 본다.
+- 실패하면 배포 전체를 멈춘다(AC-110). 게임을 고쳐 게임 `main`에 올린 뒤 손으로 다시 실행하거나 다음 날 06:00을 기다린다.
+- 맨 아래 링크는 같은 주소 아래 `game/`을 가리킨다(AC-106).
+- 합친 주소가 휴대폰에서 확인되면 게임 저장소의 따로 된 Pages를 끈다(AC-109, 사람이 1번).

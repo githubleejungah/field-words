@@ -4,7 +4,8 @@
 
 FDE(Forward Deployed Engineer: 고객 현장에서 문제를 정의하고 바로 만들어 해결하는 엔지니어) 강의 수강생이 현업 용어를 **실제 회의·면접·코드 리뷰 예문**으로 익히는 웹앱입니다. 프로젝트가 진행되는 순서대로 용어를 묶었고, 화면을 보지 않고 귀로만 들어도 공부할 수 있습니다.
 
-- 앱 주소: [공개 후 채우기]
+- 앱 주소: https://githubleejungah.github.io/field-words/
+- 게임(코드 가려 보기): https://githubleejungah.github.io/field-words/game/ — 게임 저장소 [field-words-3d-lab](https://github.com/githubleejungah/field-words-3d-lab)이 정본이고, 배포할 때 함께 올린다(ADR-0006)
 - 지금 버전: v0.1 · 용어 218개 · 헷갈리기 쉬운 짝 50개 (2026-11-17)
 
 > 이 앱은 로그인도 서버도 없습니다. 학습 기록은 각자 브라우저에만 저장되고 누구에게도 보내지 않습니다.
@@ -50,6 +51,7 @@ FDE(Forward Deployed Engineer: 고객 현장에서 문제를 정의하고 바로
 | [0003](docs/adr/0003-음성은-브라우저-내장-음성.md) | 음성은 브라우저 내장 음성 |
 | [0004](docs/adr/0004-운영-자동화는-점검과-제안까지.md) | 운영 자동화는 점검과 제안까지, 반영은 사람이 |
 | [0005](docs/adr/0005-예문-상황에-현장에선-추가.md) | 예문 상황에 "현장에선"(실제 겪은 장면 한 줄) 추가 |
+| [0006](docs/adr/0006-게임은-별도-저장소-배포-때-합침.md) | 게임은 별도 저장소를 정본으로 두고, 배포할 때 `/game/`으로 합친다 |
 
 ## 폴더
 
@@ -101,9 +103,10 @@ node --test tests/review.test.js
 | 2 | 작업 규칙 | [CLAUDE.md](CLAUDE.md) | 스택 · 규칙 · 자주 쓰는 명령 |
 | 3 | 아키텍처 | [docs/architecture.md](docs/architecture.md) | 구성도 · 구성요소 역할 · 호출 흐름 · 보안 경계 |
 | 4 | 데이터 설계 | [docs/data-model.md](docs/data-model.md) | 정본 표(데이터 · 정본 · 주인 · 사본) · glossary.json 구조 · 브라우저 저장 이름 |
-| 5 | 흐름 설계 | [docs/flows.md](docs/flows.md) | 용어 공개 · 오늘의 학습 · 복습 상자 · 마무리 · 카드 모드 · 주간 점검 순서도 |
+| 5 | 흐름 설계 | [docs/flows.md](docs/flows.md) | 용어 공개 · 오늘의 학습 · 복습 상자 · 마무리 · 카드 모드 · 주간 점검 · AI 답 검수 · 게임 합쳐 배포 순서도 |
 | 6 | 설계 결정 기록(ADR) | [docs/adr/](docs/adr/) | 결정 · 이유 · 대안 · 결과. 고치지 않고 새 ADR로 대체 |
 | 7 | 요구 | [docs/requirements.md](docs/requirements.md) | 새 기능(AI 답 검수)의 원문 · 인터뷰 · 가정 · EARS 수용 기준 · **이어서 하기**(현재 단계와 다음 할 일) |
+| 7-2 | 요구 (게임 합치기) | [docs/requirements-game.md](docs/requirements-game.md) | 게임을 같은 주소에서 보기(B안)의 원문 · 인터뷰 · 가정 · EARS 수용 기준 AC-101~110 |
 
 **그 밖의 문서**
 

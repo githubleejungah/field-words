@@ -5,6 +5,7 @@
   - [ADR-0001](adr/0001-정적-사이트와-관리자-파이프라인.md) 정적 사이트 + 관리자 파이프라인
   - [ADR-0003](adr/0003-음성은-브라우저-내장-음성.md) 음성은 브라우저 내장 음성
   - [ADR-0004](adr/0004-운영-자동화는-점검과-제안까지.md) 운영 자동화는 점검과 제안까지
+  - [ADR-0006](adr/0006-게임은-별도-저장소-배포-때-합침.md) 게임은 별도 저장소를 정본으로 두고 배포할 때 `/game/`으로 합친다 (요구 [requirements-game.md](requirements-game.md))
 - 데이터의 주인과 정본은 [data-model.md](data-model.md), 기능별 순서는 [flows.md](flows.md)에 있다.
 
 ## 1. 한 줄 요약
@@ -25,8 +26,9 @@ flowchart LR
   end
   subgraph GH["GitHub"]
     M["main 브랜치"]
-    A["GitHub Actions<br/>pages.yml<br/>check → deploy"]
-    PG["GitHub Pages<br/>site/ 폴더만"]
+    GR["게임 저장소 field-words-3d-lab<br/>main (게임 정본)"]
+    A["GitHub Actions<br/>pages.yml<br/>check → deploy<br/>(push · 매일 06:00 · 손으로)"]
+    PG["GitHub Pages<br/>site/ + game/"]
   end
   subgraph BR["수강생 브라우저"]
     H["index.html"]
@@ -36,7 +38,8 @@ flowchart LR
     SP["Web Speech API<br/>(브라우저 내장 음성)"]
   end
   MAIL["사용자 메일 앱<br/>(의견 보내기)"]
-  GAME["코드 가려 보기 게임<br/>field-words-3d-lab (별도 저장소·별도 Pages)"]
+  GAME["코드 가려 보기 게임<br/>game/ (같은 주소 아래)"]
+  JSD["jsDelivr<br/>파이썬 실행기 Pyodide<br/>(동의한 뒤에만)"]
 
   W --> C
   W --> R
@@ -45,6 +48,7 @@ flowchart LR
   S -- "validate.py가 검사" --> G
   G -- "git push (사람)" --> M
   M --> A --> PG
+  GR -- "배포할 때 받아 검사 후 game/에 넣음" --> A
   PG -- "HTTP로 파일 내려받기" --> H
   H --> RV
   H --> AP
@@ -52,8 +56,9 @@ flowchart LR
   AP --> RV --> LS
   AP --> SP
   AP -- "mailto: 링크" --> MAIL
-  H -- "맨 아래 링크" --> GAME
+  H -- "맨 아래 링크 game/" --> GAME
   GAME -. "glossary.json 읽기만" .-> PG
+  GAME -. "Web Worker 안에서만" .-> JSD
 ```
 
 GitHub에서 이 그림이 바로 보인다. Mermaid(글로 그림을 그리는 문법)로 그렸다.
@@ -81,10 +86,16 @@ GitHub에서 이 그림이 바로 보인다. Mermaid(글로 그림을 그리는 
 
 | 단계 | 하는 일 |
 |---|---|
-| 언제 | `main`에 push할 때, 또는 GitHub 화면에서 손으로 실행할 때 |
-| check | `validate.py` → 파이프라인 시험(`python -m unittest`, AI 답 검수) → `node --test tests/review.test.js` → `node --check`로 `app.js`·`review.js` 문법 검사 → 통과하면 `site/` 폴더를 배포용 묶음(artifact)으로 올려 둔다 |
-| deploy | check가 통과해야만 실행. check가 올려 둔 `site/` 묶음을 GitHub Pages에 배포만 한다 |
+| 언제 | `main`에 push할 때, 매일 한국 06:00(UTC 21:00, `schedule`), GitHub 화면에서 손으로 실행할 때 (AC-104) |
+| check ① 필드워드 | `validate.py` → 파이프라인 시험(`python -m unittest`, AI 답 검수) → `node --test tests/review.test.js` → `node --check`로 `app.js`·`review.js` 문법 검사 |
+| check ② 게임 받기 | 게임 저장소 `githubleejungah/field-words-3d-lab`의 `main` 최신 커밋을 `game-src/`에 받는다(공개 저장소라 비밀 키 없음, 지난 기록 전체 — 공개 점검이 지난 커밋도 본다) (AC-102) |
+| check ③ 게임 검사 | `game-src/` 안에서 게임 검사 4가지: `check_public.mjs --no-report` → `check_problems.mjs --glossary ../site/data/glossary.json` → `node --test tests/` → `site/js/*.js` 문법 검사 (AC-103) |
+| check ④ 합치기 | `site/`를 `_site/`로 복사하고 `game-src/site/`를 `_site/game/`에 넣어 배포용 묶음(artifact)으로 올린다. 필드워드 저장소에는 아무것도 커밋하지 않는다 (AC-101 · AC-105) |
+| deploy | check가 통과해야만 실행. check가 올려 둔 묶음을 GitHub Pages에 배포만 한다 |
+| 실패하면 | ①~④ 중 하나라도 실패하면 deploy는 돌지 않는다. 지난 사이트(게임 포함)가 그대로 남는다. GitHub가 실패 알림 메일을 보낸다 (AC-110) |
 
+- 게임 코드의 정본은 게임 저장소다(ADR-0006). 게임을 고치려면 게임 저장소를 고친다. 게임만 고친 날은 다음 날 06:00 배포에 들어간다. 급하면 손으로 실행한다.
+- GitHub는 저장소에 60일 동안 활동이 없으면 예약 실행(`schedule`)을 멈춘다. 그때는 Actions 화면에서 다시 켠다.
 - 올리기(check)와 배포(deploy)를 다른 작업으로 나눈 이유: 같은 작업에서 연달아 하면 배포가 방금 올린 묶음을 못 찾는 일이 생겼다(2026-11-24).
 - `pipeline/`, `docs/`, `schema/`는 배포되지 않는다. 공개 사이트에는 API 키(Key: 유료 서비스용 비밀 열쇠)가 들어갈 자리가 없다.
 - `check_all.py`의 9가지 중 Actions가 돌리는 것은 데이터 검사와 규칙 시험뿐이다. 비밀 값·개인정보 검사는 관리자 PC에서만 돈다.
@@ -170,5 +181,5 @@ sequenceDiagram
 | 개인정보 | 로그인 없음. 학습 기록은 브라우저 밖으로 나가지 않는다. 공개 파일의 전화번호·주민번호 모양은 `check_all.py`가 찾는다 |
 | 다른 기획 자료 | `research/`는 저장소 밖. `.gitignore`에 남겨 두고 `check_all.py`가 Git에 있는지 검사 |
 | 외부 스크립트 | 외부 서버 스크립트를 불러오지 않는다. `check_all.py`가 검사 |
-| 게임 링크 | 맨 아래 링크 하나만 있다(2026-11-25, A안). 게임은 별도 저장소의 별도 사이트이고 코드를 불러오지 않는다. 게임이 같은 주인 주소에서 `glossary.json`을 읽기만 한다. 게임 기록(`cm:v1:*`)과 필드워드 기록(`fw:v1:*`)은 주소 경로가 달라도 같은 출처(origin: 주소의 앞부분 `https://githubleejungah.github.io`)라 한 localStorage에 같이 있다. 접두어로 나눈다 |
+| 게임 | 게임은 `/field-words/game/`에 함께 배포된다(ADR-0006). 필드워드 화면은 게임 코드를 불러오지 않고 맨 아래 링크 1개만 있다. 게임은 `glossary.json`을 읽기만 한다. 외부 스크립트 예외는 `/game/` 아래 파이썬 실행기(jsDelivr, 버전 고정, 동의한 뒤, Web Worker 안) 1개뿐이고, 필드워드 화면은 계속 0개다(AC-107). Web Worker는 localStorage에 접근하지 못한다. 게임 기록(`cm:v1:*`)과 필드워드 기록(`fw:v1:*`)은 주소 경로가 달라도 같은 출처(origin: 주소의 앞부분 `https://githubleejungah.github.io`)라 한 localStorage에 같이 있다. 접두어로 나눈다 |
 | 검색 노출 | `index.html`의 `noindex, nofollow`. 넓게 공개할 때 지운다 |
