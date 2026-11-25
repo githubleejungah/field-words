@@ -283,7 +283,7 @@ a { color: var(--accent); }
   text-align: center;
   font-size: 15px;
 }
-.footer a { color: var(--muted); }
+.footer a { color: var(--muted); white-space: nowrap; }  /* 링크 하나가 두 줄로 갈라지지 않게 (예: "게임 ↗"의 화살표만 다음 줄로) */
 
 /* 처음 한 번만 보이는 한 줄 안내 */
 .first-notice {
