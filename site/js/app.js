@@ -249,13 +249,19 @@ function todayPanel() {
     h("span", { class: "progress-row-icon" }, icon("chart")),
     h("span", { class: "progress-row-text" }, h("b", {}, t("prog.link")), h("small", {}, t("prog.link.sub", { n: c.longTerm }))),
     icon("chevron"));
+  // 게임 입구 (AC-106): 내 기록과 같은 모양의 줄. 게임은 같은 주소 아래 game/ (ADR-0006).
+  // 첫 화면에서 스크롤 없이 보이게 여기에 둔다. 맨 아래 링크도 남긴다.
+  const gameLink = h("a", { class: "progress-row game-row", href: "game/" },
+    h("span", { class: "progress-row-icon" }, icon("game")),
+    h("span", { class: "progress-row-text" }, h("b", {}, t("game.link")), h("small", {}, t("game.link.sub"))),
+    icon("chevron"));
   // 상태별 개수: 눈에 덜 띄는 정보 줄 (색만이 아니라 모양 표시도 함께)
   const statusRow = c.unseen === state.terms.length ? "" : h("div", { class: "status-row" },
     ["known", "shaky", "confused", "misconception", "unknown"].map((k) =>
       h("span", { class: `status-item ${k}` }, h("i", { class: "mark", "aria-hidden": "true" }), t(`status.${k}`), h("b", {}, c[k]))),
     h("span", { class: "status-item longterm" }, icon("medal"), t("status.longTerm"), h("b", {}, c.longTerm))
   );
-  const stats = h("div", {}, statusRow, progressLink);
+  const stats = h("div", {}, statusRow, progressLink, gameLink);
 
   return h("section", { class: "today" },
     h("div", { class: "today-main" },
@@ -1839,6 +1845,8 @@ const ICONS = {
   mic: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z M5 11a7 7 0 0 0 14 0 M12 18v3",
   book: "M3 5.5C5.5 4 8.5 4 12 6c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5z M12 6v13.5",
   chart: "M4 20V4 M4 20h16 M8 16l4-5 3 3 5-6",
+  // 게임 입구: 게임기 손잡이(패드) 모양
+  game: "M7 8h10a5 5 0 0 1 4.6 7l-.6 1.4a2.5 2.5 0 0 1-4.2.6L15 15H9l-1.8 2a2.5 2.5 0 0 1-4.2-.6L2.4 15A5 5 0 0 1 7 8z M7.5 10.5v3 M6 12h3 M15.5 11h.01 M17.5 13h.01",
   moon: "M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z",
   spark: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z",
   search: "M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14z M20 20l-4-4",

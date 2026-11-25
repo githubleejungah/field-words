@@ -56,7 +56,7 @@ flowchart LR
   AP --> RV --> LS
   AP --> SP
   AP -- "mailto: 링크" --> MAIL
-  H -- "맨 아래 링크 game/" --> GAME
+  AP -- "오늘 카드 게임 줄 · 맨 아래 링크 game/" --> GAME
   GAME -. "glossary.json 읽기만" .-> PG
   GAME -. "Web Worker 안에서만" .-> JSD
 ```

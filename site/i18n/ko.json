@@ -94,6 +94,8 @@
   "learn.know": "이미 알아요 → 바로 확인",
   "learn.done": "익혔어요",
   "check.recall": "뜻을 떠올려 보세요. 얼마나 자신 있나요?",
+  "game.link": "코드 가려 보기 게임",
+  "game.link.sub": "코드 한 줄을 가리고 무엇이 달라질지 맞혀 보기",
   "check.recall.term": "이 뜻의 용어를 떠올려 보세요. “{def}” 얼마나 자신 있나요?",
   "check.hidden": "용어는 답한 뒤에 보여요",
   "check.sure": "확실해요",
