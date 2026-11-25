@@ -381,13 +381,25 @@ function renderStudy() {
   }
   paintHead();
 
-  const card = h("article", { class: "card" },
+  // 상자 3 이상은 "뜻 → 용어" 문제라서, 답하기 전까지 용어·발음을 가린다 (flows 2-2). 안 가리면 정답이 문제 위에 보인다.
+  // 다시 돌아온 카드(이미 답함)는 가리지 않는다.
+  let hidden = !s.answers[s.i] && (Review.get(term.id)?.box ?? 0) >= 3;
+  const realHead = () => [
     h("div", { class: "term-head", "data-sec": "term" },
       termTitle(term),
       speech.supported && speakButton("term", t("speak.term"), () => termOnlyParts(term), "mini")
     ),
-    pronKo(term)
-  );
+    pronKo(term),
+  ];
+  const headBox = h("div", { class: "study-term" },
+    ...(hidden ? [h("div", { class: "term-head term-hidden", "aria-label": t("check.hidden") }, h("p", { class: "term-hidden-mark" }, "?"))] : realHead()));
+  const reveal = () => {
+    if (!hidden) return;
+    hidden = false;
+    headBox.replaceChildren(...realHead());
+    if (speech.supported) speech.start("term", termOnlyParts(term));
+  };
+  const card = h("article", { class: "card" }, headBox);
   const panel = h("div", { class: "check" });
   card.append(panel);
 
@@ -422,11 +434,11 @@ function renderStudy() {
   if (!s.kinds[s.i]) s.kinds[s.i] = !Review.get(term.id) && !s.learned.includes(term.id) ? "learn" : "check";
   if (s.kinds[s.i] === "learn") { showLearn(); return; }
 
-  if (speech.supported) speech.start("term", termOnlyParts(term));
+  if (speech.supported && !hidden) speech.start("term", termOnlyParts(term));
 
-  // ① 떠올리기: 확신도 한 번 누르기
+  // ① 떠올리기: 확신도 한 번 누르기 (가린 카드는 뜻을 보고 용어를 떠올린다)
   panel.replaceChildren(
-    h("p", { class: "check-prompt" }, t("check.recall")),
+    h("p", { class: "check-prompt" }, hidden ? t("check.recall.term", { def: firstSentence(term.definition) }) : t("check.recall")),
     h("div", { class: "conf-row" },
       ["sure", "unsure", "dontknow"].map((c) =>
         h("button", { class: `btn conf ${c}`, type: "button", onclick: () => onConfidence(c) }, t(`check.${c}`)))
@@ -458,6 +470,7 @@ function renderStudy() {
   function finish({ confidence, correct, chosen, quiz }) {
     const confusedWith = !correct && chosen ? chosen.id : null;
     const { status } = Review.record(term.id, { confidence, correct, quiz: quiz?.kind ?? "recall", confusedWith });
+    reveal();
     const bad = status === "misconception" || status === "confused" || status === "unknown";
     s.answers[s.i] = { status };
     paintHead();

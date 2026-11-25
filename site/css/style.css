@@ -413,6 +413,8 @@ details.answer[open] summary::before { content: "▾"; }
   justify-content: space-between;
   gap: 4px 16px;
 }
+/* 상자 3 이상 확인 문제: 답하기 전까지 용어 자리에 "?"만 (flows 2-2) */
+.term-hidden-mark { margin: 0; font-size: 40px; font-weight: 700; line-height: 1.2; color: var(--muted); letter-spacing: 4px; }
 .card-progress { margin-top: 6px; color: var(--muted); font-size: 14px; white-space: nowrap; }
 .term-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; border-radius: 8px; }
 .speak-btn.mini { min-width: 0; min-height: 36px; padding: 0 12px; font-size: 14px; }
