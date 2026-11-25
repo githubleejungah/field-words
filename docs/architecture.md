@@ -36,6 +36,7 @@ flowchart LR
     SP["Web Speech API<br/>(브라우저 내장 음성)"]
   end
   MAIL["사용자 메일 앱<br/>(의견 보내기)"]
+  GAME["코드 가려 보기 게임<br/>field-words-3d-lab (별도 저장소·별도 Pages)"]
 
   W --> C
   W --> R
@@ -51,6 +52,8 @@ flowchart LR
   AP --> RV --> LS
   AP --> SP
   AP -- "mailto: 링크" --> MAIL
+  H -- "맨 아래 링크" --> GAME
+  GAME -. "glossary.json 읽기만" .-> PG
 ```
 
 GitHub에서 이 그림이 바로 보인다. Mermaid(글로 그림을 그리는 문법)로 그렸다.
@@ -167,4 +170,5 @@ sequenceDiagram
 | 개인정보 | 로그인 없음. 학습 기록은 브라우저 밖으로 나가지 않는다. 공개 파일의 전화번호·주민번호 모양은 `check_all.py`가 찾는다 |
 | 다른 기획 자료 | `research/`는 저장소 밖. `.gitignore`에 남겨 두고 `check_all.py`가 Git에 있는지 검사 |
 | 외부 스크립트 | 외부 서버 스크립트를 불러오지 않는다. `check_all.py`가 검사 |
+| 게임 링크 | 맨 아래 링크 하나만 있다(2026-11-25, A안). 게임은 별도 저장소의 별도 사이트이고 코드를 불러오지 않는다. 게임이 같은 주인 주소에서 `glossary.json`을 읽기만 한다. 게임 기록(`cm:v1:*`)과 필드워드 기록(`fw:v1:*`)은 주소 경로가 달라도 같은 출처(origin: 주소의 앞부분 `https://githubleejungah.github.io`)라 한 localStorage에 같이 있다. 접두어로 나눈다 |
 | 검색 노출 | `index.html`의 `noindex, nofollow`. 넓게 공개할 때 지운다 |
