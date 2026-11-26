@@ -580,7 +580,9 @@ body.has-bottom-bar .footer { display: none; }
 .check { margin-top: 18px; }
 .check-prompt { margin: 0 0 14px; font-weight: 600; }
 .conf-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.btn.conf { justify-content: center; min-height: 56px; font-size: 16px; font-weight: 700; }
+.btn.conf { justify-content: center; min-height: 56px; font-size: 16px; font-weight: 700; padding: 0 6px; white-space: nowrap; }
+/* 좁은 휴대폰(약 380px 이하)에서 "확실해요"가 "확실해 / 요"로 갈라지지 않게 (2026-11-26) */
+@media (max-width: 380px) { .btn.conf { font-size: 15px; } }
 .btn.conf.sure { border-color: var(--accent); color: var(--accent); }
 .options { display: grid; gap: 10px; }
 .option {
