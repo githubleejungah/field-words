@@ -22,6 +22,7 @@
 
 ```mermaid
 flowchart TD
+  Z["후보 줄 모으기<br/>pipeline/candidates/날짜_주제_용어후보.md<br/>+ 00_후보_목록.md (ADR-0007)"] --> A
   A["후보 묶음 작성<br/>pipeline/candidates/날짜.py<br/>(주간 작업 또는 대화)"] --> B["preview.py<br/>읽기 쉬운 미리보기 .md"]
   B --> C{"사람이 검토"}
   C -- "고칠 것 있음" --> A

@@ -58,6 +58,7 @@ glossary.json
 | 용어별 `confusable_with` | 없음 (파생값) | — | `confusable_pairs`에서 사이트가 계산한다. 데이터에 적지 않는다 |
 | glossary.json 모양 규칙 | `schema/glossary.schema.json` | 관리자 | 이 문서의 "한눈에 보기"(설명용). 참조 검사는 `validate.py` 코드에 있다 |
 | 넣은 용어 묶음의 기록 | `pipeline/seeds/*.py` (Git) | 관리자 (`promote.py`가 후보를 이리로 옮김) | — . 넣은 뒤 내용은 glossary.json이 정본이다. 이 파일을 다시 실행해 되돌리지 않는다 |
+| 용어 후보 줄(다듬기 전) | `pipeline/candidates/*_용어후보.md` (**Git 밖**, 관리자 PC). 한 곳에만 둔다(ADR-0007) | 어느 세션이든 중복 확인 뒤 세션마다 새 파일 1개 | `pipeline/candidates/00_후보_목록.md`(개수 · 상태 한 장 목록). 옛 `field-words-inbox` 이슈 1~5번은 닫힌 기록 |
 | 승인 전 후보 | `pipeline/candidates/*.py` (**Git 밖**, 관리자 PC) | 주간 예약 작업·Claude가 쓰고 사람이 승인 | `*_미리보기.md`(`preview.py`), `--dry-run` 때의 임시 복사본 |
 | 점검 · 제안 보고서 | `pipeline/reports/` (**Git 밖**) | `check_all.py`, 주간 예약 작업 | — |
 | 화면 문구 | `site/i18n/ko.json` | 개발자 | `state.text`(메모리) |
