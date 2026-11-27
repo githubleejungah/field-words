@@ -6,7 +6,7 @@ FDE(Forward Deployed Engineer: 고객 현장에서 문제를 정의하고 바로
 
 - 앱 주소: https://githubleejungah.github.io/field-words/
 - 게임(코드 가려 보기): https://githubleejungah.github.io/field-words/game/ — 게임 저장소 [field-words-3d-lab](https://github.com/githubleejungah/field-words-3d-lab)이 정본이고, 배포할 때 함께 올린다(ADR-0006)
-- 지금 버전: v0.1 · 용어 218개 · 헷갈리기 쉬운 짝 50개 (2026-11-17)
+- 지금 버전: v0.1 · 용어 253개 · 헷갈리기 쉬운 짝 58개 · AI 답 검수 20문제 (2026-11-27)
 
 > 이 앱은 로그인도 서버도 없습니다. 학습 기록은 각자 브라우저에만 저장되고 누구에게도 보내지 않습니다.
 > 그래서 어떤 용어를 많이 틀리는지 자동으로 알 수 없습니다. 틀린 설명이나 필요한 용어는 앱의 **"의견 보내기"**로 알려 주세요.
